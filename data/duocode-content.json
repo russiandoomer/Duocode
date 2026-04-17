@@ -1,0 +1,215 @@
+{
+  "branding": {
+    "appName": "duocode",
+    "headline": "<duocode />",
+    "tagline": "Aprende programacion con clases, retos y metricas en una sola plataforma.",
+    "heroSnippet": "bootcamp.load('frontend_engineer_path')",
+    "logoLabel": "</>",
+    "logoHint": "Reemplaza el logo provisional desde assets/images y docs/branding-guide.md."
+  },
+  "profile": {
+    "name": "Jimmy Zambrana",
+    "handle": "JimmyCode.dev",
+    "track": "Frontend Engineer Path",
+    "nextClass": "React Hooks Essentials",
+    "currentFocus": "Hooks, estado, consumo de APIs y deploy web.",
+    "dailyGoal": "45 min",
+    "repositoryStatus": "Listo para GitHub"
+  },
+  "roadmaps": [
+    {
+      "id": "frontend-launchpad",
+      "title": "Frontend Launchpad",
+      "stack": "HTML CSS JS React",
+      "classes": 8,
+      "lessons": 34,
+      "level": "Beginner",
+      "duration": "4 semanas",
+      "progress": 72,
+      "status": "Activa",
+      "next": "Hooks y estado"
+    },
+    {
+      "id": "api-builder",
+      "title": "API Builder",
+      "stack": "Node HTTP JSON Deploy",
+      "classes": 6,
+      "lessons": 24,
+      "level": "Intermediate",
+      "duration": "3 semanas",
+      "progress": 41,
+      "status": "En curso",
+      "next": "Endpoints REST"
+    },
+    {
+      "id": "ship-it",
+      "title": "Ship It",
+      "stack": "GitHub Vercel Railway",
+      "classes": 5,
+      "lessons": 18,
+      "level": "Deploy",
+      "duration": "2 semanas",
+      "progress": 18,
+      "status": "Pendiente",
+      "next": "Variables de entorno"
+    }
+  ],
+  "featuredClasses": [
+    {
+      "id": "react-hooks",
+      "title": "React Hooks Essentials",
+      "description": "useState, useEffect y componentes reutilizables con una UI de producto real.",
+      "level": "Intermedio",
+      "duration": "45 min",
+      "lessons": 6,
+      "tag": "React",
+      "status": "Popular"
+    },
+    {
+      "id": "api-errors",
+      "title": "Fetch y manejo de errores",
+      "description": "Llamadas a API, loading states, retries y respuestas JSON limpias.",
+      "level": "Intermedio",
+      "duration": "38 min",
+      "lessons": 5,
+      "tag": "API",
+      "status": "Nueva"
+    },
+    {
+      "id": "deploy-stack",
+      "title": "Deploy con Vercel y Railway",
+      "description": "Conecta frontend y backend, variables de entorno y despliegue desde GitHub.",
+      "level": "Deploy",
+      "duration": "52 min",
+      "lessons": 7,
+      "tag": "Deploy",
+      "status": "Clave"
+    }
+  ],
+  "categories": [
+    "react",
+    "api",
+    "git",
+    "deploy",
+    "typescript"
+  ],
+  "resources": [
+    {
+      "id": "react-patterns",
+      "label": "TS",
+      "title": "React Hooks Patterns",
+      "meta": "md - 12 min - actualizado_hoy",
+      "type": "Guia"
+    },
+    {
+      "id": "railway-setup",
+      "label": "DEP",
+      "title": "Railway Setup Checklist",
+      "meta": "guide - 10 min - deploy_ready",
+      "type": "Deploy"
+    },
+    {
+      "id": "vercel-env",
+      "label": "ENV",
+      "title": "Variables de entorno en Vercel",
+      "meta": "snippet - 6 min - production_safe",
+      "type": "Config"
+    }
+  ],
+  "challengeModes": [
+    {
+      "id": "easy",
+      "label": "EASY",
+      "description": "Reto guiado con pista y codigo base.",
+      "color": "#22C55E"
+    },
+    {
+      "id": "medium",
+      "label": "MEDIUM",
+      "description": "Reto intermedio con objetivos claros y validacion manual.",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "hard",
+      "label": "HARD",
+      "description": "Reto libre orientado a portfolio y deploy final.",
+      "color": "#38BDF8"
+    }
+  ],
+  "stats": {
+    "level": 12,
+    "totalXp": 1280,
+    "precision": 85,
+    "streak": 7,
+    "solvedChallenges": 38,
+    "totalMinutes": 245,
+    "weeklyActivity": [
+      { "day": "L", "xp": 90 },
+      { "day": "M", "xp": 140 },
+      { "day": "X", "xp": 110 },
+      { "day": "J", "xp": 170 },
+      { "day": "V", "xp": 210 },
+      { "day": "S", "xp": 150 },
+      { "day": "D", "xp": 120 }
+    ],
+    "recentSessions": [
+      {
+        "id": "react-07",
+        "title": "Sprint React #07",
+        "topic": "Hooks y estado",
+        "status": "COMPLETADO",
+        "power": 52,
+        "reward": 187,
+        "accuracy": 89,
+        "lines": [
+          "const xp = streak * 40;",
+          "if (answer.correct) level++;",
+          "return 'duocode';"
+        ]
+      },
+      {
+        "id": "api-03",
+        "title": "API Debug #03",
+        "topic": "Fetch y manejo de errores",
+        "status": "EN CURSO",
+        "power": 68,
+        "reward": 142,
+        "accuracy": 81,
+        "lines": [
+          "try {",
+          "  const data = await fetch(url);",
+          "} catch (error) {"
+        ]
+      },
+      {
+        "id": "js-11",
+        "title": "JavaScript Loops #11",
+        "topic": "Bucles y arrays",
+        "status": "COMPLETADO",
+        "power": 74,
+        "reward": 201,
+        "accuracy": 93,
+        "lines": [
+          "for (const item of items) {",
+          "  total += item.value;",
+          "}"
+        ]
+      }
+    ]
+  },
+  "deploy": {
+    "repositoryName": "duocode-platform",
+    "frontendPlatform": "Vercel",
+    "backendPlatform": "Railway",
+    "frontendBuildCommand": "npm run web:build",
+    "backendStartCommand": "npm run api:start",
+    "envVarName": "EXPO_PUBLIC_API_URL",
+    "githubChecklist": [
+      "Crear repositorio en GitHub",
+      "Subir rama main",
+      "Conectar Vercel al repo",
+      "Conectar Railway al repo",
+      "Configurar EXPO_PUBLIC_API_URL en Vercel"
+    ]
+  }
+}

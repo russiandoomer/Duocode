@@ -1,0 +1,346 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin Duocode",
+      "email": "admin@duocode.dev",
+      "passwordHash": "scrypt$16a7143145ec89d067ea10761c6a0143$2c224336efd06602fa02f163cd13fc9b6ac10778facdbc139f66eea39d045d8865ac52455e4e873d778845462d41d2236bfb6dde8f1be95206358332b3bddbad",
+      "role": "admin",
+      "track": "Platform Oversight",
+      "focus": "Metricas, progresion y roadmap editorial.",
+      "dailyGoalMinutes": 0,
+      "createdAt": "2026-04-01T09:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Jimmy Zambrana",
+      "email": "student@duocode.dev",
+      "passwordHash": "scrypt$2d3c760f34a4876a637274cea3c347a4$c8d04d915c05eab2d43d5075f24dab39e4702c0748e35248034612c90d3b0a335ce937c0471cd9ce84b992e8ae766bf3012217bd1c465516f4118c08e010c7dc",
+      "role": "student",
+      "track": "Frontend Engineer Path",
+      "focus": "Hooks, estado, consumo de APIs y deploy web.",
+      "dailyGoalMinutes": 45,
+      "createdAt": "2026-04-02T10:15:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Ana API",
+      "email": "ana@duocode.dev",
+      "passwordHash": "scrypt$2d3c760f34a4876a637274cea3c347a4$c8d04d915c05eab2d43d5075f24dab39e4702c0748e35248034612c90d3b0a335ce937c0471cd9ce84b992e8ae766bf3012217bd1c465516f4118c08e010c7dc",
+      "role": "student",
+      "track": "API Builder",
+      "focus": "Endpoints REST y manejo seguro de errores.",
+      "dailyGoalMinutes": 35,
+      "createdAt": "2026-04-03T12:45:00.000Z"
+    }
+  ],
+  "topics": [
+    {
+      "id": "js-foundations",
+      "roadmapId": "frontend-launchpad",
+      "title": "JavaScript Foundations",
+      "description": "Funciones puras, arrays y strings para resolver retos base.",
+      "estimatedMinutes": 95,
+      "status": "Activo",
+      "sortOrder": 1,
+      "exercises": [
+        {
+          "id": "greet-developer",
+          "title": "Crear saludo de developer",
+          "prompt": "Implementa una funcion llamada greetDeveloper que reciba un nombre y devuelva el texto exacto \"Hola <nombre>, listo para codear\".",
+          "instructions": [
+            "Crea una funcion llamada greetDeveloper.",
+            "Debe recibir un parametro name.",
+            "Debe devolver un string exacto sin console.log final."
+          ],
+          "functionName": "greetDeveloper",
+          "starterCode": "function greetDeveloper(name) {\n  // escribe tu solucion aqui\n}\n",
+          "solutionCode": "function greetDeveloper(name) {\n  return `Hola ${name}, listo para codear`;\n}\n",
+          "explanation": "La solucion correcta usa un template string y retorna el saludo exacto que esperan los test cases.",
+          "xpReward": 60,
+          "sortOrder": 1,
+          "testCases": [
+            {
+              "label": "Caso Jimmy",
+              "args": ["Jimmy"],
+              "expected": "Hola Jimmy, listo para codear"
+            },
+            {
+              "label": "Caso Ana",
+              "args": ["Ana"],
+              "expected": "Hola Ana, listo para codear"
+            }
+          ]
+        },
+        {
+          "id": "sum-array",
+          "title": "Sumar un array de numeros",
+          "prompt": "Implementa una funcion sumArray que reciba un array de numeros y devuelva la suma total.",
+          "instructions": [
+            "Crea una funcion llamada sumArray.",
+            "Recibe un array llamado numbers.",
+            "Devuelve la suma como numero."
+          ],
+          "functionName": "sumArray",
+          "starterCode": "function sumArray(numbers) {\n  // recorre el array y devuelve la suma\n}\n",
+          "solutionCode": "function sumArray(numbers) {\n  return numbers.reduce((total, item) => total + item, 0);\n}\n",
+          "explanation": "Se puede resolver con reduce o con un bucle. Lo importante es devolver la suma correcta para cualquier array.",
+          "xpReward": 80,
+          "sortOrder": 2,
+          "testCases": [
+            {
+              "label": "Array pequeno",
+              "args": [[1, 2, 3, 4]],
+              "expected": 10
+            },
+            {
+              "label": "Incluye negativos",
+              "args": [[8, -2, 5]],
+              "expected": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "react-state",
+      "roadmapId": "frontend-launchpad",
+      "title": "React State Patterns",
+      "description": "Funciones que formatean y transforman datos como lo haria una UI React.",
+      "estimatedMinutes": 110,
+      "status": "Activo",
+      "sortOrder": 2,
+      "exercises": [
+        {
+          "id": "counter-label",
+          "title": "Formatear etiqueta de contador",
+          "prompt": "Crea una funcion buildCounterLabel que reciba un numero y devuelva \"Contador: <numero> clicks\".",
+          "instructions": [
+            "La funcion debe llamarse buildCounterLabel.",
+            "Recibe count como numero.",
+            "Devuelve el texto exacto."
+          ],
+          "functionName": "buildCounterLabel",
+          "starterCode": "function buildCounterLabel(count) {\n  // devuelve una etiqueta legible para la UI\n}\n",
+          "solutionCode": "function buildCounterLabel(count) {\n  return `Contador: ${count} clicks`;\n}\n",
+          "explanation": "El objetivo es practicar interpolacion y devolver un string consistente para renderizar en componentes.",
+          "xpReward": 70,
+          "sortOrder": 1,
+          "testCases": [
+            {
+              "label": "Count 0",
+              "args": [0],
+              "expected": "Contador: 0 clicks"
+            },
+            {
+              "label": "Count 14",
+              "args": [14],
+              "expected": "Contador: 14 clicks"
+            }
+          ]
+        },
+        {
+          "id": "pending-tasks",
+          "title": "Filtrar tareas pendientes",
+          "prompt": "Crea una funcion getPendingTaskTitles que reciba un array de tareas y devuelva solo los titulos de las tareas cuyo campo done sea false.",
+          "instructions": [
+            "La funcion debe llamarse getPendingTaskTitles.",
+            "Cada tarea tiene title y done.",
+            "Debes devolver un array de strings."
+          ],
+          "functionName": "getPendingTaskTitles",
+          "starterCode": "function getPendingTaskTitles(tasks) {\n  // filtra las tareas pendientes y devuelve solo el title\n}\n",
+          "solutionCode": "function getPendingTaskTitles(tasks) {\n  return tasks.filter((task) => !task.done).map((task) => task.title);\n}\n",
+          "explanation": "Primero filtras por done false y luego transformas el resultado con map para quedarte solo con el title.",
+          "xpReward": 120,
+          "sortOrder": 2,
+          "testCases": [
+            {
+              "label": "Mixto",
+              "args": [[
+                { "title": "Login", "done": true },
+                { "title": "Dashboard", "done": false },
+                { "title": "Deploy", "done": false }
+              ]],
+              "expected": ["Dashboard", "Deploy"]
+            },
+            {
+              "label": "Todo completo",
+              "args": [[
+                { "title": "API", "done": true }
+              ]],
+              "expected": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deploy-readiness",
+      "roadmapId": "ship-it",
+      "title": "Deploy Readiness",
+      "description": "Respuestas escritas como funciones para simular estados de deploy y resumenes de entorno.",
+      "estimatedMinutes": 85,
+      "status": "Siguiente",
+      "sortOrder": 3,
+      "exercises": [
+        {
+          "id": "deploy-status",
+          "title": "Formatear estado de deploy",
+          "prompt": "Crea una funcion formatDeployStatus que reciba appName e isOnline y devuelva \"<appName>: online\" o \"<appName>: offline\".",
+          "instructions": [
+            "La funcion debe llamarse formatDeployStatus.",
+            "Recibe appName e isOnline.",
+            "Devuelve el string exacto."
+          ],
+          "functionName": "formatDeployStatus",
+          "starterCode": "function formatDeployStatus(appName, isOnline) {\n  // devuelve el estado del deploy\n}\n",
+          "solutionCode": "function formatDeployStatus(appName, isOnline) {\n  return `${appName}: ${isOnline ? 'online' : 'offline'}`;\n}\n",
+          "explanation": "Usa un operador ternario para resolver rapido si la app esta online u offline y concatena el nombre.",
+          "xpReward": 90,
+          "sortOrder": 1,
+          "testCases": [
+            {
+              "label": "Online",
+              "args": ["duocode-api", true],
+              "expected": "duocode-api: online"
+            },
+            {
+              "label": "Offline",
+              "args": ["duocode-web", false],
+              "expected": "duocode-web: offline"
+            }
+          ]
+        },
+        {
+          "id": "env-summary",
+          "title": "Construir resumen de variables",
+          "prompt": "Crea una funcion buildEnvSummary que reciba un objeto env y devuelva otro objeto con hasApiUrl y hasMysql configurados.",
+          "instructions": [
+            "La funcion debe llamarse buildEnvSummary.",
+            "Devuelve un objeto con booleanos.",
+            "hasApiUrl depende de env.EXPO_PUBLIC_API_URL.",
+            "hasMysql depende de MYSQL_HOST o MYSQL_URL."
+          ],
+          "functionName": "buildEnvSummary",
+          "starterCode": "function buildEnvSummary(env) {\n  // devuelve un resumen de configuracion\n}\n",
+          "solutionCode": "function buildEnvSummary(env) {\n  return {\n    hasApiUrl: Boolean(env.EXPO_PUBLIC_API_URL),\n    hasMysql: Boolean(env.MYSQL_HOST || env.MYSQL_URL),\n  };\n}\n",
+          "explanation": "La solucion usa Boolean para transformar la existencia de variables en true o false de forma clara.",
+          "xpReward": 140,
+          "sortOrder": 2,
+          "testCases": [
+            {
+              "label": "Todo listo",
+              "args": [
+                {
+                  "EXPO_PUBLIC_API_URL": "https://api.example.com",
+                  "MYSQL_HOST": "127.0.0.1"
+                }
+              ],
+              "expected": {
+                "hasApiUrl": true,
+                "hasMysql": true
+              }
+            },
+            {
+              "label": "Sin MySQL",
+              "args": [
+                {
+                  "EXPO_PUBLIC_API_URL": "https://api.example.com"
+                }
+              ],
+              "expected": {
+                "hasApiUrl": true,
+                "hasMysql": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "progress": [
+    {
+      "userId": 2,
+      "exerciseId": "greet-developer",
+      "isCompleted": true,
+      "bestScore": 100,
+      "lastSubmittedCode": "function greetDeveloper(name) {\n  return `Hola ${name}, listo para codear`;\n}\n",
+      "updatedAt": "2026-04-14T14:20:00.000Z",
+      "completedAt": "2026-04-14T14:20:00.000Z"
+    },
+    {
+      "userId": 2,
+      "exerciseId": "sum-array",
+      "isCompleted": true,
+      "bestScore": 100,
+      "lastSubmittedCode": "function sumArray(numbers) {\n  return numbers.reduce((total, item) => total + item, 0);\n}\n",
+      "updatedAt": "2026-04-15T09:05:00.000Z",
+      "completedAt": "2026-04-15T09:05:00.000Z"
+    },
+    {
+      "userId": 2,
+      "exerciseId": "counter-label",
+      "isCompleted": false,
+      "bestScore": 50,
+      "lastSubmittedCode": "function buildCounterLabel(count) {\n  return `Contador ${count}`;\n}\n",
+      "updatedAt": "2026-04-16T08:30:00.000Z",
+      "completedAt": null
+    },
+    {
+      "userId": 3,
+      "exerciseId": "greet-developer",
+      "isCompleted": true,
+      "bestScore": 100,
+      "lastSubmittedCode": "function greetDeveloper(name) {\n  return `Hola ${name}, listo para codear`;\n}\n",
+      "updatedAt": "2026-04-15T11:00:00.000Z",
+      "completedAt": "2026-04-15T11:00:00.000Z"
+    }
+  ],
+  "attempts": [
+    {
+      "id": 1,
+      "userId": 2,
+      "exerciseId": "greet-developer",
+      "submittedCode": "function greetDeveloper(name) {\n  return `Hola ${name}, listo para codear`;\n}\n",
+      "passed": true,
+      "score": 100,
+      "consoleOutput": [],
+      "testResults": [],
+      "createdAt": "2026-04-14T14:20:00.000Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "exerciseId": "sum-array",
+      "submittedCode": "function sumArray(numbers) {\n  return numbers.reduce((total, item) => total + item, 0);\n}\n",
+      "passed": true,
+      "score": 100,
+      "consoleOutput": [],
+      "testResults": [],
+      "createdAt": "2026-04-15T09:05:00.000Z"
+    },
+    {
+      "id": 3,
+      "userId": 2,
+      "exerciseId": "counter-label",
+      "submittedCode": "function buildCounterLabel(count) {\n  return `Contador ${count}`;\n}\n",
+      "passed": false,
+      "score": 50,
+      "consoleOutput": [],
+      "testResults": [],
+      "createdAt": "2026-04-16T08:30:00.000Z"
+    },
+    {
+      "id": 4,
+      "userId": 3,
+      "exerciseId": "greet-developer",
+      "submittedCode": "function greetDeveloper(name) {\n  return `Hola ${name}, listo para codear`;\n}\n",
+      "passed": true,
+      "score": 100,
+      "consoleOutput": [],
+      "testResults": [],
+      "createdAt": "2026-04-15T11:00:00.000Z"
+    }
+  ]
+}
