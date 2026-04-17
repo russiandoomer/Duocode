@@ -1,19 +1,49 @@
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { DuocodePalette } from '@/constants/duocode-theme';
 import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
+import type { LearnerExercise, LearnerTopic } from '@/types/duocode';
+
+const PATH_OFFSETS = [0, 54, 92, 54, 0, -54, -92, -54];
+const CODE_GLYPHS = ['</>', 'fn', '{}', '[]', 'map', 'api', 'git', 'db'];
 
 function LoadingState() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.loadingCard}>
-        <Text style={styles.loadingTitle}>loading classes...</Text>
-        <Text style={styles.loadingText}>Estamos preparando tus clases, temas y recursos.</Text>
+        <Text style={styles.loadingTitle}>loading roadmap...</Text>
+        <Text style={styles.loadingText}>Estamos armando tu ruta visual de lecciones.</Text>
       </View>
     </ScrollView>
   );
+}
+
+function normalizeGlyph(exercise: LearnerExercise, index: number) {
+  const functionName = exercise.functionName.toLowerCase();
+
+  if (functionName.includes('array')) {
+    return '[]';
+  }
+
+  if (functionName.includes('label')) {
+    return 'txt';
+  }
+
+  if (functionName.includes('task')) {
+    return 'map';
+  }
+
+  if (functionName.includes('deploy')) {
+    return 'git';
+  }
+
+  if (functionName.includes('env')) {
+    return 'env';
+  }
+
+  return CODE_GLYPHS[index % CODE_GLYPHS.length];
 }
 
 export default function ExploreScreen() {
@@ -24,112 +54,206 @@ export default function ExploreScreen() {
     return <LoadingState />;
   }
 
-  const { settings, topics, user } = dashboard;
+  const { topics, user } = dashboard;
+  const allLessons = topics.flatMap((topic) => topic.exercises.map((exercise) => ({ topic, exercise })));
+  const firstPendingIndex = allLessons.findIndex((entry) => !entry.exercise.completed);
+  const activeTopic =
+    topics.find((topic) => topic.exercises.some((exercise) => !exercise.completed)) || topics[0] || null;
+
+  const timelineItems: (
+    | { type: 'section'; topic: LearnerTopic; topicIndex: number }
+    | {
+        type: 'lesson';
+        topic: LearnerTopic;
+        exercise: LearnerExercise;
+        topicIndex: number;
+        globalIndex: number;
+      }
+    | { type: 'checkpoint'; topic: LearnerTopic; topicIndex: number }
+  )[] = [];
+
+  let globalIndex = 0;
+
+  topics.forEach((topic, topicIndex) => {
+    timelineItems.push({ type: 'section', topic, topicIndex });
+
+    topic.exercises.forEach((exercise) => {
+      timelineItems.push({
+        type: 'lesson',
+        topic,
+        exercise,
+        topicIndex,
+        globalIndex,
+      });
+      globalIndex += 1;
+    });
+
+    if (topicIndex < topics.length - 1) {
+      timelineItems.push({
+        type: 'checkpoint',
+        topic,
+        topicIndex,
+      });
+    }
+  });
+
+  function handleLessonPress(topic: LearnerTopic, exercise: LearnerExercise, isLocked: boolean) {
+    if (isLocked) {
+      Alert.alert('duocode', 'Completa la leccion actual para desbloquear la siguiente.');
+      return;
+    }
+
+    router.push({
+      pathname: '/(tabs)/game',
+      params: {
+        topicId: topic.id,
+        exerciseId: exercise.id,
+      },
+    });
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>classroom.tsx</Text>
-        <Text style={styles.subtitle}>{`Ruta activa: ${user.track}`}</Text>
+      <View style={styles.headerCard}>
+        <View style={styles.headerTextWrap}>
+          <Text style={styles.headerLabel}>
+            {activeTopic ? `TRACK ACTIVO · ${activeTopic.status.toUpperCase()}` : 'TRACK ACTIVO'}
+          </Text>
+          <Text style={styles.headerTitle}>{activeTopic?.title || user.track}</Text>
+          <Text style={styles.headerSubtitle}>
+            {activeTopic
+              ? `${activeTopic.completedExercises}/${activeTopic.exerciseCount} lecciones · ${activeTopic.estimatedMinutes} min`
+              : user.focus}
+          </Text>
+        </View>
+
+        <Pressable
+          style={styles.guideButton}
+          onPress={() => Alert.alert('duocode', activeTopic?.description || user.focus)}>
+          <Text style={styles.guideButtonText}>GUIA</Text>
+        </Pressable>
       </View>
 
-      <TextInput
-        placeholder={`buscar('${user.focus}')`}
-        placeholderTextColor={DuocodePalette.muted}
-        style={styles.searchInput}
-      />
+      <View style={styles.pathShell}>
+        <View style={styles.pathRail} />
 
-      <Text style={styles.sectionTitle}>categorias</Text>
-      <View style={styles.categoriesRow}>
-        {settings.categories.map((category, index) => (
-          <Pressable
-            key={category}
-            style={[styles.categoryChip, index === 0 && styles.categoryChipActive]}
-            onPress={() => Alert.alert('duocode', `Categoria activa: ${category}`)}>
-            <Text style={[styles.categoryText, index === 0 && styles.categoryTextActive]}>
-              {`<${category} />`}
-            </Text>
-          </Pressable>
-        ))}
+        {timelineItems.map((item) => {
+          if (item.type === 'section') {
+            return (
+              <View key={`section-${item.topic.id}`} style={styles.sectionDivider}>
+                <View style={styles.sectionDividerLine} />
+                <Text style={styles.sectionDividerText}>{item.topic.title}</Text>
+                <View style={styles.sectionDividerLine} />
+              </View>
+            );
+          }
+
+          if (item.type === 'checkpoint') {
+            const checkpointOffset = item.topicIndex % 2 === 0 ? -76 : 76;
+
+            return (
+              <View key={`checkpoint-${item.topic.id}`} style={styles.lessonRow}>
+                <View
+                  style={[
+                    styles.traceLine,
+                    checkpointOffset >= 0 ? styles.traceRight : styles.traceLeft,
+                    { width: Math.abs(checkpointOffset) },
+                  ]}
+                />
+
+                <View style={[styles.checkpointWrap, { transform: [{ translateX: checkpointOffset }] }]}>
+                  <View style={styles.checkpointNode}>
+                    <Text style={styles.checkpointNodeText}>XP</Text>
+                  </View>
+                  <Text style={styles.lessonLabel}>checkpoint</Text>
+                </View>
+              </View>
+            );
+          }
+
+          const offset = PATH_OFFSETS[item.globalIndex % PATH_OFFSETS.length];
+          const isCurrent = firstPendingIndex === -1 ? false : item.globalIndex === firstPendingIndex;
+          const isLocked = firstPendingIndex === -1 ? false : item.globalIndex > firstPendingIndex;
+          const glyph = isLocked ? '--' : normalizeGlyph(item.exercise, item.globalIndex);
+
+          return (
+            <View key={item.exercise.id} style={styles.lessonRow}>
+              {offset !== 0 ? (
+                <View
+                  style={[
+                    styles.traceLine,
+                    offset > 0 ? styles.traceRight : styles.traceLeft,
+                    { width: Math.abs(offset) },
+                  ]}
+                />
+              ) : null}
+
+              <View style={[styles.lessonWrap, { transform: [{ translateX: offset }] }]}>
+                <Pressable
+                  style={[
+                    styles.lessonNodeBase,
+                    item.exercise.completed && styles.lessonNodeBaseCompleted,
+                    isCurrent && styles.lessonNodeBaseCurrent,
+                    isLocked && styles.lessonNodeBaseLocked,
+                  ]}
+                  onPress={() => handleLessonPress(item.topic, item.exercise, isLocked)}>
+                  <View
+                    style={[
+                      styles.lessonNode,
+                      item.exercise.completed && styles.lessonNodeCompleted,
+                      isCurrent && styles.lessonNodeCurrent,
+                      isLocked && styles.lessonNodeLocked,
+                    ]}>
+                    <Text
+                      style={[
+                        styles.lessonGlyph,
+                        item.exercise.completed && styles.lessonGlyphCompleted,
+                        isCurrent && styles.lessonGlyphCurrent,
+                        isLocked && styles.lessonGlyphLocked,
+                      ]}>
+                      {glyph}
+                    </Text>
+                  </View>
+
+                  {isCurrent ? (
+                    <View style={styles.startTag}>
+                      <Text style={styles.startTagText}>EMPEZAR</Text>
+                    </View>
+                  ) : null}
+                </Pressable>
+
+                <Text style={styles.lessonLabel}>{item.exercise.title}</Text>
+                <Text style={styles.lessonMeta}>
+                  {isLocked
+                    ? 'bloqueado'
+                    : item.exercise.completed
+                      ? `${item.exercise.xpReward} XP · completado`
+                      : `${item.exercise.xpReward} XP · en curso`}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
       </View>
 
-      <Text style={styles.sectionTitle}>temas_del_alumno</Text>
-      {topics.map((topic) => (
-        <Pressable key={topic.id} style={styles.topicCard} onPress={() => router.push('/(tabs)/game')}>
-          <View style={styles.topicHeader}>
-            <View style={styles.topicBadge}>
-              <Text style={styles.topicBadgeText}>{topic.exercises.length}</Text>
-            </View>
-
-            <View style={styles.topicBody}>
-              <Text style={styles.topicTitle}>{topic.title}</Text>
-              <Text style={styles.topicDescription}>{topic.description}</Text>
-            </View>
-          </View>
-
-          <View style={styles.topicMetaRow}>
-            <Text style={styles.topicMeta}>{`${topic.completedExercises}/${topic.exerciseCount} resueltos`}</Text>
-            <Text style={styles.topicMeta}>{`${topic.estimatedMinutes} min`}</Text>
-            <Text style={styles.topicMeta}>{topic.status}</Text>
-          </View>
-
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${topic.progressPercent}%` }]} />
-          </View>
-        </Pressable>
-      ))}
-
-      <Text style={styles.sectionTitle}>clases_recomendadas</Text>
-      {settings.featuredClasses.map((item, index) => (
-        <Pressable
-          key={item.id}
-          style={styles.classCard}
-          onPress={() => Alert.alert('duocode', `Clase sugerida: ${item.title}`)}>
-          <View style={[styles.resourceThumb, index === 0 ? styles.thumbSoft : styles.thumbMuted]}>
-            <Text style={styles.resourceThumbText}>{item.tag}</Text>
-          </View>
-
-          <View style={styles.classBody}>
-            <Text style={styles.resourceTitle}>{item.title}</Text>
-            <Text style={styles.classDescription}>{item.description}</Text>
-            <View style={styles.classMetaRow}>
-              <Text style={styles.classMeta}>{item.level}</Text>
-              <Text style={styles.classMeta}>{item.duration}</Text>
-              <Text style={styles.classMeta}>{`${item.lessons} lessons`}</Text>
-            </View>
-          </View>
-        </Pressable>
-      ))}
-
-      <Text style={styles.sectionTitle}>recursos</Text>
-      {settings.resources.map((resource, index) => (
-        <Pressable
-          key={resource.id}
-          style={styles.resourceCard}
-          onPress={() => Alert.alert('duocode', `Recurso: ${resource.title}`)}>
-          <View style={[styles.resourceThumb, index === 0 ? styles.thumbSoft : styles.thumbMuted]}>
-            <Text style={styles.resourceThumbText}>{resource.label}</Text>
-          </View>
-
-          <View style={styles.resourceBody}>
-            <Text style={styles.resourceTitle}>{resource.title}</Text>
-            <Text style={styles.resourceMeta}>{resource.meta}</Text>
-          </View>
-
-          <Text style={styles.resourceArrow}>{'>_'}</Text>
-        </Pressable>
-      ))}
+      <View style={styles.toolboxCard}>
+        <Text style={styles.toolboxTitle}>dev_toolbox</Text>
+        <Text style={styles.toolboxText}>
+          Ruta inspirada en Duolingo, pero convertida en roadmap de codigo con nodos, checkpoints y progreso real por leccion.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: DuocodePalette.background,
+    backgroundColor: DuocodePalette.navy,
   },
   container: {
-    padding: 24,
-    paddingBottom: 96,
+    padding: 18,
+    paddingTop: 24,
+    paddingBottom: 110,
     gap: 18,
   },
   loadingCard: {
@@ -152,201 +276,238 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  header: {
-    marginTop: 8,
+  headerCard: {
+    backgroundColor: '#0F1D32',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 18,
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+  },
+  headerTextWrap: {
+    flex: 1,
     gap: 4,
   },
-  title: {
-    color: DuocodePalette.text,
-    fontSize: 32,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  subtitle: {
+  headerLabel: {
     color: DuocodePalette.code,
-    fontSize: 14,
-    fontFamily: Fonts.mono,
-  },
-  searchInput: {
-    backgroundColor: DuocodePalette.surface,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    fontSize: 15,
-    color: DuocodePalette.text,
-    fontFamily: Fonts.mono,
-  },
-  sectionTitle: {
-    color: DuocodePalette.text,
-    fontSize: 17,
+    fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  categoriesRow: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
+  headerTitle: {
+    color: DuocodePalette.surface,
+    fontSize: 28,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
   },
-  categoryChip: {
-    backgroundColor: DuocodePalette.surface,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+  headerSubtitle: {
+    color: DuocodePalette.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: Fonts.mono,
   },
-  categoryChipActive: {
+  guideButton: {
     backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
     borderColor: DuocodePalette.accent,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  categoryText: {
-    color: DuocodePalette.muted,
-    fontSize: 14,
-    fontWeight: '700',
-    fontFamily: Fonts.mono,
-  },
-  categoryTextActive: {
+  guideButtonText: {
     color: DuocodePalette.accent,
-  },
-  topicCard: {
-    backgroundColor: DuocodePalette.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 18,
-    gap: 14,
-  },
-  topicHeader: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  topicBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: DuocodePalette.accentSoft,
-  },
-  topicBadgeText: {
-    color: DuocodePalette.accent,
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  topicBody: {
-    flex: 1,
-    gap: 6,
-  },
-  topicTitle: {
-    color: DuocodePalette.text,
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  topicDescription: {
-    color: DuocodePalette.muted,
     fontSize: 13,
-    lineHeight: 18,
-  },
-  topicMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  topicMeta: {
-    color: DuocodePalette.code,
-    fontSize: 12,
+    fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  progressTrack: {
-    height: 8,
+  pathShell: {
+    position: 'relative',
+    paddingVertical: 10,
+    paddingBottom: 20,
+  },
+  pathRail: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '50%',
+    width: 4,
+    marginLeft: -2,
     borderRadius: 999,
-    backgroundColor: DuocodePalette.surfaceAlt,
-    overflow: 'hidden',
+    backgroundColor: '#132844',
+    shadowColor: DuocodePalette.accent,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: DuocodePalette.accent,
-  },
-  classCard: {
-    backgroundColor: DuocodePalette.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 18,
+  sectionDivider: {
     flexDirection: 'row',
-    gap: 14,
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 8,
   },
-  classBody: {
+  sectionDividerLine: {
     flex: 1,
-    gap: 6,
+    height: 1,
+    backgroundColor: DuocodePalette.border,
   },
-  classDescription: {
+  sectionDividerText: {
     color: DuocodePalette.muted,
     fontSize: 13,
-    lineHeight: 18,
-  },
-  classMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  classMeta: {
-    color: DuocodePalette.code,
-    fontSize: 12,
-    fontFamily: Fonts.mono,
-  },
-  resourceCard: {
-    backgroundColor: DuocodePalette.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  resourceThumb: {
-    width: 58,
-    height: 58,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  thumbSoft: {
-    backgroundColor: DuocodePalette.accentSoft,
-  },
-  thumbMuted: {
-    backgroundColor: DuocodePalette.surfaceMuted,
-  },
-  resourceThumbText: {
-    color: DuocodePalette.accent,
-    fontSize: 15,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  resourceBody: {
-    flex: 1,
-    gap: 4,
-  },
-  resourceTitle: {
-    color: DuocodePalette.text,
-    fontSize: 16,
     fontWeight: '800',
     fontFamily: Fonts.mono,
   },
-  resourceMeta: {
-    color: DuocodePalette.code,
-    fontSize: 13,
-    fontFamily: Fonts.mono,
+  lessonRow: {
+    height: 132,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  resourceArrow: {
+  traceLine: {
+    position: 'absolute',
+    top: 47,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: '#163252',
+  },
+  traceLeft: {
+    right: '50%',
+  },
+  traceRight: {
+    left: '50%',
+  },
+  lessonWrap: {
+    alignItems: 'center',
+    gap: 6,
+    width: 148,
+  },
+  lessonNodeBase: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#173150',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOpacity: 0.24,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  lessonNodeBaseCompleted: {
+    backgroundColor: '#12382A',
+  },
+  lessonNodeBaseCurrent: {
+    backgroundColor: '#173450',
+  },
+  lessonNodeBaseLocked: {
+    backgroundColor: '#203244',
+  },
+  lessonNode: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 2,
+    borderColor: DuocodePalette.accent,
+  },
+  lessonNodeCompleted: {
+    backgroundColor: '#18472F',
+    borderColor: DuocodePalette.green,
+  },
+  lessonNodeCurrent: {
+    backgroundColor: '#10253B',
+    borderColor: DuocodePalette.code,
+  },
+  lessonNodeLocked: {
+    backgroundColor: '#273544',
+    borderColor: '#415367',
+  },
+  lessonGlyph: {
     color: DuocodePalette.accent,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '900',
     fontFamily: Fonts.mono,
+  },
+  lessonGlyphCompleted: {
+    color: DuocodePalette.green,
+  },
+  lessonGlyphCurrent: {
+    color: DuocodePalette.code,
+  },
+  lessonGlyphLocked: {
+    color: '#72849A',
+  },
+  startTag: {
+    position: 'absolute',
+    top: -10,
+    backgroundColor: '#0A1F2F',
+    borderWidth: 1,
+    borderColor: DuocodePalette.code,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  startTagText: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  lessonLabel: {
+    color: DuocodePalette.surface,
+    fontSize: 12,
+    fontWeight: '900',
+    textAlign: 'center',
+    fontFamily: Fonts.mono,
+  },
+  lessonMeta: {
+    color: DuocodePalette.muted,
+    fontSize: 11,
+    textAlign: 'center',
+    fontFamily: Fonts.mono,
+  },
+  checkpointWrap: {
+    alignItems: 'center',
+    gap: 6,
+    width: 132,
+  },
+  checkpointNode: {
+    width: 74,
+    height: 74,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1C2942',
+    borderWidth: 1,
+    borderColor: '#4D6382',
+  },
+  checkpointNodeText: {
+    color: DuocodePalette.amber,
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  toolboxCard: {
+    backgroundColor: DuocodePalette.surface,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 18,
+    gap: 8,
+  },
+  toolboxTitle: {
+    color: DuocodePalette.text,
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  toolboxText: {
+    color: DuocodePalette.muted,
+    fontSize: 13,
+    lineHeight: 20,
   },
 });

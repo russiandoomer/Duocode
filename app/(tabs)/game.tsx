@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { DuocodePalette } from '@/constants/duocode-theme';
@@ -29,6 +30,7 @@ function LoadingState() {
 }
 
 export default function GameScreen() {
+  const params = useLocalSearchParams<{ topicId?: string | string[]; exerciseId?: string | string[] }>();
   const { dashboard, loading, evaluateExercise } = useLearnerDashboard();
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
@@ -36,6 +38,11 @@ export default function GameScreen() {
   const [editorCode, setEditorCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
+
+  const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
+  const requestedExerciseId = Array.isArray(params.exerciseId)
+    ? params.exerciseId[0]
+    : params.exerciseId;
 
   useEffect(() => {
     if (!dashboard?.topics.length) {
@@ -48,13 +55,21 @@ export default function GameScreen() {
       dashboard.topics[0];
 
     setSelectedTopicId((current) => {
+      if (
+        requestedTopicId &&
+        dashboard.topics.some((topic) => topic.id === requestedTopicId) &&
+        current !== requestedTopicId
+      ) {
+        return requestedTopicId;
+      }
+
       if (current && dashboard.topics.some((topic) => topic.id === current)) {
         return current;
       }
 
       return preferredTopic.id;
     });
-  }, [dashboard]);
+  }, [dashboard, requestedTopicId]);
 
   const selectedTopic =
     dashboard?.topics.find((topic) => topic.id === selectedTopicId) || dashboard?.topics[0] || null;
@@ -69,13 +84,21 @@ export default function GameScreen() {
       selectedTopic.exercises.find((exercise) => !exercise.completed) || selectedTopic.exercises[0];
 
     setSelectedExerciseId((current) => {
+      if (
+        requestedExerciseId &&
+        selectedTopic.exercises.some((exercise) => exercise.id === requestedExerciseId) &&
+        current !== requestedExerciseId
+      ) {
+        return requestedExerciseId;
+      }
+
       if (current && selectedTopic.exercises.some((exercise) => exercise.id === current)) {
         return current;
       }
 
       return preferredExercise.id;
     });
-  }, [selectedTopic]);
+  }, [requestedExerciseId, selectedTopic]);
 
   const selectedExercise =
     selectedTopic?.exercises.find((exercise) => exercise.id === selectedExerciseId) ||
