@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { NeonLessonNode } from '@/components/duocode/neon-lesson-node';
 import { DuocodePalette } from '@/constants/duocode-theme';
 import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
@@ -115,6 +116,8 @@ export default function ExploreScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.headerCard}>
+        <View style={styles.gridBackdrop} />
+
         <View style={styles.headerTextWrap}>
           <Text style={styles.headerLabel}>
             {activeTopic ? `TRACK ACTIVO · ${activeTopic.status.toUpperCase()}` : 'TRACK ACTIVO'}
@@ -188,49 +191,23 @@ export default function ExploreScreen() {
                 />
               ) : null}
 
-              <View style={[styles.lessonWrap, { transform: [{ translateX: offset }] }]}>
-                <Pressable
-                  style={[
-                    styles.lessonNodeBase,
-                    item.exercise.completed && styles.lessonNodeBaseCompleted,
-                    isCurrent && styles.lessonNodeBaseCurrent,
-                    isLocked && styles.lessonNodeBaseLocked,
-                  ]}
-                  onPress={() => handleLessonPress(item.topic, item.exercise, isLocked)}>
-                  <View
-                    style={[
-                      styles.lessonNode,
-                      item.exercise.completed && styles.lessonNodeCompleted,
-                      isCurrent && styles.lessonNodeCurrent,
-                      isLocked && styles.lessonNodeLocked,
-                    ]}>
-                    <Text
-                      style={[
-                        styles.lessonGlyph,
-                        item.exercise.completed && styles.lessonGlyphCompleted,
-                        isCurrent && styles.lessonGlyphCurrent,
-                        isLocked && styles.lessonGlyphLocked,
-                      ]}>
-                      {glyph}
-                    </Text>
-                  </View>
-
-                  {isCurrent ? (
-                    <View style={styles.startTag}>
-                      <Text style={styles.startTagText}>EMPEZAR</Text>
-                    </View>
-                  ) : null}
-                </Pressable>
-
-                <Text style={styles.lessonLabel}>{item.exercise.title}</Text>
-                <Text style={styles.lessonMeta}>
-                  {isLocked
+              <NeonLessonNode
+                glyph={glyph}
+                label={item.exercise.title}
+                meta={
+                  isLocked
                     ? 'bloqueado'
                     : item.exercise.completed
                       ? `${item.exercise.xpReward} XP · completado`
-                      : `${item.exercise.xpReward} XP · en curso`}
-                </Text>
-              </View>
+                      : `${item.exercise.xpReward} XP · en curso`
+                }
+                isCurrent={isCurrent}
+                isCompleted={item.exercise.completed}
+                isLocked={isLocked}
+                showStartTag={isCurrent}
+                onPress={() => handleLessonPress(item.topic, item.exercise, isLocked)}
+                style={{ transform: [{ translateX: offset }] }}
+              />
             </View>
           );
         })}
@@ -239,7 +216,7 @@ export default function ExploreScreen() {
       <View style={styles.toolboxCard}>
         <Text style={styles.toolboxTitle}>dev_toolbox</Text>
         <Text style={styles.toolboxText}>
-          Ruta inspirada en Duolingo, pero convertida en roadmap de codigo con nodos, checkpoints y progreso real por leccion.
+          Ruta inspirada en Duolingo, pero convertida en roadmap de codigo con nodos neon, pulsos de compilacion, checkpoints XP y progreso real por leccion.
         </Text>
       </View>
     </ScrollView>
@@ -285,10 +262,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 16,
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  gridBackdrop: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: 'transparent',
+    borderRadius: 24,
+    opacity: 0.6,
   },
   headerTextWrap: {
     flex: 1,
     gap: 4,
+    zIndex: 1,
   },
   headerLabel: {
     color: DuocodePalette.code,
@@ -315,6 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 14,
+    zIndex: 1,
   },
   guideButtonText: {
     color: DuocodePalette.accent,
@@ -376,86 +363,6 @@ const styles = StyleSheet.create({
   },
   traceRight: {
     left: '50%',
-  },
-  lessonWrap: {
-    alignItems: 'center',
-    gap: 6,
-    width: 148,
-  },
-  lessonNodeBase: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: '#173150',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOpacity: 0.24,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-  },
-  lessonNodeBaseCompleted: {
-    backgroundColor: '#12382A',
-  },
-  lessonNodeBaseCurrent: {
-    backgroundColor: '#173450',
-  },
-  lessonNodeBaseLocked: {
-    backgroundColor: '#203244',
-  },
-  lessonNode: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: DuocodePalette.accentSoft,
-    borderWidth: 2,
-    borderColor: DuocodePalette.accent,
-  },
-  lessonNodeCompleted: {
-    backgroundColor: '#18472F',
-    borderColor: DuocodePalette.green,
-  },
-  lessonNodeCurrent: {
-    backgroundColor: '#10253B',
-    borderColor: DuocodePalette.code,
-  },
-  lessonNodeLocked: {
-    backgroundColor: '#273544',
-    borderColor: '#415367',
-  },
-  lessonGlyph: {
-    color: DuocodePalette.accent,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  lessonGlyphCompleted: {
-    color: DuocodePalette.green,
-  },
-  lessonGlyphCurrent: {
-    color: DuocodePalette.code,
-  },
-  lessonGlyphLocked: {
-    color: '#72849A',
-  },
-  startTag: {
-    position: 'absolute',
-    top: -10,
-    backgroundColor: '#0A1F2F',
-    borderWidth: 1,
-    borderColor: DuocodePalette.code,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  startTagText: {
-    color: DuocodePalette.code,
-    fontSize: 11,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
   },
   lessonLabel: {
     color: DuocodePalette.surface,
