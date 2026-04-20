@@ -29,8 +29,6 @@ data/                    contenido fallback local
 database/schema.sql      esquema MySQL
 database/seed.sql        datos iniciales MySQL
 database/setup.sql       instalacion completa en un solo archivo
-docs/branding-guide.md   guia para cambiar logos
-docs/deployment.md       guia de deploy
 server/                  API lista para Railway
 ```
 
@@ -80,9 +78,9 @@ Tambien puedes usar:
 
 Archivos de ejemplo segun plataforma:
 
-- [.env.example](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/.env.example) para local
-- [.env.railway.example](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/.env.railway.example) para Railway
-- [.env.vercel.example](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/.env.vercel.example) para Vercel
+- `.env.example` para local
+- `.env.railway.example` para Railway
+- `.env.vercel.example` para Vercel
 
 ## Configurar MySQL
 
@@ -126,7 +124,7 @@ La API expone:
    - `AUTH_SECRET`
    - `AUTH_TOKEN_TTL_SECONDS`
    - `MYSQL_URL` o alternativamente `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
-6. Railway ya tiene healthcheck recomendado en [railway.json](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/railway.json) apuntando a `/api/health`.
+6. Railway ya tiene healthcheck recomendado en `railway.json` apuntando a `/api/health`.
 7. Verifica `https://tu-api.up.railway.app/api/health`.
 
 ### Vercel
@@ -135,7 +133,7 @@ La API expone:
 2. Usa `npm run web:build` como build command.
 3. Usa `dist` como output directory.
 4. Configura `EXPO_PUBLIC_API_URL` apuntando a Railway.
-5. La configuracion en [vercel.json](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/vercel.json) ya activa `cleanUrls` para servir mejor el export estatico.
+5. La configuracion en `vercel.json` ya activa `cleanUrls` para servir mejor el export estatico.
 
 ## Checklist antes del deploy
 
@@ -160,10 +158,6 @@ git push -u origin main
 
 ## Cambiar tus logos
 
-Revisa:
-
-- [docs/branding-guide.md](docs/branding-guide.md)
-
 Archivos que vas a reemplazar:
 
 - `assets/images/icon.png`
@@ -175,7 +169,7 @@ Archivos que vas a reemplazar:
 
 Si quieres cambiar tambien el logo visual dentro de la app, edita:
 
-- [components/brand/brand-mark.tsx](components/brand/brand-mark.tsx)
+- `components/brand/brand-mark.tsx`
 
 ## Nota
 
