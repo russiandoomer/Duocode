@@ -108,6 +108,20 @@ export type AuthUser = {
   createdAt: string;
 };
 
+export type LearnerChoiceOption = {
+  id: string;
+  label: string;
+  detail: string;
+};
+
+export type LearnerExerciseMode = 'choice' | 'text' | 'code';
+export type LearnerExerciseKind =
+  | 'multiple-choice'
+  | 'completion'
+  | 'prediction'
+  | 'debugging'
+  | 'code';
+
 export type LearnerExercise = {
   id: string;
   title: string;
@@ -119,6 +133,15 @@ export type LearnerExercise = {
   completed: boolean;
   bestScore: number;
   lastSubmittedCode: string;
+  mode: LearnerExerciseMode;
+  kind: LearnerExerciseKind;
+  lessonTypeLabel: string;
+  nodeGlyph: string;
+  choiceOptions: LearnerChoiceOption[];
+  lastSelectedOptionId?: string | null;
+  lastSubmittedText?: string | null;
+  codeSnippet?: string | null;
+  inputPlaceholder?: string | null;
 };
 
 export type LearnerTopic = {
@@ -132,6 +155,24 @@ export type LearnerTopic = {
   exerciseCount: number;
   completedExercises: number;
   exercises: LearnerExercise[];
+  languageId: string;
+  languageLabel: string;
+  levelId: 'basic' | 'intermediate' | 'advanced';
+  level: 'Básico' | 'Intermedio' | 'Avanzado';
+  levelNumber: number;
+  levelObjective: string;
+  unitId: string;
+  unitTitle: string;
+  unitNumber: number;
+  lessonNumber: number;
+  lessonGoal: string;
+  stageNumber: number;
+  stageBadge: string;
+  stageMessage: string;
+  stageGoal: string;
+  stageAccent: string;
+  stageGlyph: string;
+  exampleCode?: string | null;
 };
 
 export type LearnerStats = {
@@ -172,6 +213,12 @@ export type ExerciseEvaluationResponse = {
   tests: ExerciseEvaluationTest[];
   correctSolution: string;
   explanation: string;
+  mode: LearnerExerciseMode;
+  kind: LearnerExerciseKind;
+  submittedSelectionId?: string | null;
+  submittedText?: string | null;
+  expectedSelectionId?: string | null;
+  expectedText?: string | null;
   dashboard: LearnerDashboard;
 };
 

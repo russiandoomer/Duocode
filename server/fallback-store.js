@@ -1,14 +1,14 @@
-const fallbackLearning = require('../data/duocode-learning.json');
+const { fallbackLearningData } = require('../data/javascript-course');
 
 function cloneDeep(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
 const store = {
-  users: cloneDeep(fallbackLearning.users),
-  topics: cloneDeep(fallbackLearning.topics),
-  progress: cloneDeep(fallbackLearning.progress),
-  attempts: cloneDeep(fallbackLearning.attempts),
+  users: cloneDeep(fallbackLearningData.users),
+  topics: cloneDeep(fallbackLearningData.topics),
+  progress: cloneDeep(fallbackLearningData.progress),
+  attempts: cloneDeep(fallbackLearningData.attempts),
   authAudit: [],
 };
 

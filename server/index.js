@@ -426,16 +426,11 @@ function createAppServer() {
         }
 
         const body = await parseBody(request);
-        const submittedCode = String(body.code || '');
-
-        if (submittedCode.trim().length === 0) {
-          sendJson(response, 400, {
-            error: 'Debes escribir codigo antes de evaluar.',
-          });
-          return;
-        }
-
-        const evaluation = await evaluateExerciseForUser(user.id, exerciseMatch[1], submittedCode);
+        const evaluation = await evaluateExerciseForUser(user.id, exerciseMatch[1], {
+          code: body.code,
+          selectedOptionId: body.selectedOptionId,
+          answerText: body.answerText,
+        });
         sendJson(response, 200, evaluation);
         return;
       }

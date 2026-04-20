@@ -4,11 +4,20 @@ import { apiRequest } from '@/lib/api';
 import type { ExerciseEvaluationResponse, LearnerDashboard } from '@/types/duocode';
 import { useAuth } from '@/hooks/use-auth';
 
+type ExerciseSubmissionPayload = {
+  code?: string;
+  selectedOptionId?: string | null;
+  answerText?: string | null;
+};
+
 type LearnerDashboardContextValue = {
   dashboard: LearnerDashboard | null;
   loading: boolean;
   refreshDashboard: () => Promise<void>;
-  evaluateExercise: (exerciseId: string, code: string) => Promise<ExerciseEvaluationResponse>;
+  evaluateExercise: (
+    exerciseId: string,
+    payload: ExerciseSubmissionPayload
+  ) => Promise<ExerciseEvaluationResponse>;
 };
 
 const LearnerDashboardContext = createContext<LearnerDashboardContextValue | null>(null);
@@ -39,7 +48,7 @@ export function LearnerDashboardProvider({ children }: PropsWithChildren) {
     refreshDashboard();
   }, [token, user?.role]);
 
-  async function evaluateExercise(exerciseId: string, code: string) {
+  async function evaluateExercise(exerciseId: string, payload: ExerciseSubmissionPayload) {
     if (!token) {
       throw new Error('No autenticado');
     }
@@ -48,7 +57,7 @@ export function LearnerDashboardProvider({ children }: PropsWithChildren) {
       `/api/exercises/${exerciseId}/evaluate`,
       {
         method: 'POST',
-        body: JSON.stringify({ code }),
+        body: JSON.stringify(payload),
       },
       token
     );

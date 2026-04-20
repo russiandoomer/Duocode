@@ -5,6 +5,14 @@ function normalizeValue(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .toLowerCase();
+}
+
 function valuesEqual(left, right) {
   return JSON.stringify(normalizeValue(left)) === JSON.stringify(normalizeValue(right));
 }
@@ -16,7 +24,67 @@ function formatValue(value) {
   });
 }
 
-function evaluateExerciseSubmission(exercise, submittedCode) {
+function extractChoiceSubmission(submittedCode) {
+  const normalized = String(submittedCode || '').trim();
+  return normalized.startsWith('choice:') ? normalized.slice('choice:'.length) : normalized;
+}
+
+function extractTextSubmission(submittedCode) {
+  const normalized = String(submittedCode || '').trim();
+  return normalized.startsWith('text:') ? normalized.slice('text:'.length) : normalized;
+}
+
+function evaluateChoiceExercise(exercise, submittedCode) {
+  const expected = String(exercise.testCases[0]?.expected || '').trim();
+  const received = extractChoiceSubmission(submittedCode);
+  const passed = received === expected;
+
+  return {
+    passed,
+    score: passed ? 100 : 0,
+    previewResult: received || 'Sin seleccion',
+    consoleOutput: [],
+    tests: [
+      {
+        label: exercise.testCases[0]?.label || 'Respuesta correcta',
+        pass: passed,
+        argsPreview: '[]',
+        expectedPreview: expected,
+        receivedPreview: received || 'Sin seleccion',
+        consoleOutput: [],
+      },
+    ],
+    correctSolution: exercise.solutionCode,
+    explanation: exercise.explanation,
+  };
+}
+
+function evaluateTextExercise(exercise, submittedCode) {
+  const expected = String(exercise.testCases[0]?.expected || '').trim();
+  const received = extractTextSubmission(submittedCode);
+  const passed = normalizeText(received) === normalizeText(expected);
+
+  return {
+    passed,
+    score: passed ? 100 : 0,
+    previewResult: received || 'Sin respuesta',
+    consoleOutput: [],
+    tests: [
+      {
+        label: exercise.testCases[0]?.label || 'Respuesta esperada',
+        pass: passed,
+        argsPreview: '[]',
+        expectedPreview: expected,
+        receivedPreview: received || 'Sin respuesta',
+        consoleOutput: [],
+      },
+    ],
+    correctSolution: exercise.solutionCode,
+    explanation: exercise.explanation,
+  };
+}
+
+async function evaluateCodeExercise(exercise, submittedCode) {
   const tests = [];
   let passCount = 0;
 
@@ -57,17 +125,19 @@ function evaluateExerciseSubmission(exercise, submittedCode) {
 
       const invokeScript = new vm.Script(
         `
-        if (typeof globalThis.__duocodeSolution !== 'function') {
-          throw new Error('No se encontro la funcion ${exercise.functionName}');
-        }
+        (async () => {
+          if (typeof globalThis.__duocodeSolution !== 'function') {
+            throw new Error('No se encontro la funcion ${exercise.functionName}');
+          }
 
-        globalThis.__duocodeResult = globalThis.__duocodeSolution(...globalThis.__duocodeArgs);
+          globalThis.__duocodeResult = await globalThis.__duocodeSolution(...globalThis.__duocodeArgs);
+        })()
         `,
         { timeout: 1000 }
       );
 
       context.__duocodeArgs = testCase.args;
-      invokeScript.runInContext(context, { timeout: 1000 });
+      await invokeScript.runInContext(context, { timeout: 1000 });
       received = context.__duocodeResult;
     } catch (error) {
       runtimeError = error instanceof Error ? error.message : 'Error desconocido';
@@ -100,6 +170,18 @@ function evaluateExerciseSubmission(exercise, submittedCode) {
     correctSolution: exercise.solutionCode,
     explanation: exercise.explanation,
   };
+}
+
+async function evaluateExerciseSubmission(exercise, submittedCode) {
+  if (exercise.mode === 'choice') {
+    return evaluateChoiceExercise(exercise, submittedCode);
+  }
+
+  if (exercise.mode === 'text') {
+    return evaluateTextExercise(exercise, submittedCode);
+  }
+
+  return evaluateCodeExercise(exercise, submittedCode);
 }
 
 module.exports = {

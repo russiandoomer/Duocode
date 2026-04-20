@@ -16,6 +16,7 @@ import { CodeCelebrationOverlay } from '@/components/duocode/code-celebration-ov
 import { DuocodePalette } from '@/constants/duocode-theme';
 import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
+import { extractChoiceSelection, getChoiceOption } from '@/lib/duocode-curriculum';
 import type { ExerciseEvaluationResponse, LearnerExercise } from '@/types/duocode';
 
 function LoadingState() {
@@ -47,6 +48,8 @@ export default function GameScreen() {
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [hydratedExerciseId, setHydratedExerciseId] = useState<string | null>(null);
   const [editorCode, setEditorCode] = useState('');
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [answerText, setAnswerText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
@@ -151,6 +154,8 @@ export default function GameScreen() {
   useEffect(() => {
     if (!selectedExercise) {
       setEditorCode('');
+      setSelectedOptionId(null);
+      setAnswerText('');
       setEvaluation(null);
       setHydratedExerciseId(null);
       return;
@@ -158,10 +163,23 @@ export default function GameScreen() {
 
     if (hydratedExerciseId !== selectedExercise.id) {
       setEditorCode(selectedExercise.lastSubmittedCode || selectedExercise.starterCode);
+      setSelectedOptionId(
+        selectedExercise.mode === 'choice'
+          ? selectedExercise.lastSelectedOptionId || extractChoiceSelection(selectedExercise.lastSubmittedCode)
+          : null
+      );
+      setAnswerText(selectedExercise.mode === 'text' ? selectedExercise.lastSubmittedText || '' : '');
       setEvaluation(null);
       setHydratedExerciseId(selectedExercise.id);
     }
   }, [hydratedExerciseId, selectedExercise]);
+
+  const selectedChoiceOption =
+    selectedExercise?.mode === 'choice' ? getChoiceOption(selectedExercise, selectedOptionId) : null;
+  const correctChoiceOption =
+    selectedExercise?.mode === 'choice' && evaluation
+      ? getChoiceOption(selectedExercise, evaluation.expectedSelectionId || null)
+      : null;
 
   if (loading || !dashboard) {
     return <LoadingState />;
@@ -175,7 +193,18 @@ export default function GameScreen() {
     setSubmitting(true);
 
     try {
-      const response = await evaluateExercise(selectedExercise.id, editorCode);
+      const response = await evaluateExercise(
+        selectedExercise.id,
+        selectedExercise.mode === 'choice'
+          ? { selectedOptionId }
+          : selectedExercise.mode === 'text'
+            ? {
+                answerText,
+              }
+            : {
+              code: editorCode,
+              }
+      );
       setEvaluation(response);
       if (response.passed) {
         setCelebrationVisible(true);
@@ -192,7 +221,14 @@ export default function GameScreen() {
       return;
     }
 
-    setEditorCode(selectedExercise.starterCode);
+    if (selectedExercise.mode === 'choice') {
+      setSelectedOptionId(null);
+    } else if (selectedExercise.mode === 'text') {
+      setAnswerText('');
+    } else {
+      setEditorCode(selectedExercise.starterCode);
+    }
+
     setEvaluation(null);
   }
 
@@ -239,12 +275,12 @@ export default function GameScreen() {
             <Text style={styles.heroTitle}>{isLessonLaunch ? 'lesson-lab.ts' : 'practice-replay.ts'}</Text>
             <Text style={styles.heroSubtitle}>
               {selectedTopic
-                ? `${selectedTopic.title} · ${isLessonLaunch ? 'clase activa' : 'repaso guiado'}`
+                ? `${selectedTopic.unitTitle} · Leccion ${selectedTopic.lessonNumber} · ${isLessonLaunch ? 'clase activa' : 'repaso guiado'}`
                 : 'Sin tema'}
             </Text>
             <Text style={styles.heroMeta}>
               {selectedExercise
-                ? `review=${selectedExercise.functionName} · score=${selectedExercise.bestScore}%`
+                ? `review=${selectedExercise.functionName} · mode=${selectedExercise.lessonTypeLabel} · score=${selectedExercise.bestScore}%`
                 : 'review=none'}
             </Text>
           </View>
@@ -279,14 +315,14 @@ export default function GameScreen() {
                   key={topic.id}
                   style={[styles.topicChip, isSelected && styles.topicChipSelected]}
                   onPress={() => setSelectedTopicId(topic.id)}>
-                  <Text style={[styles.topicChipText, isSelected && styles.topicChipTextSelected]}>
-                    {topic.title}
-                  </Text>
-                  <Text style={[styles.topicChipMeta, isSelected && styles.topicChipMetaSelected]}>
-                    {`${topic.exercises.length} ejercicios para repaso`}
-                  </Text>
-                </Pressable>
-              );
+                      <Text style={[styles.topicChipText, isSelected && styles.topicChipTextSelected]}>
+                    {`${topic.unitTitle} · L${topic.lessonNumber}`}
+                      </Text>
+                      <Text style={[styles.topicChipMeta, isSelected && styles.topicChipMetaSelected]}>
+                    {`${topic.level} · ${topic.exercises.length} ejercicios · ${topic.progressPercent}%`}
+                      </Text>
+                    </Pressable>
+                  );
             })}
           </ScrollView>
         </View>
@@ -310,7 +346,9 @@ export default function GameScreen() {
                   <View style={styles.exerciseHeader}>
                     <View style={styles.exerciseTitleWrap}>
                       <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-                      <Text style={styles.exerciseMeta}>{`${exercise.xpReward} XP · mejor score ${exercise.bestScore}%`}</Text>
+                      <Text style={styles.exerciseMeta}>
+                        {`${exercise.lessonTypeLabel} · ${exercise.xpReward} XP · mejor score ${exercise.bestScore}%`}
+                      </Text>
                     </View>
 
                     <View style={[styles.statusBadge, styles.statusBadgeReview]}>
@@ -350,57 +388,159 @@ export default function GameScreen() {
                 </View>
 
                 <View style={styles.exerciseInfoCard}>
+                  <Text style={styles.exerciseInfoLabel}>modo</Text>
+                  <Text style={styles.exerciseInfoValue}>{selectedExercise.lessonTypeLabel}</Text>
+                </View>
+
+                <View style={styles.exerciseInfoCard}>
                   <Text style={styles.exerciseInfoLabel}>mejor intento</Text>
                   <Text style={styles.exerciseInfoValue}>{`${selectedExercise.bestScore}%`}</Text>
                 </View>
               </View>
             </View>
 
-            <View style={styles.panel}>
-              <View style={styles.panelChrome}>
-                <Text style={styles.panelChromeText}>editor.runtime()</Text>
-              </View>
+            {selectedExercise.mode === 'choice' ? (
+              <View style={styles.panel}>
+                <View style={styles.panelChrome}>
+                  <Text style={styles.panelChromeText}>selector.runtime()</Text>
+                </View>
 
-              <View style={styles.editorHeader}>
-                <Text style={styles.panelTitle}>write_code</Text>
+                <View style={styles.editorHeader}>
+                  <Text style={styles.panelTitle}>choose_answer</Text>
 
-                <View style={styles.editorActions}>
-                  <Pressable style={styles.secondaryButton} onPress={handleReset}>
-                    <Text style={styles.secondaryButtonText}>RESET</Text>
-                  </Pressable>
+                  <View style={styles.editorActions}>
+                    <Pressable style={styles.secondaryButton} onPress={handleReset}>
+                      <Text style={styles.secondaryButtonText}>LIMPIAR</Text>
+                    </Pressable>
 
-                  <Pressable
-                    style={[styles.primaryButton, submitting && styles.primaryButtonDisabled]}
-                    onPress={handleRunTests}
-                    disabled={submitting}>
-                    <Text style={styles.primaryButtonText}>{submitting ? 'RUNNING...' : 'RUN TESTS'}</Text>
-                  </Pressable>
+                    <Pressable
+                      style={[styles.primaryButton, submitting && styles.primaryButtonDisabled]}
+                      onPress={handleRunTests}
+                      disabled={submitting}>
+                      <Text style={styles.primaryButtonText}>
+                        {submitting ? 'CHECKING...' : 'CHECK ANSWER'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                <View style={styles.optionList}>
+                  {selectedExercise.choiceOptions.map((option) => {
+                    const isActive = option.id === selectedOptionId;
+
+                    return (
+                      <Pressable
+                        key={option.id}
+                        style={[styles.optionCard, isActive && styles.optionCardSelected]}
+                        onPress={() => setSelectedOptionId(option.id)}>
+                        <View style={[styles.optionBullet, isActive && styles.optionBulletSelected]}>
+                          <Text style={[styles.optionBulletText, isActive && styles.optionBulletTextSelected]}>
+                            {option.label[0]}
+                          </Text>
+                        </View>
+
+                        <View style={styles.optionCopy}>
+                          <Text style={styles.optionTitle}>{option.label}</Text>
+                          <Text style={styles.optionDetail}>{option.detail}</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </View>
+            ) : selectedExercise.mode === 'text' ? (
+              <View style={styles.panel}>
+                <View style={styles.panelChrome}>
+                  <Text style={styles.panelChromeText}>answer.runtime()</Text>
+                </View>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={styles.editorShell}>
-                  <View style={styles.editorGutter}>
-                    {editorCode.split('\n').map((_, index) => (
-                      <Text key={`${selectedExercise.id}-line-${index + 1}`} style={styles.gutterLine}>
-                        {index + 1}
+                <View style={styles.editorHeader}>
+                  <Text style={styles.panelTitle}>write_answer</Text>
+
+                  <View style={styles.editorActions}>
+                    <Pressable style={styles.secondaryButton} onPress={handleReset}>
+                      <Text style={styles.secondaryButtonText}>RESET</Text>
+                    </Pressable>
+
+                    <Pressable
+                      style={[styles.primaryButton, submitting && styles.primaryButtonDisabled]}
+                      onPress={handleRunTests}
+                      disabled={submitting}>
+                      <Text style={styles.primaryButtonText}>{submitting ? 'CHECKING...' : 'CHECK ANSWER'}</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                {selectedExercise.codeSnippet ? (
+                  <View style={styles.answerSnippet}>
+                    {selectedExercise.codeSnippet.split('\n').map((line, index) => (
+                      <Text key={`${selectedExercise.id}-snippet-${index + 1}`} style={styles.answerSnippetLine}>
+                        {line || ' '}
                       </Text>
                     ))}
                   </View>
+                ) : null}
 
-                  <TextInput
-                    value={editorCode}
-                    onChangeText={setEditorCode}
-                    multiline
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    spellCheck={false}
-                    textAlignVertical="top"
-                    style={styles.editorInput}
-                  />
+                <TextInput
+                  value={answerText}
+                  onChangeText={setAnswerText}
+                  multiline
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  spellCheck={false}
+                  textAlignVertical="top"
+                  placeholder={selectedExercise.inputPlaceholder || 'Escribe tu respuesta'}
+                  placeholderTextColor={DuocodePalette.muted}
+                  style={styles.answerInput}
+                />
+              </View>
+            ) : (
+              <View style={styles.panel}>
+                <View style={styles.panelChrome}>
+                  <Text style={styles.panelChromeText}>editor.runtime()</Text>
                 </View>
-              </ScrollView>
-            </View>
+
+                <View style={styles.editorHeader}>
+                  <Text style={styles.panelTitle}>write_code</Text>
+
+                  <View style={styles.editorActions}>
+                    <Pressable style={styles.secondaryButton} onPress={handleReset}>
+                      <Text style={styles.secondaryButtonText}>RESET</Text>
+                    </Pressable>
+
+                    <Pressable
+                      style={[styles.primaryButton, submitting && styles.primaryButtonDisabled]}
+                      onPress={handleRunTests}
+                      disabled={submitting}>
+                      <Text style={styles.primaryButtonText}>{submitting ? 'RUNNING...' : 'RUN TESTS'}</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.editorShell}>
+                    <View style={styles.editorGutter}>
+                      {editorCode.split('\n').map((_, index) => (
+                        <Text key={`${selectedExercise.id}-line-${index + 1}`} style={styles.gutterLine}>
+                          {index + 1}
+                        </Text>
+                      ))}
+                    </View>
+
+                    <TextInput
+                      value={editorCode}
+                      onChangeText={setEditorCode}
+                      multiline
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      spellCheck={false}
+                      textAlignVertical="top"
+                      style={styles.editorInput}
+                    />
+                  </View>
+                </ScrollView>
+              </View>
+            )}
 
             {evaluation ? (
               <View style={styles.panel}>
@@ -434,6 +574,54 @@ export default function GameScreen() {
                   <Text style={styles.previewValue}>{evaluation.previewResult || 'Sin salida visible'}</Text>
                 </View>
 
+                {selectedExercise.mode === 'choice' ? (
+                  <View style={styles.choiceResultGrid}>
+                    <View style={styles.choiceResultCard}>
+                      <Text style={styles.previewLabel}>respuesta_seleccionada</Text>
+                      <Text style={styles.choiceResultTitle}>
+                        {selectedChoiceOption?.label || 'Sin opcion seleccionada'}
+                      </Text>
+                      <Text style={styles.choiceResultDetail}>
+                        {selectedChoiceOption?.detail || 'Selecciona una opcion para evaluar.'}
+                      </Text>
+                    </View>
+
+                    <View style={styles.choiceResultCard}>
+                      <Text style={styles.previewLabel}>respuesta_correcta</Text>
+                      <Text style={styles.choiceResultTitle}>
+                        {correctChoiceOption?.label || 'No disponible'}
+                      </Text>
+                      <Text style={styles.choiceResultDetail}>
+                        {correctChoiceOption?.detail || 'La respuesta correcta aparecera aqui.'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                {selectedExercise.mode === 'text' ? (
+                  <View style={styles.choiceResultGrid}>
+                    <View style={styles.choiceResultCard}>
+                      <Text style={styles.previewLabel}>respuesta_enviada</Text>
+                      <Text style={styles.choiceResultTitle}>
+                        {evaluation.submittedText || 'Sin respuesta enviada'}
+                      </Text>
+                      <Text style={styles.choiceResultDetail}>
+                        Texto capturado desde la caja de respuesta.
+                      </Text>
+                    </View>
+
+                    <View style={styles.choiceResultCard}>
+                      <Text style={styles.previewLabel}>respuesta_correcta</Text>
+                      <Text style={styles.choiceResultTitle}>
+                        {evaluation.expectedText || 'No disponible'}
+                      </Text>
+                      <Text style={styles.choiceResultDetail}>
+                        Compara esta salida con tu respuesta para detectar la diferencia exacta.
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
                 {evaluation.tests.map((test) => (
                   <View key={test.label} style={styles.testCard}>
                     <View style={styles.testHeader}>
@@ -459,10 +647,12 @@ export default function GameScreen() {
                   </View>
                 ))}
 
-                <View style={styles.solutionCard}>
-                  <Text style={styles.solutionLabel}>solucion_correcta</Text>
-                  <Text style={styles.solutionCode}>{evaluation.correctSolution}</Text>
-                </View>
+                {selectedExercise.mode === 'code' ? (
+                  <View style={styles.solutionCard}>
+                    <Text style={styles.solutionLabel}>solucion_correcta</Text>
+                    <Text style={styles.solutionCode}>{evaluation.correctSolution}</Text>
+                  </View>
+                ) : null}
 
                 <View style={styles.explanationCard}>
                   <Text style={styles.solutionLabel}>explicacion</Text>
@@ -592,6 +782,61 @@ const styles = StyleSheet.create({
   },
   topicChipMetaSelected: {
     color: DuocodePalette.code,
+  },
+  optionList: {
+    gap: 12,
+  },
+  optionCard: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 20,
+    padding: 14,
+  },
+  optionCardSelected: {
+    borderColor: DuocodePalette.accent,
+    backgroundColor: DuocodePalette.accentSoft,
+  },
+  optionBullet: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DuocodePalette.navySoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+  },
+  optionBulletSelected: {
+    borderColor: DuocodePalette.accent,
+    backgroundColor: '#12324B',
+  },
+  optionBulletText: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  optionBulletTextSelected: {
+    color: DuocodePalette.accent,
+  },
+  optionCopy: {
+    flex: 1,
+    gap: 5,
+  },
+  optionTitle: {
+    color: DuocodePalette.text,
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: Fonts.mono,
+  },
+  optionDetail: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    lineHeight: 18,
   },
   exerciseCard: {
     backgroundColor: DuocodePalette.surfaceAlt,
@@ -731,6 +976,33 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
+  answerSnippet: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    padding: 16,
+    gap: 6,
+  },
+  answerSnippetLine: {
+    color: DuocodePalette.code,
+    fontSize: 13,
+    lineHeight: 20,
+    fontFamily: Fonts.mono,
+  },
+  answerInput: {
+    minHeight: 140,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    color: DuocodePalette.text,
+    fontSize: 14,
+    lineHeight: 22,
+    fontFamily: Fonts.mono,
+  },
   editorShell: {
     minWidth: 680,
     maxWidth: 920,
@@ -817,6 +1089,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontFamily: Fonts.mono,
+  },
+  choiceResultGrid: {
+    gap: 12,
+  },
+  choiceResultCard: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 16,
+    gap: 8,
+  },
+  choiceResultTitle: {
+    color: DuocodePalette.text,
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: Fonts.mono,
+  },
+  choiceResultDetail: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    lineHeight: 18,
   },
   testCard: {
     backgroundColor: DuocodePalette.surfaceAlt,

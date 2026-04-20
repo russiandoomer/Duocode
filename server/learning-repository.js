@@ -5,6 +5,7 @@ const { getAllUsers, getUserById, sanitizeUser } = require('./auth-repository');
 const { hasMysqlConfig, queryRows } = require('./mysql');
 
 const WEEKDAY_LABELS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+let mysqlLearningAvailable;
 
 function safeJsonParse(value, fallbackValue = null) {
   if (value == null) {
@@ -23,11 +24,132 @@ function safeJsonParse(value, fallbackValue = null) {
 }
 
 function linesFromCode(value) {
-  return String(value || '')
+  const normalized = String(value || '').trim();
+
+  if (normalized.startsWith('choice:')) {
+    return [`choice = ${normalized.slice('choice:'.length)}`];
+  }
+
+  if (normalized.startsWith('text:')) {
+    return [`answer = ${normalized.slice('text:'.length)}`];
+  }
+
+  return normalized
     .split('\n')
     .map((line) => line.trimEnd())
     .filter(Boolean)
     .slice(0, 3);
+}
+
+function inferTopicLevel(topic) {
+  const title = String(topic?.title || '').toLowerCase();
+
+  if (title.includes('avanzado')) {
+    return 'Avanzado';
+  }
+
+  if (title.includes('intermedio')) {
+    return 'Intermedio';
+  }
+
+  return 'Básico';
+}
+
+function inferLevelId(level) {
+  if (String(level || '').toLowerCase().includes('avanz')) {
+    return 'advanced';
+  }
+
+  if (String(level || '').toLowerCase().includes('inter')) {
+    return 'intermediate';
+  }
+
+  return 'basic';
+}
+
+function inferLevelNumber(levelId) {
+  if (levelId === 'advanced') {
+    return 3;
+  }
+
+  if (levelId === 'intermediate') {
+    return 2;
+  }
+
+  return 1;
+}
+
+function getTopicPresentation(topic) {
+  const level = topic.level || inferTopicLevel(topic);
+  const levelId = topic.levelId || inferLevelId(level);
+  const levelNumber = Number(topic.levelNumber || inferLevelNumber(levelId));
+  const languageId = topic.languageId || topic.id.split('-')[0] || 'general';
+
+  return {
+    roadmapId: topic.roadmapId || 'roadmap-default',
+    languageId,
+    languageLabel: topic.languageLabel || topic.title.split('·')[0]?.trim() || topic.title,
+    levelId,
+    level,
+    levelNumber,
+    levelObjective: topic.levelObjective || 'Completa las unidades para abrir el siguiente nivel.',
+    unitId: topic.unitId || `${languageId}-unit-${levelNumber}`,
+    unitTitle: topic.unitTitle || `Unidad ${topic.unitNumber || 1}`,
+    unitNumber: Number(topic.unitNumber || 1),
+    lessonNumber: Number(topic.lessonNumber || 1),
+    lessonGoal: topic.lessonGoal || topic.description,
+    stageNumber: Number(topic.stageNumber || levelNumber),
+    stageBadge: topic.stageBadge || `${languageId.toUpperCase()} NIVEL ${levelNumber}`,
+    stageMessage: topic.stageMessage || topic.description,
+    stageGoal: topic.stageGoal || 'Completa la unidad actual para seguir.',
+    stageAccent: topic.stageAccent || '#38BDF8',
+    stageGlyph: topic.stageGlyph || '</>',
+    exampleCode: topic.exampleCode || null,
+  };
+}
+
+function getExercisePresentation(exercise) {
+  return {
+    mode: exercise.mode || 'code',
+    kind: exercise.kind || (exercise.mode === 'choice' ? 'multiple-choice' : 'code'),
+    lessonTypeLabel: exercise.lessonTypeLabel || 'Codigo',
+    nodeGlyph: exercise.nodeGlyph || '</>',
+    choiceOptions: Array.isArray(exercise.choiceOptions) ? exercise.choiceOptions : [],
+    codeSnippet: exercise.codeSnippet || null,
+    inputPlaceholder: exercise.inputPlaceholder || null,
+  };
+}
+
+function extractSelectedOptionId(submittedCode) {
+  const normalized = String(submittedCode || '').trim();
+  return normalized.startsWith('choice:') ? normalized.slice('choice:'.length) || null : null;
+}
+
+function extractSubmittedText(submittedCode) {
+  const normalized = String(submittedCode || '').trim();
+  return normalized.startsWith('text:') ? normalized.slice('text:'.length) || null : null;
+}
+
+async function canUseMysqlLearning() {
+  if (!hasMysqlConfig()) {
+    return false;
+  }
+
+  if (typeof mysqlLearningAvailable === 'boolean') {
+    return mysqlLearningAvailable;
+  }
+
+  try {
+    const rows = await queryRows(
+      'SELECT id FROM learning_topics WHERE id IN (?, ?, ?) LIMIT 1',
+      ['js-basic-u1-l1', 'js-intermediate-u1-l1', 'js-advanced-u1-l1']
+    );
+    mysqlLearningAvailable = rows.length > 0;
+  } catch {
+    mysqlLearningAvailable = false;
+  }
+
+  return mysqlLearningAvailable;
 }
 
 function mapTopics(topicRows, exerciseRows, testCaseRows) {
@@ -52,7 +174,7 @@ function mapTopics(topicRows, exerciseRows, testCaseRows) {
 }
 
 async function loadLearningCatalog() {
-  if (hasMysqlConfig()) {
+  if (await canUseMysqlLearning()) {
     const [topicRows, exerciseRows, testCaseRows] = await Promise.all([
       queryRows(
         'SELECT id, roadmap_id AS roadmapId, title, description, estimated_minutes AS estimatedMinutes, status_label AS status, sort_order AS sortOrder FROM learning_topics ORDER BY sort_order ASC'
@@ -83,7 +205,7 @@ async function loadLearningCatalog() {
 }
 
 async function loadUserProgress(userId) {
-  if (hasMysqlConfig()) {
+  if (await canUseMysqlLearning()) {
     return await queryRows(
       'SELECT user_id AS userId, exercise_id AS exerciseId, is_completed AS isCompleted, best_score AS bestScore, last_submitted_code AS lastSubmittedCode, updated_at AS updatedAt, completed_at AS completedAt FROM user_exercise_progress WHERE user_id = ?',
       [userId]
@@ -94,7 +216,7 @@ async function loadUserProgress(userId) {
 }
 
 async function loadUserAttempts(userId) {
-  if (hasMysqlConfig()) {
+  if (await canUseMysqlLearning()) {
     const rows = await queryRows(
       'SELECT id, user_id AS userId, exercise_id AS exerciseId, submitted_code AS submittedCode, passed, score, console_output_json AS consoleOutput, test_results_json AS testResults, created_at AS createdAt FROM exercise_attempts WHERE user_id = ? ORDER BY created_at DESC',
       [userId]
@@ -114,7 +236,7 @@ async function loadUserAttempts(userId) {
 }
 
 async function loadAllProgress() {
-  if (hasMysqlConfig()) {
+  if (await canUseMysqlLearning()) {
     return await queryRows(
       'SELECT user_id AS userId, exercise_id AS exerciseId, is_completed AS isCompleted, best_score AS bestScore, last_submitted_code AS lastSubmittedCode, updated_at AS updatedAt, completed_at AS completedAt FROM user_exercise_progress'
     );
@@ -124,7 +246,7 @@ async function loadAllProgress() {
 }
 
 async function loadAllAttempts() {
-  if (hasMysqlConfig()) {
+  if (await canUseMysqlLearning()) {
     const rows = await queryRows(
       'SELECT id, user_id AS userId, exercise_id AS exerciseId, submitted_code AS submittedCode, passed, score, console_output_json AS consoleOutput, test_results_json AS testResults, created_at AS createdAt FROM exercise_attempts ORDER BY created_at DESC'
     );
@@ -146,8 +268,10 @@ function buildTopicProgress(topics, progressRows) {
   const progressByExercise = new Map(progressRows.map((item) => [item.exerciseId, item]));
 
   return topics.map((topic) => {
+    const topicPresentation = getTopicPresentation(topic);
     const exercises = topic.exercises.map((exercise) => {
       const progress = progressByExercise.get(exercise.id);
+      const exercisePresentation = getExercisePresentation(exercise);
 
       return {
         id: exercise.id,
@@ -160,6 +284,21 @@ function buildTopicProgress(topics, progressRows) {
         completed: Boolean(progress?.isCompleted),
         bestScore: Number(progress?.bestScore ?? 0),
         lastSubmittedCode: progress?.lastSubmittedCode || exercise.starterCode,
+        mode: exercisePresentation.mode,
+        kind: exercisePresentation.kind,
+        lessonTypeLabel: exercisePresentation.lessonTypeLabel,
+        nodeGlyph: exercisePresentation.nodeGlyph,
+        choiceOptions: exercisePresentation.choiceOptions,
+        lastSubmittedText:
+          exercisePresentation.mode === 'text'
+            ? extractSubmittedText(progress?.lastSubmittedCode || '')
+            : null,
+        codeSnippet: exercisePresentation.codeSnippet,
+        inputPlaceholder: exercisePresentation.inputPlaceholder,
+        lastSelectedOptionId:
+          exercisePresentation.mode === 'choice'
+            ? extractSelectedOptionId(progress?.lastSubmittedCode || '')
+            : null,
       };
     });
 
@@ -177,6 +316,24 @@ function buildTopicProgress(topics, progressRows) {
       exerciseCount: exercises.length,
       completedExercises: completedCount,
       exercises,
+      languageId: topicPresentation.languageId,
+      languageLabel: topicPresentation.languageLabel,
+      levelId: topicPresentation.levelId,
+      level: topicPresentation.level,
+      levelNumber: topicPresentation.levelNumber,
+      levelObjective: topicPresentation.levelObjective,
+      unitId: topicPresentation.unitId,
+      unitTitle: topicPresentation.unitTitle,
+      unitNumber: topicPresentation.unitNumber,
+      lessonNumber: topicPresentation.lessonNumber,
+      lessonGoal: topicPresentation.lessonGoal,
+      stageNumber: topicPresentation.stageNumber,
+      stageBadge: topicPresentation.stageBadge,
+      stageMessage: topicPresentation.stageMessage,
+      stageGoal: topicPresentation.stageGoal,
+      stageAccent: topicPresentation.stageAccent,
+      stageGlyph: topicPresentation.stageGlyph,
+      exampleCode: topicPresentation.exampleCode,
     };
   });
 }
@@ -291,7 +448,7 @@ async function saveAttemptAndProgress(userId, exercise, submittedCode, evaluatio
   const currentProgressRows = await loadUserProgress(userId);
   const currentProgress = currentProgressRows.find((item) => item.exerciseId === exercise.id);
 
-  if (hasMysqlConfig()) {
+  if (await canUseMysqlLearning()) {
     await queryRows(
       'INSERT INTO exercise_attempts (user_id, exercise_id, submitted_code, passed, score, console_output_json, test_results_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
       [
@@ -349,20 +506,71 @@ async function saveAttemptAndProgress(userId, exercise, submittedCode, evaluatio
   });
 }
 
-async function evaluateExerciseForUser(userId, exerciseId, submittedCode) {
+async function evaluateExerciseForUser(userId, exerciseId, submission) {
   const definition = await findExerciseDefinition(exerciseId);
 
   if (!definition) {
     throw new Error('Ejercicio no encontrado');
   }
 
-  const evaluation = evaluateExerciseSubmission(definition.exercise, submittedCode);
+  const exercisePresentation = getExercisePresentation(definition.exercise);
+  let submittedCode = String(submission?.code || '');
+  let submittedSelectionId = null;
+  let submittedText = null;
+
+  if (exercisePresentation.mode === 'choice') {
+    submittedSelectionId = String(submission?.selectedOptionId || '').trim();
+
+    if (!submittedSelectionId) {
+      throw new Error('Debes elegir una opcion antes de evaluar.');
+    }
+
+    const isKnownOption = exercisePresentation.choiceOptions.some(
+      (option) => option.id === submittedSelectionId
+    );
+
+    if (!isKnownOption) {
+      throw new Error('La opcion seleccionada no existe para esta leccion.');
+    }
+
+    submittedCode = `choice:${submittedSelectionId}`;
+  } else if (exercisePresentation.mode === 'text') {
+    submittedText = String(submission?.answerText || '').trim();
+
+    if (!submittedText) {
+      throw new Error('Debes escribir una respuesta antes de evaluar.');
+    }
+
+    submittedCode = `text:${submittedText}`;
+  } else if (submittedCode.trim().length === 0) {
+    throw new Error('Debes escribir codigo antes de evaluar.');
+  }
+
+  const evaluation = await evaluateExerciseSubmission(
+    {
+      ...definition.exercise,
+      mode: exercisePresentation.mode,
+    },
+    submittedCode
+  );
   await saveAttemptAndProgress(userId, definition.exercise, submittedCode, evaluation);
 
   return {
     exerciseId,
     topicId: definition.topic.id,
     ...evaluation,
+    mode: exercisePresentation.mode,
+    kind: exercisePresentation.kind,
+    submittedSelectionId,
+    submittedText,
+    expectedSelectionId:
+      exercisePresentation.mode === 'choice'
+        ? String(definition.exercise.testCases[0]?.expected || '')
+        : null,
+    expectedText:
+      exercisePresentation.mode === 'text'
+        ? String(definition.exercise.testCases[0]?.expected || '')
+        : null,
     dashboard: await buildLearnerDashboard(userId),
   };
 }

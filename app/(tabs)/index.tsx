@@ -6,16 +6,38 @@ import { DuocodePalette } from '@/constants/duocode-theme';
 import { Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
+import { groupCourseTopics } from '@/lib/duocode-curriculum';
+import type { LearnerExercise, LearnerTopic } from '@/types/duocode';
 
 function LoadingState() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.loadingCard}>
-        <Text style={styles.loadingTitle}>syncing student workspace...</Text>
-        <Text style={styles.loadingText}>Estamos cargando tu progreso, ejercicios y metricas.</Text>
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>syncing.course()</Text>
+        <Text style={styles.panelText}>Estamos cargando tu curso completo de JavaScript.</Text>
       </View>
     </ScrollView>
   );
+}
+
+function getNextExercise(topic: LearnerTopic | null) {
+  if (!topic) {
+    return null;
+  }
+
+  return topic.exercises.find((exercise) => !exercise.completed) || topic.exercises[0] || null;
+}
+
+function findNextLesson(topics: LearnerTopic[]) {
+  return (
+    topics.find((topic) => topic.progressPercent < 100) ||
+    topics[0] ||
+    null
+  );
+}
+
+function countExercises(topic: LearnerTopic, mode: LearnerExercise['mode']) {
+  return topic.exercises.filter((exercise) => exercise.mode === mode).length;
 }
 
 export default function HomeScreen() {
@@ -28,26 +50,38 @@ export default function HomeScreen() {
   }
 
   const { user, settings, topics, stats } = dashboard;
-  const totalExercises = topics.reduce((total, topic) => total + topic.exerciseCount, 0);
-  const completedExercises = topics.reduce((total, topic) => total + topic.completedExercises, 0);
-  const completionPercent =
-    totalExercises === 0 ? 0 : Math.round((completedExercises / totalExercises) * 100);
-  const nextTopic = topics.find((topic) => topic.exercises.some((exercise) => !exercise.completed)) || topics[0];
-  const nextExercise =
-    nextTopic?.exercises.find((exercise) => !exercise.completed) || nextTopic?.exercises[0] || null;
-  const codeLines = String(nextExercise?.lastSubmittedCode || nextExercise?.starterCode || '')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean)
-    .slice(0, 3);
+  const levels = groupCourseTopics(topics);
+  const totalLessons = topics.length;
+  const completedLessons = topics.filter((topic) => topic.progressPercent >= 100).length;
+  const nextLesson = findNextLesson(topics);
+  const nextExercise = getNextExercise(nextLesson);
+  const currentLevel = levels.find((level) => level.id === nextLesson?.levelId) || levels[0] || null;
+  const currentUnit =
+    currentLevel?.units.find((unit) => unit.id === nextLesson?.unitId) ||
+    currentLevel?.units[0] ||
+    null;
+
+  function handleContinue() {
+    if (!nextLesson || !nextExercise) {
+      return;
+    }
+
+    router.push({
+      pathname: '/(tabs)/explore',
+      params: {
+        topicId: nextLesson.id,
+        exerciseId: nextExercise.id,
+      },
+    });
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
-        <View style={styles.headerText}>
-          <Text style={styles.eyebrow}>{'// student_session'}</Text>
-          <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.track}>{user.track}</Text>
+        <View style={styles.headerCopy}>
+          <Text style={styles.headerEyebrow}>{'// js_course_boot'}</Text>
+          <Text style={styles.headerName}>{user.name}</Text>
+          <Text style={styles.headerTrack}>{user.track}</Text>
         </View>
 
         <View style={styles.headerActions}>
@@ -65,28 +99,29 @@ export default function HomeScreen() {
           <View style={[styles.windowDot, styles.windowDotGreen]} />
         </View>
 
-        <Text style={styles.heroTitle}>{settings.branding.appName}</Text>
-        <Text style={styles.heroSubtitle}>{user.focus}</Text>
-
-        <View style={styles.heroCodeWrap}>
-          {codeLines.map((line) => (
-            <Text key={line} style={styles.heroCode}>
-              {line}
-            </Text>
-          ))}
-          {codeLines.length === 0 ? (
-            <Text style={styles.heroCode}>{'function nextChallenge() {}'}</Text>
-          ) : null}
-        </View>
-
-        <Text style={styles.heroHint}>
-          {nextExercise
-            ? `Siguiente reto: ${nextExercise.title}`
-            : 'Todavia no tienes ejercicios cargados.'}
+        <Text style={styles.heroTitle}>duocode.js</Text>
+        <Text style={styles.heroSubtitle}>
+          Curso serio de JavaScript con 3 niveles, 15 unidades y 75 lecciones cortas tipo ruta.
         </Text>
 
-        <Pressable style={styles.heroButton} onPress={() => router.push('/(tabs)/game')}>
-          <Text style={styles.heroButtonText}>IR A PRACTICA</Text>
+        <View style={styles.codeCard}>
+          <Text style={styles.codeLine}>{`const progress = ${completedLessons}/${totalLessons};`}</Text>
+          <Text style={styles.codeLine}>
+            {`const lesson = "${nextLesson?.title || 'Sin leccion'}";`}
+          </Text>
+          <Text style={styles.codeLine}>
+            {`const exercise = "${nextExercise?.title || 'Sin ejercicio'}";`}
+          </Text>
+        </View>
+
+        <Text style={styles.heroMeta}>
+          {nextLesson
+            ? `Siguiente foco: ${nextLesson.unitTitle} · Leccion ${nextLesson.lessonNumber}`
+            : 'No hay lecciones pendientes.'}
+        </Text>
+
+        <Pressable style={styles.primaryButton} onPress={handleContinue}>
+          <Text style={styles.primaryButtonText}>CONTINUAR CURSO</Text>
         </Pressable>
       </View>
 
@@ -107,66 +142,68 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>avance</Text>
-          <Text style={styles.metricValue}>{`${completionPercent}%`}</Text>
+          <Text style={styles.metricLabel}>lecciones</Text>
+          <Text style={styles.metricValue}>{`${completedLessons}/${totalLessons}`}</Text>
         </View>
       </View>
 
-      <View style={styles.summaryRow}>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>meta_diaria</Text>
-          <Text style={styles.infoValue}>{`${user.dailyGoalMinutes} min`}</Text>
-          <Text style={styles.infoMeta}>Objetivo minimo para mantener ritmo de estudio.</Text>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>tema_actual</Text>
-          <Text style={styles.infoValue}>{nextTopic?.title || 'Sin temas'}</Text>
-          <Text style={styles.infoMeta}>
-            {nextExercise ? `${nextExercise.title} · ${nextExercise.xpReward} XP` : 'Esperando ejercicios'}
-          </Text>
-        </View>
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>ruta_actual</Text>
+        <Text style={styles.panelText}>
+          {currentUnit
+            ? `${currentLevel?.name} · Unidad ${currentUnit.unitNumber} · ${currentUnit.title}`
+            : 'Todavia no hay una unidad seleccionada.'}
+        </Text>
+        <Text style={styles.panelHint}>
+          {nextLesson
+            ? `${nextLesson.title} · ${countExercises(nextLesson, 'choice')} seleccion · ${countExercises(nextLesson, 'text')} texto · ${countExercises(nextLesson, 'code')} codigo`
+            : 'Esperando lecciones.'}
+        </Text>
       </View>
 
-      <Text style={styles.sectionTitle}>clases_en_avance</Text>
+      <Text style={styles.sectionTitle}>niveles_del_curso</Text>
 
-      {topics.map((topic) => {
-        const pendingExercise =
-          topic.exercises.find((exercise) => !exercise.completed) || topic.exercises[0] || null;
+      {levels.map((level) => {
+        const firstLesson = level.units[0]?.lessons[0] || null;
 
         return (
           <Pressable
-            key={topic.id}
-            style={styles.topicCard}
-            onPress={() =>
+            key={level.id}
+            style={[styles.levelCard, level.isLocked && styles.levelCardLocked]}
+            onPress={() => {
+              if (!firstLesson || level.isLocked) {
+                return;
+              }
+
               router.push({
                 pathname: '/(tabs)/explore',
                 params: {
-                  topicId: topic.id,
-                  exerciseId: pendingExercise?.id,
+                  topicId: firstLesson.id,
                 },
-              })
-            }>
-            <View style={styles.topicHeader}>
-              <View style={styles.topicTitleWrap}>
-                <Text style={styles.topicTitle}>{topic.title}</Text>
-                <Text style={styles.topicDescription}>{topic.description}</Text>
+              });
+            }}>
+            <View style={styles.levelHeader}>
+              <View style={styles.levelCopy}>
+                <Text style={styles.levelEyebrow}>{`Nivel ${level.levelNumber}`}</Text>
+                <Text style={styles.levelTitle}>{level.name}</Text>
+                <Text style={styles.levelObjective}>{level.objective}</Text>
               </View>
-              <Text style={styles.topicProgress}>{`${topic.progressPercent}%`}</Text>
+
+              <View style={styles.levelBadge}>
+                <Text style={styles.levelBadgeText}>{`${level.progressPercent}%`}</Text>
+              </View>
             </View>
 
-            <View style={styles.topicMetaRow}>
-              <Text style={styles.topicMeta}>{`${topic.completedExercises}/${topic.exerciseCount} ejercicios`}</Text>
-              <Text style={styles.topicMeta}>{`${topic.estimatedMinutes} min`}</Text>
-              <Text style={styles.topicMeta}>{topic.status}</Text>
+            <View style={styles.levelMetaRow}>
+              <Text style={styles.levelMeta}>{`${level.units.length} unidades`}</Text>
+              <Text style={styles.levelMeta}>
+                {`${level.units.reduce((total, unit) => total + unit.completedLessons, 0)} lecciones completas`}
+              </Text>
+              <Text style={styles.levelMeta}>{level.isLocked ? 'locked' : 'open'}</Text>
             </View>
-
-            <Text style={styles.topicNext}>
-              {pendingExercise ? `clase_actual => ${pendingExercise.title}` : 'clase_actual => Tema completado'}
-            </Text>
 
             <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${topic.progressPercent}%` }]} />
+              <View style={[styles.progressFill, { width: `${level.progressPercent}%` }]} />
             </View>
           </Pressable>
         );
@@ -184,26 +221,6 @@ const styles = StyleSheet.create({
     paddingBottom: 96,
     gap: 18,
   },
-  loadingCard: {
-    marginTop: 32,
-    backgroundColor: DuocodePalette.surface,
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 24,
-    gap: 10,
-  },
-  loadingTitle: {
-    color: DuocodePalette.text,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  loadingText: {
-    color: DuocodePalette.muted,
-    fontSize: 14,
-    lineHeight: 20,
-  },
   headerRow: {
     marginTop: 6,
     flexDirection: 'row',
@@ -211,22 +228,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 12,
   },
-  headerText: {
+  headerCopy: {
     flex: 1,
     gap: 4,
   },
-  eyebrow: {
+  headerEyebrow: {
     color: DuocodePalette.muted,
     fontSize: 14,
     fontFamily: Fonts.mono,
     fontWeight: '700',
   },
-  name: {
+  headerName: {
     color: DuocodePalette.text,
     fontSize: 28,
     fontWeight: '900',
   },
-  track: {
+  headerTrack: {
     color: DuocodePalette.code,
     fontSize: 14,
     fontFamily: Fonts.mono,
@@ -255,11 +272,6 @@ const styles = StyleSheet.create({
     padding: 24,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
-    shadowColor: DuocodePalette.accent,
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
     gap: 12,
   },
   windowBar: {
@@ -291,7 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
   },
-  heroCodeWrap: {
+  codeCard: {
     backgroundColor: DuocodePalette.surfaceAlt,
     borderRadius: 18,
     borderWidth: 1,
@@ -299,17 +311,17 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 8,
   },
-  heroCode: {
+  codeLine: {
     color: DuocodePalette.code,
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: Fonts.mono,
   },
-  heroHint: {
+  heroMeta: {
     color: DuocodePalette.muted,
     fontSize: 13,
     lineHeight: 19,
   },
-  heroButton: {
+  primaryButton: {
     alignSelf: 'flex-start',
     backgroundColor: DuocodePalette.accentSoft,
     borderWidth: 1,
@@ -318,7 +330,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
   },
-  heroButtonText: {
+  primaryButtonText: {
     color: DuocodePalette.accent,
     fontSize: 15,
     fontWeight: '900',
@@ -349,31 +361,26 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  infoCard: {
-    flex: 1,
+  panel: {
     backgroundColor: DuocodePalette.surface,
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
     padding: 18,
     gap: 8,
   },
-  infoLabel: {
-    color: DuocodePalette.code,
-    fontSize: 12,
-    fontFamily: Fonts.mono,
-  },
-  infoValue: {
+  panelTitle: {
     color: DuocodePalette.text,
     fontSize: 17,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  infoMeta: {
+  panelText: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  panelHint: {
     color: DuocodePalette.muted,
     fontSize: 13,
     lineHeight: 18,
@@ -384,7 +391,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  topicCard: {
+  levelCard: {
     backgroundColor: DuocodePalette.surface,
     borderRadius: 24,
     borderWidth: 1,
@@ -392,45 +399,59 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 14,
   },
-  topicHeader: {
+  levelCardLocked: {
+    opacity: 0.65,
+  },
+  levelHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
   },
-  topicTitleWrap: {
+  levelCopy: {
     flex: 1,
     gap: 4,
   },
-  topicTitle: {
-    color: DuocodePalette.text,
-    fontSize: 17,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  topicDescription: {
-    color: DuocodePalette.muted,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  topicProgress: {
-    color: DuocodePalette.accent,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  topicMetaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  topicMeta: {
+  levelEyebrow: {
     color: DuocodePalette.code,
     fontSize: 12,
     fontFamily: Fonts.mono,
   },
-  topicNext: {
+  levelTitle: {
     color: DuocodePalette.text,
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  levelObjective: {
+    color: DuocodePalette.muted,
     fontSize: 13,
+    lineHeight: 18,
+  },
+  levelBadge: {
+    minWidth: 74,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  levelBadgeText: {
+    color: DuocodePalette.accent,
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  levelMetaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  levelMeta: {
+    color: DuocodePalette.code,
+    fontSize: 12,
     fontFamily: Fonts.mono,
   },
   progressTrack: {
