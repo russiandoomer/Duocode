@@ -2,6 +2,9 @@
   "name": "duocode",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.19.4"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -13,7 +16,8 @@
     "local:web": "powershell -ExecutionPolicy Bypass -File ./scripts/local-web.ps1",
     "web:build": "expo export --platform web",
     "api:start": "node ./server/index.js",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "deploy:check": "npm run lint && npx tsc --noEmit && npm run web:build"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

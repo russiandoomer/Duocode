@@ -78,6 +78,12 @@ Tambien puedes usar:
 - `MYSQL_URL`
 - `DATABASE_URL`
 
+Archivos de ejemplo segun plataforma:
+
+- [.env.example](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/.env.example) para local
+- [.env.railway.example](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/.env.railway.example) para Railway
+- [.env.vercel.example](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/.env.vercel.example) para Vercel
+
 ## Configurar MySQL
 
 Opcion rapida:
@@ -116,7 +122,12 @@ La API expone:
 2. Agrega un servicio MySQL.
 3. Importa `database/setup.sql` o, si prefieres, `database/schema.sql` y luego `database/seed.sql`.
 4. Configura el servicio backend con `npm run api:start`.
-5. Verifica `https://tu-api.up.railway.app/api/health`.
+5. Usa estas variables en el backend:
+   - `AUTH_SECRET`
+   - `AUTH_TOKEN_TTL_SECONDS`
+   - `MYSQL_URL` o alternativamente `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
+6. Railway ya tiene healthcheck recomendado en [railway.json](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/railway.json) apuntando a `/api/health`.
+7. Verifica `https://tu-api.up.railway.app/api/health`.
 
 ### Vercel
 
@@ -124,6 +135,15 @@ La API expone:
 2. Usa `npm run web:build` como build command.
 3. Usa `dist` como output directory.
 4. Configura `EXPO_PUBLIC_API_URL` apuntando a Railway.
+5. La configuracion en [vercel.json](/abs/path/C:/xampp/htdocs/duoapp/MyApp0/vercel.json) ya activa `cleanUrls` para servir mejor el export estatico.
+
+## Checklist antes del deploy
+
+Corre esto antes de subir cambios:
+
+```bash
+npm run deploy:check
+```
 
 ## GitHub
 
@@ -159,4 +179,4 @@ Si quieres cambiar tambien el logo visual dentro de la app, edita:
 
 ## Nota
 
-Si todavia no configuras Railway o MySQL, la app sigue funcionando con contenido fallback local para que puedas avanzar con el diseño y el frontend mientras preparas infraestructura.
+Si todavia no configuras Railway o MySQL, la app puede seguir mostrando contenido fallback local para que avances con el diseño y parte del frontend. Para login, registro, metricas reales y progreso autenticado, si necesitas configurar `EXPO_PUBLIC_API_URL` hacia tu backend en Railway.

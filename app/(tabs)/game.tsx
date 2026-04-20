@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   Alert,
   Pressable,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { CodeCelebrationOverlay } from '@/components/duocode/code-celebration-overlay';
 import { DuocodePalette } from '@/constants/duocode-theme';
 import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
-import type { ExerciseEvaluationResponse } from '@/types/duocode';
+import type { ExerciseEvaluationResponse, LearnerExercise } from '@/types/duocode';
 
 function LoadingState() {
   return (
@@ -23,14 +24,23 @@ function LoadingState() {
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>loading.practice()</Text>
         <Text style={styles.panelBodyText}>
-          Estamos preparando tus temas, ejercicios y tests del reto.
+          Estamos preparando tus temas, ejercicios y tests del laboratorio.
         </Text>
       </View>
     </ScrollView>
   );
 }
 
+function isExerciseReviewed(exercise: LearnerExercise) {
+  return (
+    exercise.completed ||
+    exercise.bestScore > 0 ||
+    exercise.lastSubmittedCode.trim() !== exercise.starterCode.trim()
+  );
+}
+
 export default function GameScreen() {
+  const router = useRouter();
   const params = useLocalSearchParams<{ topicId?: string | string[]; exerciseId?: string | string[] }>();
   const { dashboard, loading, evaluateExercise } = useLearnerDashboard();
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
@@ -42,39 +52,77 @@ export default function GameScreen() {
   const [celebrationVisible, setCelebrationVisible] = useState(false);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
-  const requestedExerciseId = Array.isArray(params.exerciseId)
-    ? params.exerciseId[0]
-    : params.exerciseId;
+  const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
+  const allTopics = useMemo(() => dashboard?.topics || [], [dashboard?.topics]);
+  const requestedTopicFromAll = allTopics.find((topic) => topic.id === requestedTopicId) || null;
+  const requestedExerciseFromAll =
+    requestedTopicFromAll?.exercises.find((exercise) => exercise.id === requestedExerciseId) || null;
+
+  const practiceTopics = useMemo(() => {
+    if (!allTopics.length) {
+      return [];
+    }
+
+    const reviewTopics = allTopics
+      .map((topic) => ({
+        ...topic,
+        exercises: topic.exercises.filter(isExerciseReviewed),
+      }))
+      .filter((topic) => topic.exercises.length > 0);
+
+    if (!requestedTopicFromAll) {
+      return reviewTopics;
+    }
+
+    const requestedTopicEntry = {
+      ...requestedTopicFromAll,
+      exercises: requestedTopicFromAll.exercises,
+    };
+
+    const hasRequestedTopic = reviewTopics.some((topic) => topic.id === requestedTopicFromAll.id);
+
+    if (!hasRequestedTopic) {
+      return [requestedTopicEntry, ...reviewTopics];
+    }
+
+    return reviewTopics.map((topic) => (topic.id === requestedTopicFromAll.id ? requestedTopicEntry : topic));
+  }, [allTopics, requestedTopicFromAll]);
 
   useEffect(() => {
-    if (!dashboard?.topics.length) {
+    if (!practiceTopics.length) {
       setSelectedTopicId(null);
       return;
     }
 
-    const preferredTopic =
-      dashboard.topics.find((topic) => topic.exercises.some((exercise) => !exercise.completed)) ||
-      dashboard.topics[0];
-
     setSelectedTopicId((current) => {
       if (
         requestedTopicId &&
-        dashboard.topics.some((topic) => topic.id === requestedTopicId) &&
+        practiceTopics.some((topic) => topic.id === requestedTopicId) &&
         current !== requestedTopicId
       ) {
         return requestedTopicId;
       }
 
-      if (current && dashboard.topics.some((topic) => topic.id === current)) {
+      if (current && practiceTopics.some((topic) => topic.id === current)) {
         return current;
       }
 
-      return preferredTopic.id;
+      return practiceTopics[0].id;
     });
-  }, [dashboard, requestedTopicId]);
+  }, [practiceTopics, requestedTopicId]);
 
   const selectedTopic =
-    dashboard?.topics.find((topic) => topic.id === selectedTopicId) || dashboard?.topics[0] || null;
+    practiceTopics.find((topic) => topic.id === selectedTopicId) || practiceTopics[0] || null;
+
+  const isLessonLaunch = Boolean(
+    selectedTopic &&
+      selectedExerciseId &&
+      requestedTopicFromAll &&
+      requestedExerciseFromAll &&
+      selectedTopic.id === requestedTopicFromAll.id &&
+      selectedExerciseId === requestedExerciseFromAll.id &&
+      !isExerciseReviewed(requestedExerciseFromAll)
+  );
 
   useEffect(() => {
     if (!selectedTopic?.exercises.length) {
@@ -82,23 +130,16 @@ export default function GameScreen() {
       return;
     }
 
-    const preferredExercise =
-      selectedTopic.exercises.find((exercise) => !exercise.completed) || selectedTopic.exercises[0];
+    const defaultExercise =
+      selectedTopic.exercises.find((exercise) => exercise.id === requestedExerciseId) ||
+      selectedTopic.exercises[0];
 
     setSelectedExerciseId((current) => {
-      if (
-        requestedExerciseId &&
-        selectedTopic.exercises.some((exercise) => exercise.id === requestedExerciseId) &&
-        current !== requestedExerciseId
-      ) {
-        return requestedExerciseId;
-      }
-
       if (current && selectedTopic.exercises.some((exercise) => exercise.id === current)) {
         return current;
       }
 
-      return preferredExercise.id;
+      return defaultExercise.id;
     });
   }, [requestedExerciseId, selectedTopic]);
 
@@ -140,7 +181,7 @@ export default function GameScreen() {
         setCelebrationVisible(true);
       }
     } catch (error) {
-      Alert.alert('duocode', error instanceof Error ? error.message : 'No se pudo evaluar el reto');
+      Alert.alert('duocode', error instanceof Error ? error.message : 'No se pudo evaluar la practica');
     } finally {
       setSubmitting(false);
     }
@@ -155,34 +196,82 @@ export default function GameScreen() {
     setEvaluation(null);
   }
 
+  if (!practiceTopics.length) {
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.heroRow}>
+            <BrandMark label={dashboard.settings.branding.logoLabel} size={72} />
+
+            <View style={styles.heroTextWrap}>
+              <Text style={styles.heroTitle}>practice-replay.ts</Text>
+              <Text style={styles.heroSubtitle}>Todavia no tienes clases terminadas para repasar.</Text>
+              <Text style={styles.heroMeta}>Completa primero una clase y luego vuelve aqui para repetirla.</Text>
+            </View>
+          </View>
+
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>practice_locked</Text>
+            <Text style={styles.panelBodyText}>
+              `Clases` ahora es el espacio para estudiar por tecnologia. `Practica` queda reservado para volver a hacer ejercicios que ya viste, revisar tus errores y consolidar memoria.
+            </Text>
+
+            <Pressable style={styles.primaryButton} onPress={() => router.push('/(tabs)/explore')}>
+              <Text style={styles.primaryButtonText}>IR A CLASES</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <SafeAreaView style={styles.screen}>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
         <View style={styles.heroRow}>
           <BrandMark label={dashboard.settings.branding.logoLabel} size={72} />
 
           <View style={styles.heroTextWrap}>
-            <Text style={styles.heroTitle}>practice-lab.ts</Text>
+            <Text style={styles.heroTitle}>{isLessonLaunch ? 'lesson-lab.ts' : 'practice-replay.ts'}</Text>
             <Text style={styles.heroSubtitle}>
-              {selectedTopic ? `${selectedTopic.title} · ${selectedTopic.progressPercent}%` : 'Sin tema'}
+              {selectedTopic
+                ? `${selectedTopic.title} · ${isLessonLaunch ? 'clase activa' : 'repaso guiado'}`
+                : 'Sin tema'}
             </Text>
             <Text style={styles.heroMeta}>
               {selectedExercise
-                ? `target=${selectedExercise.functionName} · reward=${selectedExercise.xpReward}xp`
-                : 'target=none'}
+                ? `review=${selectedExercise.functionName} · score=${selectedExercise.bestScore}%`
+                : 'review=none'}
             </Text>
           </View>
         </View>
 
         <View style={styles.panel}>
           <View style={styles.panelChrome}>
-            <Text style={styles.panelChromeText}>topics.index()</Text>
+            <Text style={styles.panelChromeText}>{isLessonLaunch ? 'lesson.scope()' : 'practice.scope()'}</Text>
           </View>
 
-          <Text style={styles.panelTitle}>topics</Text>
+          <Text style={styles.panelTitle}>{isLessonLaunch ? 'leccion_activa' : 'repaso_de_lo_aprendido'}</Text>
+          <Text style={styles.panelBodyText}>
+            {isLessonLaunch
+              ? 'Llegaste desde Clases. Aqui puedes resolver la leccion actual en el laboratorio y despues volver a Practica para repetirla cuando ya la hayas trabajado.'
+              : 'Aqui solo aparecen ejercicios que ya tocaste antes. Puedes rehacerlos, corregirlos y ver claramente que fallo y cual era la solucion correcta.'}
+          </Text>
+        </View>
+
+        <View style={styles.panel}>
+          <View style={styles.panelChrome}>
+            <Text style={styles.panelChromeText}>{isLessonLaunch ? 'topics.current()' : 'topics.reviewable()'}</Text>
+          </View>
+
+          <Text style={styles.panelTitle}>{isLessonLaunch ? 'tema y repaso' : 'temas para practicar'}</Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.topicRow}>
-            {dashboard.topics.map((topic) => {
+            {practiceTopics.map((topic) => {
               const isSelected = topic.id === selectedTopic?.id;
 
               return (
@@ -194,7 +283,7 @@ export default function GameScreen() {
                     {topic.title}
                   </Text>
                   <Text style={[styles.topicChipMeta, isSelected && styles.topicChipMetaSelected]}>
-                    {`${topic.completedExercises}/${topic.exerciseCount}`}
+                    {`${topic.exercises.length} ejercicios para repaso`}
                   </Text>
                 </Pressable>
               );
@@ -204,11 +293,11 @@ export default function GameScreen() {
 
         {selectedTopic ? (
           <View style={styles.panel}>
-            <View style={styles.panelChrome}>
-              <Text style={styles.panelChromeText}>lessons.route()</Text>
-            </View>
+          <View style={styles.panelChrome}>
+            <Text style={styles.panelChromeText}>{isLessonLaunch ? 'lesson.queue()' : 'review.queue()'}</Text>
+          </View>
 
-            <Text style={styles.panelTitle}>challenge_list</Text>
+          <Text style={styles.panelTitle}>{isLessonLaunch ? 'lecciones del tema' : 'practicas disponibles'}</Text>
 
             {selectedTopic.exercises.map((exercise) => {
               const isSelected = exercise.id === selectedExercise?.id;
@@ -221,20 +310,12 @@ export default function GameScreen() {
                   <View style={styles.exerciseHeader}>
                     <View style={styles.exerciseTitleWrap}>
                       <Text style={styles.exerciseTitle}>{exercise.title}</Text>
-                      <Text style={styles.exerciseMeta}>{`${exercise.xpReward} XP · score ${exercise.bestScore}%`}</Text>
+                      <Text style={styles.exerciseMeta}>{`${exercise.xpReward} XP · mejor score ${exercise.bestScore}%`}</Text>
                     </View>
 
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        exercise.completed ? styles.statusBadgeSuccess : styles.statusBadgePending,
-                      ]}>
-                      <Text
-                        style={[
-                          styles.statusBadgeText,
-                          exercise.completed ? styles.statusTextSuccess : styles.statusTextPending,
-                        ]}>
-                        {exercise.completed ? 'OK' : 'TODO'}
+                    <View style={[styles.statusBadge, styles.statusBadgeReview]}>
+                      <Text style={[styles.statusBadgeText, styles.statusTextReview]}>
+                        {exercise.completed ? 'REPLAY' : isLessonLaunch ? 'LECCION' : 'REVISAR'}
                       </Text>
                     </View>
                   </View>
@@ -248,10 +329,10 @@ export default function GameScreen() {
           <>
             <View style={styles.panel}>
               <View style={styles.panelChrome}>
-                <Text style={styles.panelChromeText}>briefing.packet()</Text>
+                <Text style={styles.panelChromeText}>{isLessonLaunch ? 'briefing.lesson()' : 'briefing.replay()'}</Text>
               </View>
 
-              <Text style={styles.panelTitle}>challenge_brief</Text>
+              <Text style={styles.panelTitle}>{isLessonLaunch ? 'lesson_brief' : 'practice_brief'}</Text>
               <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
 
               <View style={styles.instructionsBox}>
@@ -269,10 +350,8 @@ export default function GameScreen() {
                 </View>
 
                 <View style={styles.exerciseInfoCard}>
-                  <Text style={styles.exerciseInfoLabel}>estado</Text>
-                  <Text style={styles.exerciseInfoValue}>
-                    {selectedExercise.completed ? 'Completado' : 'En practica'}
-                  </Text>
+                  <Text style={styles.exerciseInfoLabel}>mejor intento</Text>
+                  <Text style={styles.exerciseInfoValue}>{`${selectedExercise.bestScore}%`}</Text>
                 </View>
               </View>
             </View>
@@ -294,33 +373,33 @@ export default function GameScreen() {
                     style={[styles.primaryButton, submitting && styles.primaryButtonDisabled]}
                     onPress={handleRunTests}
                     disabled={submitting}>
-                    <Text style={styles.primaryButtonText}>
-                      {submitting ? 'RUNNING...' : 'RUN TESTS'}
-                    </Text>
+                    <Text style={styles.primaryButtonText}>{submitting ? 'RUNNING...' : 'RUN TESTS'}</Text>
                   </Pressable>
                 </View>
               </View>
 
-              <View style={styles.editorShell}>
-                <View style={styles.editorGutter}>
-                  {editorCode.split('\n').map((_, index) => (
-                    <Text key={`${selectedExercise.id}-line-${index + 1}`} style={styles.gutterLine}>
-                      {index + 1}
-                    </Text>
-                  ))}
-                </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.editorShell}>
+                  <View style={styles.editorGutter}>
+                    {editorCode.split('\n').map((_, index) => (
+                      <Text key={`${selectedExercise.id}-line-${index + 1}`} style={styles.gutterLine}>
+                        {index + 1}
+                      </Text>
+                    ))}
+                  </View>
 
-                <TextInput
-                  value={editorCode}
-                  onChangeText={setEditorCode}
-                  multiline
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  spellCheck={false}
-                  textAlignVertical="top"
-                  style={styles.editorInput}
-                />
-              </View>
+                  <TextInput
+                    value={editorCode}
+                    onChangeText={setEditorCode}
+                    multiline
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                    textAlignVertical="top"
+                    style={styles.editorInput}
+                  />
+                </View>
+              </ScrollView>
             </View>
 
             {evaluation ? (
@@ -332,12 +411,12 @@ export default function GameScreen() {
                 </View>
 
                 <View style={styles.resultHeader}>
-                  <View>
+                  <View style={styles.resultTextWrap}>
                     <Text style={styles.panelTitle}>feedback</Text>
                     <Text style={styles.panelBodyText}>
                       {evaluation.passed
-                        ? 'Tu solucion paso todos los tests.'
-                        : 'Tu solucion todavia falla en algunos tests.'}
+                        ? 'Volviste a resolverlo bien. Ya esta consolidado.'
+                        : 'Todavia hay fallos. Mira cada test y compara con la solucion correcta.'}
                     </Text>
                   </View>
 
@@ -392,33 +471,29 @@ export default function GameScreen() {
               </View>
             ) : null}
           </>
-        ) : (
-          <View style={styles.panel}>
-            <Text style={styles.panelTitle}>challenge_brief</Text>
-            <Text style={styles.panelBodyText}>No hay ejercicios disponibles para este usuario.</Text>
-          </View>
-        )}
+        ) : null}
       </ScrollView>
 
       <CodeCelebrationOverlay
         visible={celebrationVisible && Boolean(evaluation?.passed && selectedExercise)}
-        title={selectedExercise?.title || 'Lesson complete'}
+        title={selectedExercise?.title || 'Practice complete'}
         score={evaluation?.score || 0}
         xpReward={selectedExercise?.xpReward || 0}
         onDismiss={() => setCelebrationVisible(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
+    flex: 1,
     backgroundColor: DuocodePalette.navy,
   },
   container: {
     padding: 18,
     paddingTop: 24,
-    paddingBottom: 110,
+    paddingBottom: 140,
     gap: 18,
   },
   heroRow: {
@@ -429,6 +504,7 @@ const styles = StyleSheet.create({
   },
   heroTextWrap: {
     flex: 1,
+    gap: 4,
   },
   heroTitle: {
     color: DuocodePalette.surface,
@@ -487,7 +563,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   topicChip: {
-    minWidth: 170,
+    minWidth: 220,
     backgroundColor: DuocodePalette.surfaceAlt,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
@@ -554,22 +630,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  statusBadgeSuccess: {
-    backgroundColor: '#0D2B1A',
-  },
-  statusBadgePending: {
-    backgroundColor: '#35260B',
+  statusBadgeReview: {
+    backgroundColor: '#0A2741',
   },
   statusBadgeText: {
     fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  statusTextSuccess: {
-    color: DuocodePalette.green,
-  },
-  statusTextPending: {
-    color: DuocodePalette.amber,
+  statusTextReview: {
+    color: DuocodePalette.terminalBlue,
   },
   promptText: {
     color: DuocodePalette.text,
@@ -593,9 +663,11 @@ const styles = StyleSheet.create({
   exerciseInfoRow: {
     flexDirection: 'row',
     gap: 12,
+    flexWrap: 'wrap',
   },
   exerciseInfoCard: {
     flex: 1,
+    minWidth: 140,
     backgroundColor: DuocodePalette.surfaceAlt,
     borderRadius: 18,
     borderWidth: 1,
@@ -619,10 +691,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 12,
+    flexWrap: 'wrap',
   },
   editorActions: {
     flexDirection: 'row',
     gap: 10,
+    flexWrap: 'wrap',
   },
   secondaryButton: {
     backgroundColor: DuocodePalette.surfaceAlt,
@@ -645,6 +719,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   primaryButtonDisabled: {
     opacity: 0.6,
@@ -655,24 +731,17 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  editorInput: {
-    minHeight: 280,
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingVertical: 18,
-    color: DuocodePalette.text,
-    fontSize: 14,
-    lineHeight: 22,
-    fontFamily: Fonts.mono,
-  },
   editorShell: {
+    minWidth: 680,
+    maxWidth: 920,
+    width: '100%',
     backgroundColor: DuocodePalette.surfaceAlt,
     borderWidth: 1,
     borderColor: DuocodePalette.borderStrong,
     borderRadius: 22,
     overflow: 'hidden',
     flexDirection: 'row',
-    minHeight: 280,
+    minHeight: 340,
   },
   editorGutter: {
     width: 46,
@@ -689,11 +758,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.mono,
   },
+  editorInput: {
+    minHeight: 340,
+    minWidth: 520,
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    color: DuocodePalette.text,
+    fontSize: 14,
+    lineHeight: 22,
+    fontFamily: Fonts.mono,
+  },
   resultHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 12,
+    flexWrap: 'wrap',
+  },
+  resultTextWrap: {
+    flex: 1,
+    minWidth: 220,
   },
   resultBadge: {
     minWidth: 76,

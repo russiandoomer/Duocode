@@ -128,14 +128,25 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>temas_en_avance</Text>
+      <Text style={styles.sectionTitle}>clases_en_avance</Text>
 
       {topics.map((topic) => {
         const pendingExercise =
           topic.exercises.find((exercise) => !exercise.completed) || topic.exercises[0] || null;
 
         return (
-          <Pressable key={topic.id} style={styles.topicCard} onPress={() => router.push('/(tabs)/game')}>
+          <Pressable
+            key={topic.id}
+            style={styles.topicCard}
+            onPress={() =>
+              router.push({
+                pathname: '/(tabs)/explore',
+                params: {
+                  topicId: topic.id,
+                  exerciseId: pendingExercise?.id,
+                },
+              })
+            }>
             <View style={styles.topicHeader}>
               <View style={styles.topicTitleWrap}>
                 <Text style={styles.topicTitle}>{topic.title}</Text>
@@ -151,7 +162,7 @@ export default function HomeScreen() {
             </View>
 
             <Text style={styles.topicNext}>
-              {pendingExercise ? `next => ${pendingExercise.title}` : 'next => Tema completado'}
+              {pendingExercise ? `clase_actual => ${pendingExercise.title}` : 'clase_actual => Tema completado'}
             </Text>
 
             <View style={styles.progressTrack}>

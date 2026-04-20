@@ -6,6 +6,16 @@ function getTokenSecret() {
   return process.env.AUTH_SECRET || 'duocode-dev-secret';
 }
 
+function getTokenExpirationSeconds() {
+  const configuredValue = Number(process.env.AUTH_TOKEN_TTL_SECONDS || DEFAULT_EXPIRATION_SECONDS);
+
+  if (!Number.isFinite(configuredValue) || configuredValue <= 0) {
+    return DEFAULT_EXPIRATION_SECONDS;
+  }
+
+  return Math.floor(configuredValue);
+}
+
 function toBase64Url(value) {
   return Buffer.from(value)
     .toString('base64')
@@ -25,9 +35,12 @@ function sign(value) {
 }
 
 function createToken(payload) {
+  const now = Math.floor(Date.now() / 1000);
   const enrichedPayload = {
     ...payload,
-    exp: Math.floor(Date.now() / 1000) + DEFAULT_EXPIRATION_SECONDS,
+    iat: now,
+    iss: 'duocode-api',
+    exp: now + getTokenExpirationSeconds(),
   };
 
   const encodedPayload = toBase64Url(JSON.stringify(enrichedPayload));
@@ -48,7 +61,13 @@ function verifyToken(token) {
 
   const expectedSignature = sign(payloadPart);
 
-  if (signaturePart !== expectedSignature) {
+  const providedBuffer = Buffer.from(signaturePart);
+  const expectedBuffer = Buffer.from(expectedSignature);
+
+  if (
+    providedBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(providedBuffer, expectedBuffer)
+  ) {
     return null;
   }
 

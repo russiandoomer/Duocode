@@ -9,6 +9,7 @@ const store = {
   topics: cloneDeep(fallbackLearning.topics),
   progress: cloneDeep(fallbackLearning.progress),
   attempts: cloneDeep(fallbackLearning.attempts),
+  authAudit: [],
 };
 
 let nextUserId = Math.max(...store.users.map((user) => user.id), 0) + 1;
@@ -32,6 +33,10 @@ function getAttempts() {
 
 function addUser(user) {
   const nextUser = {
+    isActive: true,
+    failedLoginAttempts: 0,
+    lockedUntil: null,
+    lastLoginAt: null,
     ...user,
     id: nextUserId++,
   };
@@ -48,6 +53,32 @@ function addAttempt(attempt) {
 
   store.attempts.push(nextAttempt);
   return nextAttempt;
+}
+
+function patchUser(userId, partialUpdate) {
+  const index = store.users.findIndex((item) => Number(item.id) === Number(userId));
+
+  if (index === -1) {
+    return null;
+  }
+
+  store.users[index] = {
+    ...store.users[index],
+    ...partialUpdate,
+  };
+
+  return store.users[index];
+}
+
+function addAuthAudit(entry) {
+  const nextEntry = {
+    id: store.authAudit.length + 1,
+    createdAt: new Date().toISOString(),
+    ...entry,
+  };
+
+  store.authAudit.push(nextEntry);
+  return nextEntry;
 }
 
 function upsertProgress(progressRecord) {
@@ -70,10 +101,12 @@ function upsertProgress(progressRecord) {
 
 module.exports = {
   addAttempt,
+  addAuthAudit,
   addUser,
   getAttempts,
   getProgress,
   getTopics,
   getUsers,
+  patchUser,
   upsertProgress,
 };

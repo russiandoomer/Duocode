@@ -13,7 +13,7 @@ type AuthContextValue = {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, confirmPassword?: string) => Promise<void>;
   logout: () => void;
 };
 
@@ -87,11 +87,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     );
   }
 
-  async function register(name: string, email: string, password: string) {
+  async function register(name: string, email: string, password: string, confirmPassword?: string) {
     await consumeAuth(
       apiRequest<AuthPayload>('/api/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, confirmPassword }),
       })
     );
   }

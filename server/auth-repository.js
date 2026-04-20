@@ -2,6 +2,12 @@ const { queryRows, hasMysqlConfig } = require('./mysql');
 const fallbackStore = require('./fallback-store');
 const { hashPassword } = require('./passwords');
 
+function normalizeEmail(email) {
+  return String(email || '')
+    .trim()
+    .toLowerCase();
+}
+
 function sanitizeUser(user) {
   if (!user) {
     return null;
@@ -20,12 +26,14 @@ function sanitizeUser(user) {
 }
 
 async function getUserByEmail(email) {
+  const normalizedEmail = normalizeEmail(email);
+
   if (hasMysqlConfig()) {
-    const rows = await queryRows('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
+    const rows = await queryRows('SELECT * FROM users WHERE email = ? LIMIT 1', [normalizedEmail]);
     return rows[0] || null;
   }
 
-  return fallbackStore.getUsers().find((user) => user.email.toLowerCase() === email.toLowerCase()) || null;
+  return fallbackStore.getUsers().find((user) => user.email.toLowerCase() === normalizedEmail) || null;
 }
 
 async function getUserById(id) {
@@ -47,6 +55,7 @@ async function getAllUsers() {
 
 async function createUser({ name, email, password }) {
   const passwordHash = hashPassword(password);
+  const normalizedEmail = normalizeEmail(email);
   const defaults = {
     role: 'student',
     track: 'Frontend Engineer Path',
@@ -57,15 +66,15 @@ async function createUser({ name, email, password }) {
   if (hasMysqlConfig()) {
     await queryRows(
       'INSERT INTO users (name, email, password_hash, role, track_label, focus_text, daily_goal_minutes) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [name, email, passwordHash, defaults.role, defaults.track, defaults.focus, defaults.dailyGoalMinutes]
+      [name, normalizedEmail, passwordHash, defaults.role, defaults.track, defaults.focus, defaults.dailyGoalMinutes]
     );
 
-    return await getUserByEmail(email);
+    return await getUserByEmail(normalizedEmail);
   }
 
   return fallbackStore.addUser({
     name,
-    email,
+    email: normalizedEmail,
     passwordHash,
     role: defaults.role,
     track: defaults.track,
@@ -75,10 +84,100 @@ async function createUser({ name, email, password }) {
   });
 }
 
+async function markLoginFailure(userId, maxAttempts, lockMinutes) {
+  if (hasMysqlConfig()) {
+    try {
+      await queryRows(
+        `UPDATE users
+         SET failed_login_attempts = failed_login_attempts + 1,
+             locked_until = IF(failed_login_attempts + 1 >= ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), locked_until)
+         WHERE id = ?`,
+        [maxAttempts, lockMinutes, userId]
+      );
+
+      return await getUserById(userId);
+    } catch {
+      return await getUserById(userId);
+    }
+  }
+
+  const currentUser = await getUserById(userId);
+
+  if (!currentUser) {
+    return null;
+  }
+
+  const failedLoginAttempts = Number(currentUser.failedLoginAttempts || 0) + 1;
+  const lockedUntil =
+    failedLoginAttempts >= maxAttempts
+      ? new Date(Date.now() + lockMinutes * 60 * 1000).toISOString()
+      : currentUser.lockedUntil || null;
+
+  return fallbackStore.patchUser(userId, {
+    failedLoginAttempts,
+    lockedUntil,
+  });
+}
+
+async function markLoginSuccess(userId) {
+  if (hasMysqlConfig()) {
+    try {
+      await queryRows(
+        `UPDATE users
+         SET failed_login_attempts = 0,
+             locked_until = NULL,
+             last_login_at = NOW()
+         WHERE id = ?`,
+        [userId]
+      );
+    } catch {
+      return await getUserById(userId);
+    }
+
+    return await getUserById(userId);
+  }
+
+  return fallbackStore.patchUser(userId, {
+    failedLoginAttempts: 0,
+    lockedUntil: null,
+    lastLoginAt: new Date().toISOString(),
+  });
+}
+
+async function recordAuthAudit({ userId = null, email = '', eventType, ipAddress = '', userAgent = '', details = {} }) {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (hasMysqlConfig()) {
+    try {
+      await queryRows(
+        'INSERT INTO auth_audit_log (user_id, email, event_type, ip_address, user_agent, details_json) VALUES (?, ?, ?, ?, ?, ?)',
+        [userId, normalizedEmail, eventType, ipAddress, userAgent.slice(0, 255), JSON.stringify(details)]
+      );
+    } catch {
+      return;
+    }
+
+    return;
+  }
+
+  fallbackStore.addAuthAudit({
+    userId,
+    email: normalizedEmail,
+    eventType,
+    ipAddress,
+    userAgent,
+    details,
+  });
+}
+
 module.exports = {
   createUser,
   getAllUsers,
   getUserByEmail,
   getUserById,
+  markLoginFailure,
+  markLoginSuccess,
+  normalizeEmail,
+  recordAuthAudit,
   sanitizeUser,
 };

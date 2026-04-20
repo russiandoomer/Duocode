@@ -1,5 +1,6 @@
-import { useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { NeonLessonNode } from '@/components/duocode/neon-lesson-node';
 import { DuocodePalette } from '@/constants/duocode-theme';
@@ -7,224 +8,313 @@ import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
 import type { LearnerExercise, LearnerTopic } from '@/types/duocode';
 
-const PATH_OFFSETS = [0, 54, 92, 54, 0, -54, -92, -54];
-const CODE_GLYPHS = ['</>', 'fn', '{}', '[]', 'map', 'api', 'git', 'db'];
+const PATH_OFFSETS = [0, 48, 82, 48, 0, -48, -82, -48];
 
 function LoadingState() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.loadingCard}>
-        <Text style={styles.loadingTitle}>loading roadmap...</Text>
-        <Text style={styles.loadingText}>Estamos armando tu ruta visual de lecciones.</Text>
+        <Text style={styles.loadingTitle}>loading.classes()</Text>
+        <Text style={styles.loadingText}>Estamos organizando tus clases por stack y tecnologia.</Text>
       </View>
     </ScrollView>
   );
 }
 
-function normalizeGlyph(exercise: LearnerExercise, index: number) {
-  const functionName = exercise.functionName.toLowerCase();
+function getTopicStack(topic: LearnerTopic) {
+  const title = topic.title.toLowerCase();
 
-  if (functionName.includes('array')) {
-    return '[]';
+  if (title.includes('react')) {
+    return { label: 'react', flavor: 'componentes + estado', glyph: '<>' };
   }
 
-  if (functionName.includes('label')) {
-    return 'txt';
+  if (title.includes('deploy')) {
+    return { label: 'deploy', flavor: 'railway + vercel', glyph: 'git' };
   }
 
-  if (functionName.includes('task')) {
-    return 'map';
+  if (title.includes('api')) {
+    return { label: 'api', flavor: 'http + json', glyph: 'api' };
   }
 
-  if (functionName.includes('deploy')) {
-    return 'git';
+  if (title.includes('javascript') || title.includes('js')) {
+    return { label: 'javascript', flavor: 'fundamentos + funciones', glyph: 'js' };
   }
 
-  if (functionName.includes('env')) {
-    return 'env';
+  return { label: 'code', flavor: 'logica + practica', glyph: '</>' };
+}
+
+function buildLessonMeta(exercise: LearnerExercise) {
+  if (exercise.completed) {
+    return `${exercise.xpReward} XP · clase completada`;
   }
 
-  return CODE_GLYPHS[index % CODE_GLYPHS.length];
+  if (exercise.bestScore > 0) {
+    return `${exercise.xpReward} XP · avance ${exercise.bestScore}%`;
+  }
+
+  return `${exercise.xpReward} XP · clase pendiente`;
 }
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ topicId?: string | string[]; exerciseId?: string | string[] }>();
   const { dashboard, loading } = useLearnerDashboard();
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
+
+  const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
+  const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
+
+  useEffect(() => {
+    if (!dashboard?.topics.length) {
+      setSelectedTopicId(null);
+      return;
+    }
+
+    setSelectedTopicId((current) => {
+      if (
+        requestedTopicId &&
+        dashboard.topics.some((topic) => topic.id === requestedTopicId) &&
+        current !== requestedTopicId
+      ) {
+        return requestedTopicId;
+      }
+
+      if (current && dashboard.topics.some((topic) => topic.id === current)) {
+        return current;
+      }
+
+      return dashboard.topics[0].id;
+    });
+  }, [dashboard, requestedTopicId]);
+
+  const selectedTopic =
+    dashboard?.topics.find((topic) => topic.id === selectedTopicId) || dashboard?.topics[0] || null;
+
+  useEffect(() => {
+    if (!selectedTopic?.exercises.length) {
+      setSelectedExerciseId(null);
+      return;
+    }
+
+    const defaultExercise =
+      selectedTopic.exercises.find((exercise) => exercise.id === requestedExerciseId) ||
+      selectedTopic.exercises.find((exercise) => !exercise.completed) ||
+      selectedTopic.exercises[0];
+
+    setSelectedExerciseId((current) => {
+      if (current && selectedTopic.exercises.some((exercise) => exercise.id === current)) {
+        return current;
+      }
+
+      return defaultExercise.id;
+    });
+  }, [requestedExerciseId, selectedTopic]);
+
+  const selectedExercise =
+    selectedTopic?.exercises.find((exercise) => exercise.id === selectedExerciseId) ||
+    selectedTopic?.exercises[0] ||
+    null;
+
+  const selectedStack = selectedTopic ? getTopicStack(selectedTopic) : null;
+  const selectedObjectives = useMemo(() => {
+    if (!selectedTopic) {
+      return [];
+    }
+
+    const objectives = new Set<string>();
+
+    selectedTopic.exercises.forEach((exercise) => {
+      exercise.instructions.forEach((instruction) => {
+        if (objectives.size < 4) {
+          objectives.add(instruction);
+        }
+      });
+    });
+
+    return Array.from(objectives);
+  }, [selectedTopic]);
 
   if (loading || !dashboard) {
     return <LoadingState />;
   }
 
-  const { topics, user } = dashboard;
-  const allLessons = topics.flatMap((topic) => topic.exercises.map((exercise) => ({ topic, exercise })));
-  const firstPendingIndex = allLessons.findIndex((entry) => !entry.exercise.completed);
-  const activeTopic =
-    topics.find((topic) => topic.exercises.some((exercise) => !exercise.completed)) || topics[0] || null;
-
-  const timelineItems: (
-    | { type: 'section'; topic: LearnerTopic; topicIndex: number }
-    | {
-        type: 'lesson';
-        topic: LearnerTopic;
-        exercise: LearnerExercise;
-        topicIndex: number;
-        globalIndex: number;
-      }
-    | { type: 'checkpoint'; topic: LearnerTopic; topicIndex: number }
-  )[] = [];
-
-  let globalIndex = 0;
-
-  topics.forEach((topic, topicIndex) => {
-    timelineItems.push({ type: 'section', topic, topicIndex });
-
-    topic.exercises.forEach((exercise) => {
-      timelineItems.push({
-        type: 'lesson',
-        topic,
-        exercise,
-        topicIndex,
-        globalIndex,
-      });
-      globalIndex += 1;
-    });
-
-    if (topicIndex < topics.length - 1) {
-      timelineItems.push({
-        type: 'checkpoint',
-        topic,
-        topicIndex,
-      });
-    }
-  });
-
-  function handleLessonPress(topic: LearnerTopic, exercise: LearnerExercise, isLocked: boolean) {
-    if (isLocked) {
-      Alert.alert('duocode', 'Completa la leccion actual para desbloquear la siguiente.');
+  function handleOpenPractice() {
+    if (!selectedTopic || !selectedExercise) {
       return;
     }
 
     router.push({
       pathname: '/(tabs)/game',
       params: {
-        topicId: topic.id,
-        exerciseId: exercise.id,
+        topicId: selectedTopic.id,
+        exerciseId: selectedExercise.id,
       },
     });
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      <View style={styles.headerCard}>
-        <View style={styles.gridBackdrop} />
-
-        <View style={styles.headerTextWrap}>
-          <Text style={styles.headerLabel}>
-            {activeTopic ? `TRACK ACTIVO · ${activeTopic.status.toUpperCase()}` : 'TRACK ACTIVO'}
-          </Text>
-          <Text style={styles.headerTitle}>{activeTopic?.title || user.track}</Text>
-          <Text style={styles.headerSubtitle}>
-            {activeTopic
-              ? `${activeTopic.completedExercises}/${activeTopic.exerciseCount} lecciones · ${activeTopic.estimatedMinutes} min`
-              : user.focus}
-          </Text>
-        </View>
-
-        <Pressable
-          style={styles.guideButton}
-          onPress={() => Alert.alert('duocode', activeTopic?.description || user.focus)}>
-          <Text style={styles.guideButtonText}>GUIA</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.pathShell}>
-        <View style={styles.pathRail} />
-
-        {timelineItems.map((item) => {
-          if (item.type === 'section') {
-            return (
-              <View key={`section-${item.topic.id}`} style={styles.sectionDivider}>
-                <View style={styles.sectionDividerLine} />
-                <Text style={styles.sectionDividerText}>{item.topic.title}</Text>
-                <View style={styles.sectionDividerLine} />
-              </View>
-            );
-          }
-
-          if (item.type === 'checkpoint') {
-            const checkpointOffset = item.topicIndex % 2 === 0 ? -76 : 76;
-
-            return (
-              <View key={`checkpoint-${item.topic.id}`} style={styles.lessonRow}>
-                <View
-                  style={[
-                    styles.traceLine,
-                    checkpointOffset >= 0 ? styles.traceRight : styles.traceLeft,
-                    { width: Math.abs(checkpointOffset) },
-                  ]}
-                />
-
-                <View style={[styles.checkpointWrap, { transform: [{ translateX: checkpointOffset }] }]}>
-                  <View style={styles.checkpointNode}>
-                    <Text style={styles.checkpointNodeText}>XP</Text>
-                  </View>
-                  <Text style={styles.lessonLabel}>checkpoint</Text>
-                </View>
-              </View>
-            );
-          }
-
-          const offset = PATH_OFFSETS[item.globalIndex % PATH_OFFSETS.length];
-          const isCurrent = firstPendingIndex === -1 ? false : item.globalIndex === firstPendingIndex;
-          const isLocked = firstPendingIndex === -1 ? false : item.globalIndex > firstPendingIndex;
-          const glyph = isLocked ? '--' : normalizeGlyph(item.exercise, item.globalIndex);
-
-          return (
-            <View key={item.exercise.id} style={styles.lessonRow}>
-              {offset !== 0 ? (
-                <View
-                  style={[
-                    styles.traceLine,
-                    offset > 0 ? styles.traceRight : styles.traceLeft,
-                    { width: Math.abs(offset) },
-                  ]}
-                />
-              ) : null}
-
-              <NeonLessonNode
-                glyph={glyph}
-                label={item.exercise.title}
-                meta={
-                  isLocked
-                    ? 'bloqueado'
-                    : item.exercise.completed
-                      ? `${item.exercise.xpReward} XP · completado`
-                      : `${item.exercise.xpReward} XP · en curso`
-                }
-                isCurrent={isCurrent}
-                isCompleted={item.exercise.completed}
-                isLocked={isLocked}
-                showStartTag={isCurrent}
-                onPress={() => handleLessonPress(item.topic, item.exercise, isLocked)}
-                style={{ transform: [{ translateX: offset }] }}
-              />
-            </View>
-          );
-        })}
-      </View>
-
-      <View style={styles.toolboxCard}>
-        <Text style={styles.toolboxTitle}>dev_toolbox</Text>
-        <Text style={styles.toolboxText}>
-          Ruta inspirada en Duolingo, pero convertida en roadmap de codigo con nodos neon, pulsos de compilacion, checkpoints XP y progreso real por leccion.
+      <View style={styles.heroCard}>
+        <Text style={styles.heroLabel}>classes.catalog()</Text>
+        <Text style={styles.heroTitle}>Clases por tecnologia</Text>
+        <Text style={styles.heroSubtitle}>
+          Aqui eliges que tema estudiar. `Practica` queda aparte para repetir lo que ya aprendiste y volver a resolverlo cuando quieras.
         </Text>
       </View>
+
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>tracks</Text>
+          <Text style={styles.sectionMeta}>{`${dashboard.topics.length} clases base`}</Text>
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trackRow}>
+          {dashboard.topics.map((topic) => {
+            const isSelected = topic.id === selectedTopic?.id;
+            const stack = getTopicStack(topic);
+
+            return (
+              <Pressable
+                key={topic.id}
+                style={[styles.trackCard, isSelected && styles.trackCardSelected]}
+                onPress={() => setSelectedTopicId(topic.id)}>
+                <Text style={[styles.trackBadge, isSelected && styles.trackBadgeSelected]}>{stack.label}</Text>
+                <Text style={styles.trackTitle}>{topic.title}</Text>
+                <Text style={styles.trackFlavor}>{stack.flavor}</Text>
+                <Text style={styles.trackStats}>{`${topic.exerciseCount} lecciones · ${topic.estimatedMinutes} min`}</Text>
+                <View style={styles.trackProgress}>
+                  <View style={[styles.trackProgressFill, { width: `${topic.progressPercent}%` }]} />
+                </View>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {selectedTopic ? (
+        <View style={styles.sectionCard}>
+          <View style={styles.classHeaderRow}>
+            <View style={styles.classHeaderText}>
+              <Text style={styles.classLabel}>{selectedStack?.label || 'code'}</Text>
+              <Text style={styles.classTitle}>{selectedTopic.title}</Text>
+              <Text style={styles.classSubtitle}>{selectedTopic.description}</Text>
+            </View>
+
+            <View style={styles.classBadge}>
+              <Text style={styles.classBadgeValue}>{`${selectedTopic.progressPercent}%`}</Text>
+              <Text style={styles.classBadgeText}>avance</Text>
+            </View>
+          </View>
+
+          <View style={styles.classInfoRow}>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>estado</Text>
+              <Text style={styles.infoValue}>{selectedTopic.status}</Text>
+            </View>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>lecciones</Text>
+              <Text style={styles.infoValue}>{`${selectedTopic.completedExercises}/${selectedTopic.exerciseCount}`}</Text>
+            </View>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoLabel}>stack</Text>
+              <Text style={styles.infoValue}>{selectedStack?.flavor || 'fundamentals'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.objectiveBox}>
+            <Text style={styles.objectiveTitle}>objetivos_de_clase</Text>
+            {selectedObjectives.map((objective) => (
+              <Text key={objective} style={styles.objectiveLine}>
+                {`> ${objective}`}
+              </Text>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {selectedTopic ? (
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>ruta de clase</Text>
+            <Text style={styles.sectionMeta}>{selectedTopic.title}</Text>
+          </View>
+
+          <View style={styles.pathShell}>
+            <View style={styles.pathRail} />
+
+            {selectedTopic.exercises.map((exercise, index) => {
+              const offset = PATH_OFFSETS[index % PATH_OFFSETS.length];
+              const isSelected = exercise.id === selectedExercise?.id;
+
+              return (
+                <View key={exercise.id} style={styles.lessonRow}>
+                  {offset !== 0 ? (
+                    <View
+                      style={[
+                        styles.traceLine,
+                        offset > 0 ? styles.traceRight : styles.traceLeft,
+                        { width: Math.abs(offset) },
+                      ]}
+                    />
+                  ) : null}
+
+                  <NeonLessonNode
+                    glyph={selectedStack?.glyph || '</>'}
+                    label={exercise.title}
+                    meta={buildLessonMeta(exercise)}
+                    isCurrent={isSelected}
+                    isCompleted={exercise.completed}
+                    isLocked={false}
+                    showStartTag={isSelected}
+                    onPress={() => setSelectedExerciseId(exercise.id)}
+                    style={{ transform: [{ translateX: offset }] }}
+                  />
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
+
+      {selectedExercise ? (
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>detalle de clase</Text>
+            <Text style={styles.sectionMeta}>{selectedExercise.functionName}</Text>
+          </View>
+
+          <Text style={styles.exercisePrompt}>{selectedExercise.prompt}</Text>
+
+          <View style={styles.objectiveBox}>
+            <Text style={styles.objectiveTitle}>pasos_de_la_leccion</Text>
+            {selectedExercise.instructions.map((instruction) => (
+              <Text key={instruction} style={styles.objectiveLine}>
+                {`> ${instruction}`}
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.previewCodeBox}>
+            {selectedExercise.starterCode.split('\n').map((line, index) => (
+              <Text key={`${selectedExercise.id}-starter-${index + 1}`} style={styles.previewCodeLine}>
+                {line || ' '}
+              </Text>
+            ))}
+          </View>
+
+          <Pressable style={styles.practiceButton} onPress={handleOpenPractice}>
+            <Text style={styles.practiceButtonText}>INICIAR LECCION EN LABORATORIO</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
+    flex: 1,
     backgroundColor: DuocodePalette.navy,
   },
   container: {
@@ -253,66 +343,210 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  headerCard: {
+  heroCard: {
     backgroundColor: '#0F1D32',
-    borderRadius: 24,
+    borderRadius: 26,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
-    padding: 18,
-    flexDirection: 'row',
-    gap: 16,
-    alignItems: 'center',
-    overflow: 'hidden',
+    padding: 20,
+    gap: 8,
   },
-  gridBackdrop: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: 'transparent',
-    borderRadius: 24,
-    opacity: 0.6,
-  },
-  headerTextWrap: {
-    flex: 1,
-    gap: 4,
-    zIndex: 1,
-  },
-  headerLabel: {
+  heroLabel: {
     color: DuocodePalette.code,
     fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  headerTitle: {
+  heroTitle: {
     color: DuocodePalette.surface,
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  headerSubtitle: {
+  heroSubtitle: {
+    color: DuocodePalette.muted,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  sectionCard: {
+    backgroundColor: DuocodePalette.surface,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 18,
+    gap: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    color: DuocodePalette.text,
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  sectionMeta: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+  },
+  trackRow: {
+    gap: 12,
+  },
+  trackCard: {
+    width: 226,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 16,
+    gap: 8,
+  },
+  trackCardSelected: {
+    borderColor: DuocodePalette.accent,
+    backgroundColor: DuocodePalette.accentSoft,
+  },
+  trackBadge: {
+    alignSelf: 'flex-start',
+    color: DuocodePalette.terminalBlue,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    backgroundColor: '#10253F',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  trackBadgeSelected: {
+    color: DuocodePalette.accent,
+  },
+  trackTitle: {
+    color: DuocodePalette.text,
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  trackFlavor: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+  },
+  trackStats: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  trackProgress: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: '#10253F',
+    overflow: 'hidden',
+  },
+  trackProgressFill: {
+    height: '100%',
+    backgroundColor: DuocodePalette.accent,
+  },
+  classHeaderRow: {
+    flexDirection: 'row',
+    gap: 14,
+  },
+  classHeaderText: {
+    flex: 1,
+    gap: 4,
+  },
+  classLabel: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  classTitle: {
+    color: DuocodePalette.text,
+    fontSize: 24,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  classSubtitle: {
     color: DuocodePalette.muted,
     fontSize: 13,
     lineHeight: 19,
-    fontFamily: Fonts.mono,
   },
-  guideButton: {
+  classBadge: {
+    minWidth: 82,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: DuocodePalette.accentSoft,
     borderWidth: 1,
     borderColor: DuocodePalette.accent,
-    borderRadius: 16,
-    paddingHorizontal: 16,
+    borderRadius: 18,
+    paddingHorizontal: 12,
     paddingVertical: 14,
-    zIndex: 1,
+    gap: 4,
   },
-  guideButtonText: {
+  classBadgeValue: {
     color: DuocodePalette.accent,
-    fontSize: 13,
+    fontSize: 22,
     fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  classBadgeText: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  classInfoRow: {
+    flexDirection: 'row',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  infoBox: {
+    flex: 1,
+    minWidth: 110,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 18,
+    padding: 14,
+    gap: 6,
+  },
+  infoLabel: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+  },
+  infoValue: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    fontWeight: '800',
+    fontFamily: Fonts.mono,
+  },
+  objectiveBox: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 18,
+    padding: 16,
+    gap: 8,
+  },
+  objectiveTitle: {
+    color: DuocodePalette.surface,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  objectiveLine: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    lineHeight: 18,
     fontFamily: Fonts.mono,
   },
   pathShell: {
     position: 'relative',
-    paddingVertical: 10,
-    paddingBottom: 20,
+    paddingVertical: 8,
+    paddingBottom: 16,
   },
   pathRail: {
     position: 'absolute',
@@ -323,30 +557,9 @@ const styles = StyleSheet.create({
     marginLeft: -2,
     borderRadius: 999,
     backgroundColor: '#132844',
-    shadowColor: DuocodePalette.accent,
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  sectionDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 8,
-  },
-  sectionDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: DuocodePalette.border,
-  },
-  sectionDividerText: {
-    color: DuocodePalette.muted,
-    fontSize: 13,
-    fontWeight: '800',
-    fontFamily: Fonts.mono,
   },
   lessonRow: {
-    height: 132,
+    height: 128,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -364,57 +577,37 @@ const styles = StyleSheet.create({
   traceRight: {
     left: '50%',
   },
-  lessonLabel: {
-    color: DuocodePalette.surface,
-    fontSize: 12,
-    fontWeight: '900',
-    textAlign: 'center',
-    fontFamily: Fonts.mono,
+  exercisePrompt: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    lineHeight: 22,
   },
-  lessonMeta: {
-    color: DuocodePalette.muted,
-    fontSize: 11,
-    textAlign: 'center',
-    fontFamily: Fonts.mono,
-  },
-  checkpointWrap: {
-    alignItems: 'center',
-    gap: 6,
-    width: 132,
-  },
-  checkpointNode: {
-    width: 74,
-    height: 74,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1C2942',
-    borderWidth: 1,
-    borderColor: '#4D6382',
-  },
-  checkpointNodeText: {
-    color: DuocodePalette.amber,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  toolboxCard: {
-    backgroundColor: DuocodePalette.surface,
-    borderRadius: 22,
+  previewCodeBox: {
+    backgroundColor: DuocodePalette.navySoft,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
-    padding: 18,
-    gap: 8,
+    borderRadius: 20,
+    padding: 16,
+    gap: 6,
   },
-  toolboxTitle: {
-    color: DuocodePalette.text,
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  toolboxText: {
-    color: DuocodePalette.muted,
+  previewCodeLine: {
+    color: DuocodePalette.code,
     fontSize: 13,
     lineHeight: 20,
+    fontFamily: Fonts.mono,
+  },
+  practiceButton: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  practiceButtonText: {
+    color: DuocodePalette.accent,
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
   },
 });

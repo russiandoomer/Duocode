@@ -17,6 +17,7 @@ DELETE FROM user_exercise_progress;
 DELETE FROM exercise_test_cases;
 DELETE FROM learning_exercises;
 DELETE FROM learning_topics;
+DELETE FROM auth_audit_log;
 DELETE FROM users;
 
 INSERT INTO branding_config (id, app_name, headline, tagline, hero_snippet, logo_label, logo_hint) VALUES
@@ -79,10 +80,10 @@ INSERT INTO deploy_checklist (item_text, sort_order) VALUES
 ('Conectar Railway al repo', 4),
 ('Configurar EXPO_PUBLIC_API_URL en Vercel', 5);
 
-INSERT INTO users (id, name, email, password_hash, role, track_label, focus_text, daily_goal_minutes, created_at) VALUES
-(1, 'Admin Duocode', 'admin@duocode.dev', 'scrypt$16a7143145ec89d067ea10761c6a0143$2c224336efd06602fa02f163cd13fc9b6ac10778facdbc139f66eea39d045d8865ac52455e4e873d778845462d41d2236bfb6dde8f1be95206358332b3bddbad', 'admin', 'Platform Oversight', 'Metricas, progresion y roadmap editorial.', 0, '2026-04-01 09:00:00'),
-(2, 'Jimmy Zambrana', 'student@duocode.dev', 'scrypt$2d3c760f34a4876a637274cea3c347a4$c8d04d915c05eab2d43d5075f24dab39e4702c0748e35248034612c90d3b0a335ce937c0471cd9ce84b992e8ae766bf3012217bd1c465516f4118c08e010c7dc', 'student', 'Frontend Engineer Path', 'Hooks, estado, consumo de APIs y deploy web.', 45, '2026-04-02 10:15:00'),
-(3, 'Ana API', 'ana@duocode.dev', 'scrypt$2d3c760f34a4876a637274cea3c347a4$c8d04d915c05eab2d43d5075f24dab39e4702c0748e35248034612c90d3b0a335ce937c0471cd9ce84b992e8ae766bf3012217bd1c465516f4118c08e010c7dc', 'student', 'API Builder', 'Endpoints REST y manejo seguro de errores.', 35, '2026-04-03 12:45:00');
+INSERT INTO users (id, name, email, password_hash, role, is_active, failed_login_attempts, locked_until, last_login_at, track_label, focus_text, daily_goal_minutes, created_at) VALUES
+(1, 'Admin Duocode', 'admin@duocode.dev', 'scrypt$16a7143145ec89d067ea10761c6a0143$2c224336efd06602fa02f163cd13fc9b6ac10778facdbc139f66eea39d045d8865ac52455e4e873d778845462d41d2236bfb6dde8f1be95206358332b3bddbad', 'admin', true, 0, NULL, '2026-04-16 09:15:00', 'Platform Oversight', 'Metricas, progresion y roadmap editorial.', 0, '2026-04-01 09:00:00'),
+(2, 'Jimmy Zambrana', 'student@duocode.dev', 'scrypt$2d3c760f34a4876a637274cea3c347a4$c8d04d915c05eab2d43d5075f24dab39e4702c0748e35248034612c90d3b0a335ce937c0471cd9ce84b992e8ae766bf3012217bd1c465516f4118c08e010c7dc', 'student', true, 0, NULL, '2026-04-16 08:32:00', 'Frontend Engineer Path', 'Hooks, estado, consumo de APIs y deploy web.', 45, '2026-04-02 10:15:00'),
+(3, 'Ana API', 'ana@duocode.dev', 'scrypt$2d3c760f34a4876a637274cea3c347a4$c8d04d915c05eab2d43d5075f24dab39e4702c0748e35248034612c90d3b0a335ce937c0471cd9ce84b992e8ae766bf3012217bd1c465516f4118c08e010c7dc', 'student', true, 0, NULL, '2026-04-15 11:00:00', 'API Builder', 'Endpoints REST y manejo seguro de errores.', 35, '2026-04-03 12:45:00');
 
 INSERT INTO learning_topics (id, roadmap_id, title, description, estimated_minutes, status_label, sort_order) VALUES
 ('js-foundations', 'frontend-launchpad', 'JavaScript Foundations', 'Funciones puras, arrays y strings para resolver retos base.', 95, 'Activo', 1),
