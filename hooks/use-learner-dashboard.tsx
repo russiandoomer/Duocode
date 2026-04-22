@@ -1,13 +1,18 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 import { apiRequest } from '@/lib/api';
-import type { ExerciseEvaluationResponse, LearnerDashboard } from '@/types/duocode';
+import type {
+  ExerciseEvaluationResponse,
+  LearnerAttemptMode,
+  LearnerDashboard,
+} from '@/types/duocode';
 import { useAuth } from '@/hooks/use-auth';
 
 type ExerciseSubmissionPayload = {
   code?: string;
   selectedOptionId?: string | null;
   answerText?: string | null;
+  attemptMode?: LearnerAttemptMode;
 };
 
 type LearnerDashboardContextValue = {

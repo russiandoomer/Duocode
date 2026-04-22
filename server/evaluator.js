@@ -1,6 +1,10 @@
 const util = require('util');
 const vm = require('vm');
 
+function stripAttemptModeEnvelope(submittedCode) {
+  return String(submittedCode || '').replace(/^mode:(lesson|practice)\r?\n/, '');
+}
+
 function normalizeValue(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -25,12 +29,12 @@ function formatValue(value) {
 }
 
 function extractChoiceSubmission(submittedCode) {
-  const normalized = String(submittedCode || '').trim();
+  const normalized = stripAttemptModeEnvelope(submittedCode).trim();
   return normalized.startsWith('choice:') ? normalized.slice('choice:'.length) : normalized;
 }
 
 function extractTextSubmission(submittedCode) {
-  const normalized = String(submittedCode || '').trim();
+  const normalized = stripAttemptModeEnvelope(submittedCode).trim();
   return normalized.startsWith('text:') ? normalized.slice('text:'.length) : normalized;
 }
 
@@ -85,6 +89,7 @@ function evaluateTextExercise(exercise, submittedCode) {
 }
 
 async function evaluateCodeExercise(exercise, submittedCode) {
+  const normalizedCode = stripAttemptModeEnvelope(submittedCode);
   const tests = [];
   let passCount = 0;
 
@@ -104,7 +109,7 @@ async function evaluateCodeExercise(exercise, submittedCode) {
     const loadScript = new vm.Script(
       `
       "use strict";
-      ${submittedCode}
+      ${normalizedCode}
       globalThis.__duocodeSolution =
         typeof ${exercise.functionName} === 'function'
           ? ${exercise.functionName}

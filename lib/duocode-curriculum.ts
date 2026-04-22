@@ -1,10 +1,13 @@
 import type {
+  LearnerAttemptMode,
   LearnerChoiceOption,
   LearnerExercise,
   LearnerTopic,
 } from '@/types/duocode';
 
 type LessonState = 'completed' | 'in-progress' | 'available' | 'locked';
+
+const PRACTICE_XP_RATIO = 0.35;
 
 export type DecoratedLesson = LearnerTopic & {
   isLocked: boolean;
@@ -35,6 +38,32 @@ export type CourseLevelGroup = {
   units: CourseUnitGroup[];
 };
 
+export function buildPracticeXpReward(xpReward: number) {
+  return Math.max(5, Math.round(Number(xpReward || 0) * PRACTICE_XP_RATIO));
+}
+
+export function withAttemptModeEnvelope(
+  submittedCode: string,
+  attemptMode: LearnerAttemptMode = 'lesson'
+) {
+  return `mode:${attemptMode}\n${submittedCode}`;
+}
+
+export function readAttemptModeEnvelope(submittedCode: string): LearnerAttemptMode {
+  const normalized = String(submittedCode || '').trimStart();
+
+  if (normalized.startsWith('mode:practice')) {
+    return 'practice';
+  }
+
+  return 'lesson';
+}
+
+export function stripAttemptModeEnvelope(submittedCode: string) {
+  const normalized = String(submittedCode || '');
+  return normalized.replace(/^mode:(lesson|practice)\r?\n/, '');
+}
+
 export function serializeChoiceSubmission(selectedOptionId: string) {
   return `choice:${selectedOptionId}`;
 }
@@ -48,7 +77,7 @@ export function buildChoiceSubmissionCode(functionName: string, selectedOptionId
 }
 
 export function extractChoiceSelection(submittedCode: string) {
-  const normalized = String(submittedCode || '').trim();
+  const normalized = stripAttemptModeEnvelope(submittedCode).trim();
 
   if (normalized.startsWith('choice:')) {
     return normalized.slice('choice:'.length) || null;
@@ -59,7 +88,7 @@ export function extractChoiceSelection(submittedCode: string) {
 }
 
 export function extractTextSubmission(submittedCode: string) {
-  const normalized = String(submittedCode || '').trim();
+  const normalized = stripAttemptModeEnvelope(submittedCode).trim();
 
   if (normalized.startsWith('text:')) {
     return normalized.slice('text:'.length) || null;

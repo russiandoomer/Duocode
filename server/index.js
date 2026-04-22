@@ -430,6 +430,7 @@ function createAppServer() {
           code: body.code,
           selectedOptionId: body.selectedOptionId,
           answerText: body.answerText,
+          attemptMode: body.attemptMode,
         });
         sendJson(response, 200, evaluation);
         return;

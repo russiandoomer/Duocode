@@ -193,11 +193,11 @@ const styles = StyleSheet.create({
   wrap: {
     alignItems: 'center',
     gap: 6,
-    width: 156,
+    width: 208,
   },
   button: {
-    width: 108,
-    height: 108,
+    width: 116,
+    height: 116,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -349,12 +349,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
     textAlign: 'center',
+    lineHeight: 18,
     fontFamily: Fonts.mono,
   },
   meta: {
     color: DuocodePalette.muted,
     fontSize: 11,
     textAlign: 'center',
+    lineHeight: 16,
     fontFamily: Fonts.mono,
   },
 });

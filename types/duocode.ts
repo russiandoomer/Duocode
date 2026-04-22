@@ -47,6 +47,7 @@ export type RecentSession = {
   title: string;
   topic: string;
   status: string;
+  mode: 'lesson' | 'practice';
   power: number;
   reward: number;
   accuracy: number;
@@ -114,6 +115,8 @@ export type LearnerChoiceOption = {
   detail: string;
 };
 
+export type LearnerAttemptMode = 'lesson' | 'practice';
+
 export type LearnerExerciseMode = 'choice' | 'text' | 'code';
 export type LearnerExerciseKind =
   | 'multiple-choice'
@@ -130,6 +133,7 @@ export type LearnerExercise = {
   functionName: string;
   starterCode: string;
   xpReward: number;
+  practiceXpReward: number;
   completed: boolean;
   bestScore: number;
   lastSubmittedCode: string;
@@ -140,6 +144,7 @@ export type LearnerExercise = {
   choiceOptions: LearnerChoiceOption[];
   lastSelectedOptionId?: string | null;
   lastSubmittedText?: string | null;
+  lastAttemptMode?: LearnerAttemptMode | null;
   codeSnippet?: string | null;
   inputPlaceholder?: string | null;
 };
@@ -213,6 +218,8 @@ export type ExerciseEvaluationResponse = {
   tests: ExerciseEvaluationTest[];
   correctSolution: string;
   explanation: string;
+  xpEarned: number;
+  attemptMode: LearnerAttemptMode;
   mode: LearnerExerciseMode;
   kind: LearnerExerciseKind;
   submittedSelectionId?: string | null;

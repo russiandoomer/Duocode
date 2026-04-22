@@ -5,7 +5,25 @@ const { getAllUsers, getUserById, sanitizeUser } = require('./auth-repository');
 const { hasMysqlConfig, queryRows } = require('./mysql');
 
 const WEEKDAY_LABELS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+const PRACTICE_XP_RATIO = 0.35;
 let mysqlLearningAvailable;
+
+function buildPracticeXpReward(xpReward) {
+  return Math.max(5, Math.round(Number(xpReward || 0) * PRACTICE_XP_RATIO));
+}
+
+function readAttemptModeEnvelope(submittedCode) {
+  const normalized = String(submittedCode || '').trimStart();
+  return normalized.startsWith('mode:practice') ? 'practice' : 'lesson';
+}
+
+function stripAttemptModeEnvelope(submittedCode) {
+  return String(submittedCode || '').replace(/^mode:(lesson|practice)\r?\n/, '');
+}
+
+function withAttemptModeEnvelope(submittedCode, attemptMode) {
+  return `mode:${attemptMode}\n${submittedCode}`;
+}
 
 function safeJsonParse(value, fallbackValue = null) {
   if (value == null) {
@@ -24,7 +42,7 @@ function safeJsonParse(value, fallbackValue = null) {
 }
 
 function linesFromCode(value) {
-  const normalized = String(value || '').trim();
+  const normalized = stripAttemptModeEnvelope(value).trim();
 
   if (normalized.startsWith('choice:')) {
     return [`choice = ${normalized.slice('choice:'.length)}`];
@@ -121,12 +139,12 @@ function getExercisePresentation(exercise) {
 }
 
 function extractSelectedOptionId(submittedCode) {
-  const normalized = String(submittedCode || '').trim();
+  const normalized = stripAttemptModeEnvelope(submittedCode).trim();
   return normalized.startsWith('choice:') ? normalized.slice('choice:'.length) || null : null;
 }
 
 function extractSubmittedText(submittedCode) {
-  const normalized = String(submittedCode || '').trim();
+  const normalized = stripAttemptModeEnvelope(submittedCode).trim();
   return normalized.startsWith('text:') ? normalized.slice('text:'.length) || null : null;
 }
 
@@ -281,9 +299,10 @@ function buildTopicProgress(topics, progressRows) {
         functionName: exercise.functionName,
         starterCode: exercise.starterCode,
         xpReward: exercise.xpReward,
+        practiceXpReward: buildPracticeXpReward(exercise.xpReward),
         completed: Boolean(progress?.isCompleted),
         bestScore: Number(progress?.bestScore ?? 0),
-        lastSubmittedCode: progress?.lastSubmittedCode || exercise.starterCode,
+        lastSubmittedCode: stripAttemptModeEnvelope(progress?.lastSubmittedCode || '') || exercise.starterCode,
         mode: exercisePresentation.mode,
         kind: exercisePresentation.kind,
         lessonTypeLabel: exercisePresentation.lessonTypeLabel,
@@ -299,6 +318,9 @@ function buildTopicProgress(topics, progressRows) {
           exercisePresentation.mode === 'choice'
             ? extractSelectedOptionId(progress?.lastSubmittedCode || '')
             : null,
+        lastAttemptMode: progress?.lastSubmittedCode
+          ? readAttemptModeEnvelope(progress.lastSubmittedCode)
+          : null,
       };
     });
 
@@ -339,48 +361,76 @@ function buildTopicProgress(topics, progressRows) {
 }
 
 function buildLearnerStats(userId, topics, progressRows, attempts) {
-  const progressByExercise = new Map(progressRows.map((item) => [item.exerciseId, item]));
   const exerciseCatalog = topics.flatMap((topic) => topic.exercises.map((exercise) => ({ ...exercise, topicTitle: topic.title })));
   const exerciseById = new Map(exerciseCatalog.map((exercise) => [exercise.id, exercise]));
   const completedExercises = progressRows.filter((item) => item.isCompleted);
   const solvedChallenges = completedExercises.length;
-  const totalXp = completedExercises.reduce((total, item) => total + (exerciseById.get(item.exerciseId)?.xpReward || 0), 0);
   const precision =
     progressRows.length === 0
       ? 0
       : Math.round(progressRows.reduce((total, item) => total + Number(item.bestScore || 0), 0) / progressRows.length);
-  const totalMinutes = completedExercises.reduce(
-    (total, item) => total + Math.max(10, Math.round((exerciseById.get(item.exerciseId)?.xpReward || 0) / 4)),
-    0
-  );
-
   const attemptDays = new Set(
     attempts
       .map((attempt) => String(attempt.createdAt).slice(0, 10))
       .filter(Boolean)
   );
 
-  const weeklyActivityMap = new Map(
-    WEEKDAY_LABELS.map((label) => [label, 0])
-  );
+  const weeklyActivityMap = new Map(WEEKDAY_LABELS.map((label) => [label, 0]));
+  const rewardByAttemptId = new Map();
+  const chronologicalAttempts = attempts
+    .slice()
+    .sort((left, right) => new Date(left.createdAt) - new Date(right.createdAt));
+  const completedRewardExercises = new Set();
+  let totalXp = 0;
+  let totalMinutes = 0;
 
-  for (const attempt of attempts) {
+  for (const attempt of chronologicalAttempts) {
     const exercise = exerciseById.get(attempt.exerciseId);
-    const date = new Date(attempt.createdAt);
-    const dayLabel = WEEKDAY_LABELS[date.getDay()];
-    weeklyActivityMap.set(dayLabel, (weeklyActivityMap.get(dayLabel) || 0) + (exercise?.xpReward || 20));
+    const attemptMode = readAttemptModeEnvelope(attempt.submittedCode);
+    const alreadyCompleted = completedRewardExercises.has(attempt.exerciseId);
+    let reward = 0;
+
+    if (attempt.passed && exercise) {
+      reward =
+        attemptMode === 'practice'
+          ? buildPracticeXpReward(exercise.xpReward)
+          : alreadyCompleted
+            ? 0
+            : Number(exercise.xpReward || 0);
+
+      completedRewardExercises.add(attempt.exerciseId);
+    }
+
+    rewardByAttemptId.set(attempt.id, {
+      reward,
+      attemptMode,
+    });
+
+    if (reward > 0) {
+      totalXp += reward;
+      totalMinutes += Math.max(attemptMode === 'practice' ? 4 : 10, Math.round(reward / 4));
+
+      const date = new Date(attempt.createdAt);
+      const dayLabel = WEEKDAY_LABELS[date.getDay()];
+      weeklyActivityMap.set(dayLabel, (weeklyActivityMap.get(dayLabel) || 0) + reward);
+    }
   }
 
   const recentSessions = attempts.slice(0, 5).map((attempt) => {
     const exercise = exerciseById.get(attempt.exerciseId);
+    const rewardInfo = rewardByAttemptId.get(attempt.id) || {
+      reward: 0,
+      attemptMode: readAttemptModeEnvelope(attempt.submittedCode),
+    };
 
     return {
       id: `${attempt.id}`,
       title: exercise?.title || attempt.exerciseId,
       topic: exercise?.topicTitle || 'Sin tema',
-      status: attempt.passed ? 'COMPLETADO' : 'REVISION',
+      status: attempt.passed ? (rewardInfo.attemptMode === 'practice' ? 'PRACTICADO' : 'COMPLETADO') : 'REVISION',
+      mode: rewardInfo.attemptMode,
       power: attempt.score,
-      reward: exercise?.xpReward || 0,
+      reward: rewardInfo.reward,
       accuracy: attempt.score,
       lines: linesFromCode(attempt.submittedCode),
     };
@@ -514,6 +564,7 @@ async function evaluateExerciseForUser(userId, exerciseId, submission) {
   }
 
   const exercisePresentation = getExercisePresentation(definition.exercise);
+  const attemptMode = submission?.attemptMode === 'practice' ? 'practice' : 'lesson';
   let submittedCode = String(submission?.code || '');
   let submittedSelectionId = null;
   let submittedText = null;
@@ -551,14 +602,27 @@ async function evaluateExerciseForUser(userId, exerciseId, submission) {
       ...definition.exercise,
       mode: exercisePresentation.mode,
     },
-    submittedCode
+    withAttemptModeEnvelope(submittedCode, attemptMode)
   );
-  await saveAttemptAndProgress(userId, definition.exercise, submittedCode, evaluation);
+  const currentProgressRows = await loadUserProgress(userId);
+  const currentProgress = currentProgressRows.find((item) => item.exerciseId === definition.exercise.id);
+  const xpEarned = evaluation.passed
+    ? attemptMode === 'practice'
+      ? buildPracticeXpReward(definition.exercise.xpReward)
+      : currentProgress?.isCompleted
+        ? 0
+        : Number(definition.exercise.xpReward || 0)
+    : 0;
+  const storedSubmission = withAttemptModeEnvelope(submittedCode, attemptMode);
+
+  await saveAttemptAndProgress(userId, definition.exercise, storedSubmission, evaluation);
 
   return {
     exerciseId,
     topicId: definition.topic.id,
     ...evaluation,
+    xpEarned,
+    attemptMode,
     mode: exercisePresentation.mode,
     kind: exercisePresentation.kind,
     submittedSelectionId,
