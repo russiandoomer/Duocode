@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand/brand-mark';
@@ -14,29 +14,50 @@ function LoadingState() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>loading.practice()</Text>
-        <Text style={styles.bodyText}>Estamos preparando tu zona de repaso.</Text>
+        <Text style={styles.cardTitle}>loading.lesson()</Text>
+        <Text style={styles.bodyText}>Estamos preparando tu clase actual.</Text>
       </View>
     </ScrollView>
   );
 }
 
 function rewardLabel(exercise: LearnerExercise) {
-  return `+${exercise.practiceXpReward} XP practica`;
+  return `+${exercise.xpReward} XP aprendizaje`;
 }
 
-function findInitialExercise(topic: LearnerTopic | null) {
+function findInitialExercise(topic: LearnerTopic | null, requestedExerciseId?: string) {
   if (!topic) {
     return null;
   }
 
-  return topic.exercises[0] || null;
+  return topic.exercises.find((exercise) => exercise.id === requestedExerciseId) || topic.exercises[0] || null;
 }
 
-export default function GameScreen() {
+function buildModeMix(topic: LearnerTopic) {
+  const choiceCount = topic.exercises.filter((exercise) => exercise.mode === 'choice').length;
+  const textCount = topic.exercises.filter((exercise) => exercise.mode === 'text').length;
+  const codeCount = topic.exercises.filter((exercise) => exercise.mode === 'code').length;
+  const parts = [];
+
+  if (choiceCount) {
+    parts.push(`${choiceCount} chequeo${choiceCount > 1 ? 's' : ''}`);
+  }
+
+  if (textCount) {
+    parts.push(`${textCount} completar`);
+  }
+
+  if (codeCount) {
+    parts.push(`${codeCount} codigo`);
+  }
+
+  return parts.join(' · ');
+}
+
+export default function LessonScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ topicId?: string | string[]; exerciseId?: string | string[] }>();
   const { dashboard, loading, evaluateExercise } = useLearnerDashboard();
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [hydratedExerciseId, setHydratedExerciseId] = useState<string | null>(null);
   const [editorCode, setEditorCode] = useState('');
@@ -46,42 +67,21 @@ export default function GameScreen() {
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
 
-  const practiceTopics = useMemo(
-    () =>
-      (dashboard?.topics || [])
-        .map((topic) => ({
-          ...topic,
-          exercises: topic.exercises.filter((exercise) => exercise.completed),
-        }))
-        .filter((topic) => topic.exercises.length > 0),
-    [dashboard?.topics]
+  const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
+  const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
+  const selectedTopic = useMemo(
+    () => dashboard?.topics.find((topic) => topic.id === requestedTopicId) || null,
+    [dashboard?.topics, requestedTopicId]
   );
 
   useEffect(() => {
-    if (!practiceTopics.length) {
-      setSelectedTopicId(null);
-      return;
-    }
-
-    setSelectedTopicId((current) => {
-      if (current && practiceTopics.some((topic) => topic.id === current)) {
-        return current;
-      }
-
-      return practiceTopics[0].id;
-    });
-  }, [practiceTopics]);
-
-  const selectedTopic = practiceTopics.find((topic) => topic.id === selectedTopicId) || practiceTopics[0] || null;
-
-  useEffect(() => {
-    const initialExercise = findInitialExercise(selectedTopic);
+    const initialExercise = findInitialExercise(selectedTopic, requestedExerciseId);
     setSelectedExerciseId(initialExercise?.id || null);
-  }, [selectedTopic]);
+  }, [requestedExerciseId, selectedTopic]);
 
   const selectedExercise =
     selectedTopic?.exercises.find((exercise) => exercise.id === selectedExerciseId) ||
-    findInitialExercise(selectedTopic);
+    findInitialExercise(selectedTopic, requestedExerciseId);
 
   useEffect(() => {
     if (!selectedExercise) {
@@ -110,9 +110,20 @@ export default function GameScreen() {
     selectedExercise?.mode === 'choice' && evaluation
       ? getChoiceOption(selectedExercise, evaluation.expectedSelectionId || null)
       : null;
+  const totalLessonXp = useMemo(
+    () => selectedTopic?.exercises.reduce((total, exercise) => total + exercise.xpReward, 0) || 0,
+    [selectedTopic]
+  );
 
   if (loading || !dashboard) {
     return <LoadingState />;
+  }
+
+  function handleBackToClasses() {
+    router.replace({
+      pathname: '/(tabs)/explore',
+      params: selectedTopic ? { topicId: selectedTopic.id } : undefined,
+    });
   }
 
   async function handleEvaluate() {
@@ -126,10 +137,10 @@ export default function GameScreen() {
       const response = await evaluateExercise(
         selectedExercise.id,
         selectedExercise.mode === 'choice'
-          ? { selectedOptionId, attemptMode: 'practice' }
+          ? { selectedOptionId, attemptMode: 'lesson' }
           : selectedExercise.mode === 'text'
-            ? { answerText, attemptMode: 'practice' }
-            : { code: editorCode, attemptMode: 'practice' }
+            ? { answerText, attemptMode: 'lesson' }
+            : { code: editorCode, attemptMode: 'lesson' }
       );
 
       setEvaluation(response);
@@ -137,7 +148,7 @@ export default function GameScreen() {
         setCelebrationVisible(true);
       }
     } catch (error) {
-      Alert.alert('duocode', error instanceof Error ? error.message : 'No se pudo evaluar la practica');
+      Alert.alert('duocode', error instanceof Error ? error.message : 'No se pudo evaluar la leccion');
     } finally {
       setSubmitting(false);
     }
@@ -158,17 +169,15 @@ export default function GameScreen() {
     }
   }
 
-  if (!practiceTopics.length) {
+  if (!selectedTopic) {
     return (
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>practice.mode</Text>
-            <Text style={styles.bodyText}>
-              Primero completa una leccion en `Clases`. Luego aqui la repites con solo el 35% del XP original.
-            </Text>
-            <Pressable style={styles.primaryButton} onPress={() => router.push('/(tabs)/explore')}>
-              <Text style={styles.primaryButtonText}>IR A CLASES</Text>
+            <Text style={styles.cardTitle}>leccion no encontrada</Text>
+            <Text style={styles.bodyText}>Esta vista se abre desde el camino de `Clases`.</Text>
+            <Pressable style={styles.primaryButton} onPress={handleBackToClasses}>
+              <Text style={styles.primaryButtonText}>VOLVER A CLASES</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -179,56 +188,71 @@ export default function GameScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <View style={styles.hero}>
-          <BrandMark label={dashboard.settings.branding.logoLabel} size={68} />
-          <View style={styles.heroCopy}>
-            <Text style={styles.heroTitle}>practice.mode</Text>
-            <Text style={styles.heroMeta}>repite solo lo que ya completaste</Text>
-            <Text style={styles.bodyText}>
-              Esta area es solo para repaso. Mantienes memoria del tema, pero la recompensa baja al 35%.
-            </Text>
+        <View style={styles.heroCard}>
+          <View style={styles.heroTopRow}>
+            <Pressable style={styles.backButton} onPress={handleBackToClasses}>
+              <Text style={styles.backButtonText}>VOLVER A CLASES</Text>
+            </Pressable>
+            <BrandMark label={dashboard.settings.branding.logoLabel} size={58} />
+          </View>
+
+          <Text style={styles.heroEyebrow}>
+            {selectedTopic.level} · {selectedTopic.unitTitle}
+          </Text>
+          <Text style={styles.heroTitle}>{selectedTopic.title}</Text>
+          <Text style={styles.heroText}>{selectedTopic.lessonGoal}</Text>
+
+          <View style={styles.heroBadges}>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeValue}>{`L${selectedTopic.lessonNumber}`}</Text>
+              <Text style={styles.heroBadgeLabel}>leccion</Text>
+            </View>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeValue}>{`${selectedTopic.exerciseCount}`}</Text>
+              <Text style={styles.heroBadgeLabel}>retos</Text>
+            </View>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeValue}>{`${totalLessonXp} XP`}</Text>
+              <Text style={styles.heroBadgeLabel}>recompensa</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>temas por practicar</Text>
-          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} contentContainerStyle={styles.slider}>
-            {practiceTopics.map((topic) => {
-              const isSelected = topic.id === selectedTopic?.id;
+          <Text style={styles.cardTitle}>que vas a tocar</Text>
+          <View style={styles.summaryList}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>concepto</Text>
+              <Text style={styles.summaryValue}>{selectedTopic.description}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>dinamica</Text>
+              <Text style={styles.summaryValue}>{buildModeMix(selectedTopic) || 'reto guiado'}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>meta</Text>
+              <Text style={styles.summaryValue}>{selectedTopic.stageGoal}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>retos de la leccion</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
+            {selectedTopic.exercises.map((exercise) => {
+              const isSelected = exercise.id === selectedExercise?.id;
               return (
                 <Pressable
-                  key={topic.id}
-                  style={[styles.slide, isSelected && styles.slideSelected]}
-                  onPress={() => setSelectedTopicId(topic.id)}>
-                  <Text style={styles.slideEyebrow}>{topic.level}</Text>
-                  <Text style={styles.slideTitle}>{topic.title}</Text>
-                  <Text style={styles.slideText}>{topic.lessonGoal}</Text>
-                  <Text style={styles.slideMeta}>{`${topic.completedExercises} completados · ${topic.progressPercent}%`}</Text>
+                  key={exercise.id}
+                  style={[styles.tab, isSelected && styles.tabSelected]}
+                  onPress={() => setSelectedExerciseId(exercise.id)}>
+                  <Text style={[styles.tabTitle, isSelected && styles.tabTitleSelected]}>{exercise.title}</Text>
+                  <Text style={styles.tabMeta}>{rewardLabel(exercise)}</Text>
                 </Pressable>
               );
             })}
           </ScrollView>
         </View>
-
-        {selectedTopic ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>retos de repaso</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
-              {selectedTopic.exercises.map((exercise) => {
-                const isSelected = exercise.id === selectedExercise?.id;
-                return (
-                  <Pressable
-                    key={exercise.id}
-                    style={[styles.tab, isSelected && styles.tabSelected]}
-                    onPress={() => setSelectedExerciseId(exercise.id)}>
-                    <Text style={[styles.tabTitle, isSelected && styles.tabTitleSelected]}>{exercise.title}</Text>
-                    <Text style={styles.tabMeta}>{rewardLabel(exercise)}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-        ) : null}
 
         {selectedExercise ? (
           <>
@@ -321,8 +345,8 @@ export default function GameScreen() {
                     <Text style={styles.cardTitle}>{evaluation.passed ? 'resultado correcto' : 'necesita ajuste'}</Text>
                     <Text style={styles.bodyText}>
                       {evaluation.passed
-                        ? 'Este repaso suma solo el XP reducido de practica.'
-                        : 'Compara tu respuesta con lo esperado y vuelve a intentar.'}
+                        ? 'Esta solucion suma el XP completo de la leccion.'
+                        : 'Ajusta tu respuesta y vuelve a intentarlo.'}
                     </Text>
                   </View>
                   <View style={[styles.scoreBadge, evaluation.passed ? styles.scoreBadgePass : styles.scoreBadgeFail]}>
@@ -376,7 +400,7 @@ export default function GameScreen() {
 
       <CodeCelebrationOverlay
         visible={celebrationVisible && Boolean(evaluation?.passed && selectedExercise)}
-        title={selectedExercise?.title || 'Practica completada'}
+        title={selectedExercise?.title || 'Leccion completada'}
         score={evaluation?.score || 0}
         xpReward={evaluation?.xpEarned || 0}
         onDismiss={() => setCelebrationVisible(false)}
@@ -396,24 +420,74 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
     gap: 18,
   },
-  hero: {
-    flexDirection: 'row',
+  heroCard: {
+    backgroundColor: '#0C1730',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 20,
     gap: 14,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 16,
   },
-  heroCopy: {
-    flex: 1,
-    gap: 4,
+  backButton: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  heroTitle: {
-    color: DuocodePalette.surface,
-    fontSize: 24,
+  backButtonText: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  heroMeta: {
-    color: DuocodePalette.accent,
-    fontSize: 13,
+  heroEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+  },
+  heroTitle: {
+    color: DuocodePalette.text,
+    fontSize: 27,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  heroText: {
+    color: '#C8D7EE',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  heroBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  heroBadge: {
+    flex: 1,
+    minWidth: 100,
+    backgroundColor: '#12243C',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 4,
+  },
+  heroBadgeValue: {
+    color: DuocodePalette.text,
+    fontSize: 17,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  heroBadgeLabel: {
+    color: '#A7C0E2',
+    fontSize: 11,
     fontFamily: Fonts.mono,
   },
   card: {
@@ -435,42 +509,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  slider: {
-    gap: 14,
-    paddingRight: 12,
+  summaryList: {
+    gap: 10,
   },
-  slide: {
-    width: 280,
+  summaryItem: {
     backgroundColor: DuocodePalette.surfaceAlt,
-    borderRadius: 22,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
-    padding: 16,
-    gap: 8,
+    borderRadius: 18,
+    padding: 14,
+    gap: 6,
   },
-  slideSelected: {
-    borderColor: DuocodePalette.accent,
-    backgroundColor: DuocodePalette.accentSoft,
-  },
-  slideEyebrow: {
+  summaryLabel: {
     color: DuocodePalette.code,
     fontSize: 11,
     fontFamily: Fonts.mono,
   },
-  slideTitle: {
+  summaryValue: {
     color: DuocodePalette.text,
-    fontSize: 17,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  slideText: {
-    color: DuocodePalette.muted,
     fontSize: 13,
     lineHeight: 19,
-  },
-  slideMeta: {
-    color: DuocodePalette.surface,
-    fontSize: 12,
+    fontWeight: '800',
     fontFamily: Fonts.mono,
   },
   tabRow: {

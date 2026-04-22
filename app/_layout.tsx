@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
+import { LearnerDashboardProvider } from '@/hooks/use-learner-dashboard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 function AuthRedirector() {
@@ -21,6 +22,7 @@ function AuthRedirector() {
     const inTabs = topSegment === '(tabs)';
     const inLogin = topSegment === 'login';
     const inAdmin = topSegment === 'admin';
+    const inLesson = topSegment === 'lesson';
 
     if (!user && !inLogin) {
       router.replace('/login');
@@ -32,7 +34,7 @@ function AuthRedirector() {
       return;
     }
 
-    if (user?.role === 'student' && !inTabs) {
+    if (user?.role === 'student' && !inTabs && !inLesson) {
       router.replace('/(tabs)');
     }
   }, [loading, router, user, segments]);
@@ -46,12 +48,15 @@ function RootNavigator() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthRedirector />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="admin" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
+      <LearnerDashboardProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="login" />
+          <Stack.Screen name="admin" />
+          <Stack.Screen name="lesson" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+      </LearnerDashboardProvider>
       <StatusBar style="light" />
     </ThemeProvider>
   );

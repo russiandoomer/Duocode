@@ -5,67 +5,64 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { DuocodePalette } from '@/constants/duocode-theme';
 import { Colors, Fonts } from '@/constants/theme';
-import { LearnerDashboardProvider } from '@/hooks/use-learner-dashboard';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <LearnerDashboardProvider>
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
-          headerShown: false,
-          tabBarButton: HapticTab,
-          tabBarHideOnKeyboard: true,
-          sceneStyle: {
-            backgroundColor: DuocodePalette.background,
-          },
-          tabBarStyle: {
-            backgroundColor: DuocodePalette.surfaceAlt,
-            borderTopColor: DuocodePalette.border,
-            borderTopWidth: 1,
-            height: 72,
-            paddingTop: 8,
-            paddingBottom: 8,
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '700',
-            fontFamily: Fonts.mono,
-          },
-        }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Inicio',
-            tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="explore"
-          options={{
-            title: 'Clases',
-            tabBarIcon: ({ color }) => <IconSymbol size={24} name="magnifyingglass" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="game"
-          options={{
-            title: 'Practica',
-            tabBarIcon: ({ color }) => <IconSymbol size={24} name="gamecontroller.fill" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="stats"
-          options={{
-            title: 'Mi Progreso',
-            tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.bar.fill" color={color} />,
-          }}
-        />
-      </Tabs>
-    </LearnerDashboardProvider>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
+        headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarHideOnKeyboard: true,
+        sceneStyle: {
+          backgroundColor: DuocodePalette.background,
+        },
+        tabBarStyle: {
+          backgroundColor: DuocodePalette.surfaceAlt,
+          borderTopColor: DuocodePalette.border,
+          borderTopWidth: 1,
+          height: 72,
+          paddingTop: 8,
+          paddingBottom: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '700',
+          fontFamily: Fonts.mono,
+        },
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Inicio',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Clases',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="magnifyingglass" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="game"
+        options={{
+          title: 'Practica',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="gamecontroller.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: 'Mi Progreso',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.bar.fill" color={color} />,
+        }}
+      />
+    </Tabs>
   );
 }

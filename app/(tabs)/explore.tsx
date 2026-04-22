@@ -42,6 +42,27 @@ function buildLessonMeta(lesson: DecoratedLesson) {
   return `${lesson.completedExercises}/${lesson.exerciseCount} ejercicios`;
 }
 
+function buildLessonModeMix(lesson: DecoratedLesson) {
+  const choiceCount = lesson.exercises.filter((exercise) => exercise.mode === 'choice').length;
+  const textCount = lesson.exercises.filter((exercise) => exercise.mode === 'text').length;
+  const codeCount = lesson.exercises.filter((exercise) => exercise.mode === 'code').length;
+  const parts = [];
+
+  if (choiceCount) {
+    parts.push(`${choiceCount} chequeo${choiceCount > 1 ? 's' : ''}`);
+  }
+
+  if (textCount) {
+    parts.push(`${textCount} completar`);
+  }
+
+  if (codeCount) {
+    parts.push(`${codeCount} codigo`);
+  }
+
+  return parts.join(' · ') || 'reto guiado';
+}
+
 export default function ExploreScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ topicId?: string | string[] }>();
@@ -181,7 +202,7 @@ export default function ExploreScreen() {
     selectedUnit?.lessons.find((lesson) => lesson.id === modalLessonId) ||
     allLessons.find((lesson) => lesson.id === modalLessonId) ||
     null;
-  const selectedExercise = getFirstPendingExercise(lessonForModal || selectedLesson);
+  const modalExercise = getFirstPendingExercise(lessonForModal);
   const autoCurrentExercise = getFirstPendingExercise(autoCurrentLesson);
   const queuedUnits = useMemo(() => {
     if (!selectedLevel) {
@@ -225,11 +246,10 @@ export default function ExploreScreen() {
 
     setModalLessonId(null);
     router.push({
-      pathname: '/(tabs)/game',
+      pathname: '/lesson',
       params: {
         topicId: lesson.id,
         exerciseId: lessonExercise.id,
-        sessionMode: 'lesson',
       },
     });
   }
@@ -457,45 +477,9 @@ export default function ExploreScreen() {
                 );
               })}
             </View>
-          </View>
-        ) : null}
-
-        {selectedLesson ? (
-          <View style={styles.panel}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.panelTitle}>leccion seleccionada</Text>
-              <Text style={styles.panelMeta}>{`Leccion ${selectedLesson.lessonNumber}`}</Text>
-            </View>
-
-            <Text style={styles.lessonHeadline}>{selectedLesson.title}</Text>
-            <Text style={styles.panelText}>{selectedLesson.lessonGoal}</Text>
-
-            <View style={styles.summaryBadges}>
-              <View style={styles.summaryBadge}>
-                <Text style={styles.summaryBadgeValue}>
-                  {selectedLesson.exercises.filter((exercise) => exercise.mode === 'choice').length}
-                </Text>
-                <Text style={styles.summaryBadgeLabel}>seleccion</Text>
-              </View>
-
-              <View style={styles.summaryBadge}>
-                <Text style={styles.summaryBadgeValue}>
-                  {selectedLesson.exercises.filter((exercise) => exercise.mode === 'text').length}
-                </Text>
-                <Text style={styles.summaryBadgeLabel}>texto</Text>
-              </View>
-
-              <View style={styles.summaryBadge}>
-                <Text style={styles.summaryBadgeValue}>
-                  {selectedLesson.exercises.filter((exercise) => exercise.mode === 'code').length}
-                </Text>
-                <Text style={styles.summaryBadgeLabel}>codigo</Text>
-              </View>
-            </View>
-
-            <Pressable style={styles.primaryButton} onPress={() => setModalLessonId(selectedLesson.id)}>
-              <Text style={styles.primaryButtonText}>VER DETALLE DE LA LECCION</Text>
-            </Pressable>
+            <Text style={styles.pathHint}>
+              Toca una leccion del camino para ver su enfoque y abrir una vista dedicada solo para esa clase.
+            </Text>
           </View>
         ) : null}
       </ScrollView>
@@ -523,6 +507,21 @@ export default function ExploreScreen() {
                   </Pressable>
                 </View>
 
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionLabel}>de que trata</Text>
+                  <Text style={styles.modalSectionText}>{lessonForModal.description}</Text>
+                </View>
+
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionLabel}>vas a practicar</Text>
+                  <Text style={styles.modalSectionText}>{buildLessonModeMix(lessonForModal)}</Text>
+                </View>
+
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionLabel}>resultado esperado</Text>
+                  <Text style={styles.modalSectionText}>{lessonForModal.stageGoal}</Text>
+                </View>
+
                 <View style={styles.modalBadgeRow}>
                   <View style={styles.modalBadge}>
                     <Text style={styles.modalBadgeValue}>{`${lessonForModal.exerciseCount}`}</Text>
@@ -530,22 +529,21 @@ export default function ExploreScreen() {
                   </View>
 
                   <View style={styles.modalBadge}>
-                    <Text style={styles.modalBadgeValue}>
-                      {`${lessonForModal.exercises.reduce((total, exercise) => total + exercise.xpReward, 0)} XP`}
-                    </Text>
-                    <Text style={styles.modalBadgeLabel}>aprendizaje</Text>
+                    <Text style={styles.modalBadgeValue}>{`${lessonForModal.estimatedMinutes} min`}</Text>
+                    <Text style={styles.modalBadgeLabel}>duracion</Text>
                   </View>
 
                   <View style={styles.modalBadge}>
                     <Text style={styles.modalBadgeValue}>
-                      {`${lessonForModal.exercises.reduce((total, exercise) => total + exercise.practiceXpReward, 0)} XP`}
+                      {`${lessonForModal.exercises.reduce((total, exercise) => total + exercise.xpReward, 0)} XP`}
                     </Text>
-                    <Text style={styles.modalBadgeLabel}>practica</Text>
+                    <Text style={styles.modalBadgeLabel}>recompensa</Text>
                   </View>
                 </View>
 
                 {lessonForModal.exampleCode ? (
                   <View style={styles.codePreview}>
+                    <Text style={styles.modalSectionLabel}>ejemplo rapido</Text>
                     {lessonForModal.exampleCode.split('\n').map((line, index) => (
                       <Text key={`${lessonForModal.id}-modal-${index + 1}`} style={styles.codeLine}>
                         {line || ' '}
@@ -555,10 +553,14 @@ export default function ExploreScreen() {
                 ) : null}
 
                 <Pressable style={styles.primaryButton} onPress={() => openLesson(lessonForModal)}>
-                  <Text style={styles.primaryButtonText}>
-                    {selectedExercise ? `EMPEZAR ${selectedExercise.lessonTypeLabel.toUpperCase()}` : 'EMPEZAR LECCION'}
-                  </Text>
+                  <Text style={styles.primaryButtonText}>ABRIR LECCION</Text>
                 </Pressable>
+
+                {modalExercise ? (
+                  <Text style={styles.modalStartHint}>
+                    {`Primer reto: ${modalExercise.lessonTypeLabel.toLowerCase()} · ${modalExercise.title}`}
+                  </Text>
+                ) : null}
               </>
             ) : null}
           </View>
@@ -915,36 +917,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lessonHeadline: {
-    color: DuocodePalette.text,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  summaryBadges: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  summaryBadge: {
-    flex: 1,
-    backgroundColor: DuocodePalette.surfaceAlt,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 14,
-    gap: 4,
-    alignItems: 'center',
-  },
-  summaryBadgeValue: {
-    color: DuocodePalette.accent,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  summaryBadgeLabel: {
-    color: DuocodePalette.muted,
-    fontSize: 11,
-    fontFamily: Fonts.mono,
+  pathHint: {
+    color: '#BFD1EB',
+    fontSize: 13,
+    lineHeight: 19,
   },
   primaryButton: {
     backgroundColor: DuocodePalette.accentSoft,
@@ -1006,6 +982,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  modalSection: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 6,
+  },
+  modalSectionLabel: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  modalSectionText: {
+    color: DuocodePalette.text,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '800',
+    fontFamily: Fonts.mono,
+  },
   modalCloseButton: {
     backgroundColor: DuocodePalette.surfaceAlt,
     borderRadius: 14,
@@ -1061,5 +1057,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
     fontFamily: Fonts.mono,
+  },
+  modalStartHint: {
+    color: '#A8BFE2',
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
   },
 });
