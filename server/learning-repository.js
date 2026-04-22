@@ -127,15 +127,89 @@ function getTopicPresentation(topic) {
 }
 
 function getExercisePresentation(exercise) {
+  const mode = exercise.mode || 'code';
+  const kind = exercise.kind || (exercise.mode === 'choice' ? 'multiple-choice' : 'code');
+  const normalizedTitle = String(exercise.title || '').replace(/^[^·]+·\s*/u, '').trim();
+
   return {
-    mode: exercise.mode || 'code',
-    kind: exercise.kind || (exercise.mode === 'choice' ? 'multiple-choice' : 'code'),
+    mode,
+    kind,
     lessonTypeLabel: exercise.lessonTypeLabel || 'Codigo',
     nodeGlyph: exercise.nodeGlyph || '</>',
     choiceOptions: Array.isArray(exercise.choiceOptions) ? exercise.choiceOptions : [],
     codeSnippet: exercise.codeSnippet || null,
-    inputPlaceholder: exercise.inputPlaceholder || null,
+    inputPlaceholder: buildExercisePlaceholder({ ...exercise, mode, kind }),
+    prompt: buildExercisePrompt({ ...exercise, mode, kind, normalizedTitle }),
+    instructions: buildExerciseInstructions({ ...exercise, mode, kind, normalizedTitle }),
   };
+}
+
+function buildExercisePrompt(exercise) {
+  const topicTitle = exercise.normalizedTitle || String(exercise.title || '').trim();
+
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return `Lee la idea principal de "${topicTitle}" y selecciona la opcion que mejor la describe.`;
+    case 'completion':
+      return `Mira el fragmento de "${topicTitle}" y escribe solo la palabra, operador o expresion que falta.`;
+    case 'prediction':
+      return `Observa el fragmento de "${topicTitle}" y responde exactamente que salida produce al ejecutarse.`;
+    case 'debugging':
+      return `Encuentra el error del fragmento de "${topicTitle}" y escribe la correccion principal para arreglarlo.`;
+    default:
+      return (
+        exercise.prompt ||
+        `Resuelve el reto de "${topicTitle}" editando la funcion del editor hasta que pase las pruebas.`
+      );
+  }
+}
+
+function buildExerciseInstructions(exercise) {
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return [
+        'Lee la idea o el fragmento con calma.',
+        'Compara las opciones y elige una sola respuesta.',
+        'No escribas codigo en esta actividad.',
+      ];
+    case 'completion':
+      return [
+        'Observa el ejemplo o fragmento base.',
+        'Identifica solo la pieza que falta.',
+        'Escribe unicamente esa palabra, operador o expresion corta.',
+      ];
+    case 'prediction':
+      return [
+        'Sigue el flujo del codigo paso a paso.',
+        'Piensa que valor llega realmente al console.log o al resultado.',
+        'Escribe la salida exacta, sin explicacion extra.',
+      ];
+    case 'debugging':
+      return [
+        'Busca la palabra, simbolo o parte incorrecta del fragmento.',
+        'Identifica la correccion minima necesaria para arreglarlo.',
+        'Responde con la correccion principal, no con una explicacion larga.',
+      ];
+    default:
+      return [
+        'Lee el objetivo completo del reto.',
+        'Edita la funcion manteniendo la estructura base.',
+        'Prueba una solucion clara y valida el resultado.',
+      ];
+  }
+}
+
+function buildExercisePlaceholder(exercise) {
+  switch (exercise.kind) {
+    case 'completion':
+      return 'Escribe solo la pieza faltante';
+    case 'prediction':
+      return 'Escribe la salida exacta';
+    case 'debugging':
+      return 'Escribe la correccion principal';
+    default:
+      return exercise.inputPlaceholder || null;
+  }
 }
 
 function extractSelectedOptionId(submittedCode) {
@@ -294,8 +368,8 @@ function buildTopicProgress(topics, progressRows) {
       return {
         id: exercise.id,
         title: exercise.title,
-        prompt: exercise.prompt,
-        instructions: exercise.instructions,
+        prompt: exercisePresentation.prompt,
+        instructions: exercisePresentation.instructions,
         functionName: exercise.functionName,
         starterCode: exercise.starterCode,
         xpReward: exercise.xpReward,

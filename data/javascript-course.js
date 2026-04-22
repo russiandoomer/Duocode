@@ -283,12 +283,75 @@ function buildChoiceOptions(correctDetail, distractors) {
   ];
 }
 
+function buildLearningPrompt(lessonTitle, exerciseKind) {
+  switch (exerciseKind) {
+    case 'multiple-choice':
+      return `Lee la idea principal de ${lessonTitle} y selecciona la opcion que mejor la describe.`;
+    case 'completion':
+      return `Mira el fragmento de ${lessonTitle} y escribe solo la palabra, operador o expresion que falta.`;
+    case 'prediction':
+      return `Observa el fragmento de ${lessonTitle} y responde exactamente que salida produce al ejecutarse.`;
+    case 'debugging':
+      return `Encuentra el error del fragmento de ${lessonTitle} y escribe la correccion principal para arreglarlo.`;
+    default:
+      return `Resuelve el reto de ${lessonTitle} editando la funcion hasta que pase las pruebas.`;
+  }
+}
+
+function buildLearningInstructions(exerciseKind) {
+  switch (exerciseKind) {
+    case 'multiple-choice':
+      return [
+        'Lee la idea o el fragmento con calma.',
+        'Compara las opciones y elige una sola respuesta.',
+        'No escribas codigo en esta actividad.',
+      ];
+    case 'completion':
+      return [
+        'Observa el ejemplo o fragmento base.',
+        'Identifica solo la pieza que falta.',
+        'Escribe unicamente esa palabra, operador o expresion corta.',
+      ];
+    case 'prediction':
+      return [
+        'Sigue el flujo del codigo paso a paso.',
+        'Piensa que valor llega realmente al resultado o al console.log.',
+        'Escribe la salida exacta, sin explicacion extra.',
+      ];
+    case 'debugging':
+      return [
+        'Busca la palabra, simbolo o parte incorrecta del fragmento.',
+        'Identifica la correccion minima necesaria para arreglarlo.',
+        'Responde con la correccion principal, no con una explicacion larga.',
+      ];
+    default:
+      return [
+        'Lee el objetivo completo del reto.',
+        'Edita la funcion manteniendo la estructura base.',
+        'Prueba una solucion clara y valida el resultado.',
+      ];
+  }
+}
+
+function buildInputPlaceholder(exerciseKind) {
+  switch (exerciseKind) {
+    case 'completion':
+      return 'Escribe solo la pieza faltante';
+    case 'prediction':
+      return 'Escribe la salida exacta';
+    case 'debugging':
+      return 'Escribe la correccion principal';
+    default:
+      return null;
+  }
+}
+
 function createChoiceExercise(topicId, lessonSpec, currentUnit, sortOrder) {
   return {
     id: buildExerciseId(topicId, `choice-${sortOrder}`),
     title: `Chequeo conceptual · ${lessonSpec.title}`,
-    prompt: `Selecciona la afirmacion que mejor describe ${lessonSpec.title.toLowerCase()}.`,
-    instructions: ['Lee las opciones y elige la definicion correcta.', 'Busca la idea central del concepto.', 'No necesitas escribir codigo en esta actividad.'],
+    prompt: buildLearningPrompt(lessonSpec.title, 'multiple-choice'),
+    instructions: buildLearningInstructions('multiple-choice'),
     functionName: `select${sanitizeFunctionName(topicId)}Concept`,
     starterCode: 'function chooseConcept() {\n  // respuesta guiada por seleccion\n}\n',
     solutionCode: 'function chooseConcept() {\n  return "a";\n}\n',
@@ -320,8 +383,8 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
       ...base,
       id: buildExerciseId(topicId, `completion-${sortOrder}`),
       title: `Completar idea · ${lessonSpec.title}`,
-      prompt: `Escribe la palabra o expresion clave de esta leccion: ${lessonSpec.title}.`,
-      instructions: ['Responde solo con la palabra o expresion principal.', 'No hace falta escribir una explicacion larga.', 'Piensa en el concepto mas representativo del tema.'],
+      prompt: buildLearningPrompt(lessonSpec.title, 'completion'),
+      instructions: buildLearningInstructions('completion'),
       solutionCode: lessonSpec.token,
       explanation: `La respuesta esperada es ${lessonSpec.token} porque resume el concepto trabajado.`,
       xpReward: 15,
@@ -330,7 +393,7 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
       lessonTypeLabel: 'Completar',
       nodeGlyph: '_',
       codeSnippet: lessonSpec.exampleCode,
-      inputPlaceholder: 'Escribe la palabra clave',
+      inputPlaceholder: buildInputPlaceholder('completion'),
     };
   }
 
@@ -339,8 +402,8 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
       ...base,
       id: buildExerciseId(topicId, `prediction-${sortOrder}`),
       title: `Prediccion · ${lessonSpec.title}`,
-      prompt: 'Observa el fragmento y escribe exactamente la salida esperada.',
-      instructions: ['Lee el codigo con calma antes de responder.', 'Si hay varias lineas de salida, escribelas en lineas separadas.', 'Respeta valores y orden final.'],
+      prompt: buildLearningPrompt(lessonSpec.title, 'prediction'),
+      instructions: buildLearningInstructions('prediction'),
       solutionCode: lessonSpec.predictionAnswer,
       explanation: 'La salida correcta depende del valor final impreso por el fragmento mostrado.',
       xpReward: 18,
@@ -349,7 +412,7 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
       lessonTypeLabel: 'Prediccion',
       nodeGlyph: '>>',
       codeSnippet: lessonSpec.predictionCode,
-      inputPlaceholder: 'Escribe la salida exacta',
+      inputPlaceholder: buildInputPlaceholder('prediction'),
     };
   }
 
@@ -357,8 +420,8 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
     ...base,
     id: buildExerciseId(topicId, `debug-${sortOrder}`),
     title: `Debugging · ${lessonSpec.title}`,
-    prompt: 'Detecta que palabra, simbolo o idea corrige este fragmento.',
-    instructions: ['No reescribas todo el codigo; responde la pieza mas importante.', 'Busca el error sintactico o conceptual principal.', 'Responde de forma corta y directa.'],
+    prompt: buildLearningPrompt(lessonSpec.title, 'debugging'),
+    instructions: buildLearningInstructions('debugging'),
     solutionCode: lessonSpec.debuggingAnswer,
     explanation: lessonSpec.debuggingHint,
     xpReward: 20,
@@ -367,7 +430,7 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
     lessonTypeLabel: 'Debugging',
     nodeGlyph: '!!',
     codeSnippet: lessonSpec.debuggingCode,
-    inputPlaceholder: 'Escribe la correccion principal',
+    inputPlaceholder: buildInputPlaceholder('debugging'),
   };
 }
 
@@ -376,7 +439,7 @@ function createCodeExercise(topicId, capstoneSpec, sortOrder) {
     id: buildExerciseId(topicId, `code-${sortOrder}`),
     title: capstoneSpec.title,
     prompt: capstoneSpec.prompt,
-    instructions: ['Lee con cuidado el formato exacto pedido.', 'Usa una solucion clara y mantenible.', 'Ejecuta los tests para comprobar todos los casos.'],
+    instructions: buildLearningInstructions('code'),
     functionName: capstoneSpec.functionName,
     starterCode: capstoneSpec.starterCode,
     solutionCode: capstoneSpec.solutionCode,
