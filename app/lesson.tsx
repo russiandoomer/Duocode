@@ -30,7 +30,18 @@ function findInitialExercise(topic: LearnerTopic | null, requestedExerciseId?: s
     return null;
   }
 
-  return topic.exercises.find((exercise) => exercise.id === requestedExerciseId) || topic.exercises[0] || null;
+  const requestedExercise = topic.exercises.find((exercise) => exercise.id === requestedExerciseId);
+
+  if (requestedExercise && !requestedExercise.completed) {
+    return requestedExercise;
+  }
+
+  return (
+    topic.exercises.find((exercise) => !exercise.completed) ||
+    requestedExercise ||
+    topic.exercises[topic.exercises.length - 1] ||
+    null
+  );
 }
 
 function buildModeMix(topic: LearnerTopic) {
@@ -54,6 +65,61 @@ function buildModeMix(topic: LearnerTopic) {
   return parts.join(' · ');
 }
 
+function buildChallengeTitle(exercise: LearnerExercise) {
+  switch (exercise.mode) {
+    case 'choice':
+      return 'Selecciona la mejor respuesta';
+    case 'text':
+      return 'Completa la idea';
+    default:
+      return 'Escribe el codigo que falta';
+  }
+}
+
+function buildChallengeGuidance(exercise: LearnerExercise) {
+  switch (exercise.mode) {
+    case 'choice':
+      return 'Lee el bloque o la idea principal y elige la opcion que completa mejor el concepto. No hace falta escribir nada, solo seleccionar la opcion correcta.';
+    case 'text':
+      return 'Mira el ejemplo y escribe solo la palabra, operador o expresion que falta. No copies todo el codigo: responde unicamente la parte que completa la idea.';
+    default:
+      return 'Edita el codigo respetando la estructura base. Mantén el nombre de la funcion y cambia solo lo necesario para que el resultado pase las pruebas.';
+  }
+}
+
+function buildChallengeSteps(exercise: LearnerExercise) {
+  if (exercise.instructions.length) {
+    return exercise.instructions.slice(0, 3);
+  }
+
+  switch (exercise.mode) {
+    case 'choice':
+      return ['Lee la idea principal.', 'Compara las opciones.', 'Elige una sola respuesta y revisa.'];
+    case 'text':
+      return ['Observa el ejemplo.', 'Identifica la parte faltante.', 'Escribe solo esa pieza y revisa.'];
+    default:
+      return ['Lee el objetivo del reto.', 'Completa o corrige la funcion.', 'Revisa y ejecuta la validacion.'];
+  }
+}
+
+function findNextPendingExercise(topic: LearnerTopic | null, currentExerciseId: string) {
+  if (!topic) {
+    return null;
+  }
+
+  const currentIndex = topic.exercises.findIndex((exercise) => exercise.id === currentExerciseId);
+
+  if (currentIndex === -1) {
+    return topic.exercises.find((exercise) => !exercise.completed) || null;
+  }
+
+  return (
+    topic.exercises.slice(currentIndex + 1).find((exercise) => !exercise.completed) ||
+    topic.exercises.find((exercise) => !exercise.completed) ||
+    null
+  );
+}
+
 export default function LessonScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ topicId?: string | string[]; exerciseId?: string | string[] }>();
@@ -66,6 +132,7 @@ export default function LessonScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
+  const [queuedNextExerciseId, setQueuedNextExerciseId] = useState<string | null>(null);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
   const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
@@ -114,6 +181,15 @@ export default function LessonScreen() {
     () => selectedTopic?.exercises.reduce((total, exercise) => total + exercise.xpReward, 0) || 0,
     [selectedTopic]
   );
+  const completedExercises = useMemo(
+    () => selectedTopic?.exercises.filter((exercise) => exercise.completed).length || 0,
+    [selectedTopic]
+  );
+  const currentExerciseIndex = useMemo(
+    () => selectedTopic?.exercises.findIndex((exercise) => exercise.id === selectedExercise?.id) ?? -1,
+    [selectedExercise?.id, selectedTopic]
+  );
+  const remainingExercises = Math.max((selectedTopic?.exerciseCount || 0) - completedExercises, 0);
 
   if (loading || !dashboard) {
     return <LoadingState />;
@@ -126,12 +202,23 @@ export default function LessonScreen() {
     });
   }
 
+  function handleNextExercise() {
+    if (!queuedNextExerciseId) {
+      return;
+    }
+
+    setSelectedExerciseId(queuedNextExerciseId);
+    setQueuedNextExerciseId(null);
+    setEvaluation(null);
+  }
+
   async function handleEvaluate() {
     if (!selectedExercise) {
       return;
     }
 
     setSubmitting(true);
+    setQueuedNextExerciseId(null);
 
     try {
       const response = await evaluateExercise(
@@ -145,6 +232,11 @@ export default function LessonScreen() {
 
       setEvaluation(response);
       if (response.passed) {
+        const updatedTopic =
+          response.dashboard.topics.find((topic) => topic.id === selectedTopic?.id) || selectedTopic;
+        const nextPendingExercise = findNextPendingExercise(updatedTopic, selectedExercise.id);
+
+        setQueuedNextExerciseId(nextPendingExercise?.id || null);
         setCelebrationVisible(true);
       }
     } catch (error) {
@@ -160,6 +252,7 @@ export default function LessonScreen() {
     }
 
     setEvaluation(null);
+    setQueuedNextExerciseId(null);
     if (selectedExercise.mode === 'choice') {
       setSelectedOptionId(null);
     } else if (selectedExercise.mode === 'text') {
@@ -237,27 +330,70 @@ export default function LessonScreen() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>retos de la leccion</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
-            {selectedTopic.exercises.map((exercise) => {
-              const isSelected = exercise.id === selectedExercise?.id;
+          <Text style={styles.cardTitle}>ruta de la leccion</Text>
+          <View style={styles.routeSummary}>
+            <View style={styles.routeSummaryCopy}>
+              <Text style={styles.routeEyebrow}>
+                {selectedExercise && currentExerciseIndex >= 0
+                  ? `reto ${currentExerciseIndex + 1} de ${selectedTopic.exerciseCount}`
+                  : `leccion de ${selectedTopic.exerciseCount} retos`}
+              </Text>
+              <Text style={styles.routeTitle}>
+                {selectedTopic.exercises.every((exercise) => exercise.completed)
+                  ? 'Leccion completada'
+                  : selectedExercise
+                    ? buildChallengeTitle(selectedExercise)
+                    : 'Preparando reto'}
+              </Text>
+              <Text style={styles.routeText}>
+                {selectedTopic.exercises.every((exercise) => exercise.completed)
+                  ? 'Ya resolviste todos los retos de esta leccion. La segunda vuelta la haces luego en Practica.'
+                  : `${completedExercises} resueltos · ${remainingExercises} pendientes. Aqui solo se muestra el reto actual para que no te distraigas.`}
+              </Text>
+            </View>
+
+            <View style={styles.routeCounter}>
+              <Text style={styles.routeCounterValue}>{`${completedExercises}/${selectedTopic.exerciseCount}`}</Text>
+              <Text style={styles.routeCounterLabel}>avance</Text>
+            </View>
+          </View>
+
+          <View style={styles.routeSteps}>
+            {selectedTopic.exercises.map((exercise, index) => {
+              const isCurrent = exercise.id === selectedExercise?.id;
+
               return (
-                <Pressable
+                <View
                   key={exercise.id}
-                  style={[styles.tab, isSelected && styles.tabSelected]}
-                  onPress={() => setSelectedExerciseId(exercise.id)}>
-                  <Text style={[styles.tabTitle, isSelected && styles.tabTitleSelected]}>{exercise.title}</Text>
-                  <Text style={styles.tabMeta}>{rewardLabel(exercise)}</Text>
-                </Pressable>
+                  style={[
+                    styles.routeStep,
+                    exercise.completed && styles.routeStepDone,
+                    isCurrent && styles.routeStepCurrent,
+                  ]}>
+                  <Text
+                    style={[
+                      styles.routeStepIndex,
+                      exercise.completed && styles.routeStepIndexDone,
+                      isCurrent && styles.routeStepIndexCurrent,
+                    ]}>
+                    {exercise.completed ? 'OK' : index + 1}
+                  </Text>
+                </View>
               );
             })}
-          </ScrollView>
+          </View>
+
+          <Text style={styles.routeHint}>
+            Los retos ya resueltos se cierran en esta vista. Al final vuelven como repaso en `Practica`.
+          </Text>
         </View>
 
         {selectedExercise ? (
           <>
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>{selectedExercise.title}</Text>
+              <Text style={styles.cardTitle}>reto actual</Text>
+              <Text style={styles.challengeTitle}>{buildChallengeTitle(selectedExercise)}</Text>
+              <Text style={styles.challengeSubtitle}>{selectedExercise.title}</Text>
               <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
               <View style={styles.pills}>
                 <Text style={styles.pill}>{selectedExercise.lessonTypeLabel}</Text>
@@ -268,20 +404,38 @@ export default function LessonScreen() {
 
             <View style={styles.card}>
               <View style={styles.rowBetween}>
-                <Text style={styles.cardTitle}>
-                  {selectedExercise.mode === 'choice'
-                    ? 'elige una opcion'
-                    : selectedExercise.mode === 'text'
-                      ? 'escribe la respuesta'
-                      : 'editor de codigo'}
-                </Text>
-                <View style={styles.actionRow}>
-                  <Pressable style={styles.secondaryButton} onPress={handleReset}>
-                    <Text style={styles.secondaryButtonText}>RESET</Text>
-                  </Pressable>
-                  <Pressable style={styles.primaryButton} onPress={handleEvaluate} disabled={submitting}>
-                    <Text style={styles.primaryButtonText}>{submitting ? 'REVISANDO...' : 'REVISAR'}</Text>
-                  </Pressable>
+                <Text style={styles.cardTitle}>que debes hacer</Text>
+                {selectedExercise.completed ? (
+                  queuedNextExerciseId ? (
+                    <Pressable style={styles.primaryButton} onPress={handleNextExercise}>
+                      <Text style={styles.primaryButtonText}>SIGUIENTE RETO</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable style={styles.primaryButton} onPress={handleBackToClasses}>
+                      <Text style={styles.primaryButtonText}>VOLVER A CLASES</Text>
+                    </Pressable>
+                  )
+                ) : (
+                  <View style={styles.actionRow}>
+                    <Pressable style={styles.secondaryButton} onPress={handleReset}>
+                      <Text style={styles.secondaryButtonText}>RESET</Text>
+                    </Pressable>
+                    <Pressable style={styles.primaryButton} onPress={handleEvaluate} disabled={submitting}>
+                      <Text style={styles.primaryButtonText}>{submitting ? 'REVISANDO...' : 'REVISAR'}</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.guidanceCard}>
+                <Text style={styles.guidanceLead}>{buildChallengeGuidance(selectedExercise)}</Text>
+                <View style={styles.guidanceSteps}>
+                  {buildChallengeSteps(selectedExercise).map((step, index) => (
+                    <View key={`${selectedExercise.id}-step-${index + 1}`} style={styles.guidanceStep}>
+                      <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
+                      <Text style={styles.guidanceStepText}>{step}</Text>
+                    </View>
+                  ))}
                 </View>
               </View>
 
@@ -293,7 +447,8 @@ export default function LessonScreen() {
                       <Pressable
                         key={option.id}
                         style={[styles.optionCard, isActive && styles.optionCardSelected]}
-                        onPress={() => setSelectedOptionId(option.id)}>
+                        onPress={() => setSelectedOptionId(option.id)}
+                        disabled={selectedExercise.completed}>
                         <Text style={styles.optionTitle}>{option.label}</Text>
                         <Text style={styles.optionDetail}>{option.detail}</Text>
                       </Pressable>
@@ -322,6 +477,7 @@ export default function LessonScreen() {
                     placeholder={selectedExercise.inputPlaceholder || 'Escribe tu respuesta'}
                     placeholderTextColor={DuocodePalette.muted}
                     style={styles.answerInput}
+                    editable={!selectedExercise.completed}
                   />
                 </>
               ) : (
@@ -334,6 +490,7 @@ export default function LessonScreen() {
                   spellCheck={false}
                   textAlignVertical="top"
                   style={styles.codeInput}
+                  editable={!selectedExercise.completed}
                 />
               )}
             </View>
@@ -532,6 +689,99 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontFamily: Fonts.mono,
   },
+  routeSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 14,
+  },
+  routeSummaryCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  routeEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  routeTitle: {
+    color: DuocodePalette.text,
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  routeText: {
+    color: '#C5D5EB',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  routeCounter: {
+    minWidth: 88,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    gap: 4,
+  },
+  routeCounterValue: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  routeCounterLabel: {
+    color: '#A7C0E2',
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  routeSteps: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  routeStep: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  routeStepDone: {
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+    borderColor: DuocodePalette.green,
+  },
+  routeStepCurrent: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderColor: DuocodePalette.accent,
+    shadowColor: DuocodePalette.accent,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  routeStepIndex: {
+    color: '#9CB6D8',
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  routeStepIndexDone: {
+    color: DuocodePalette.code,
+  },
+  routeStepIndexCurrent: {
+    color: DuocodePalette.accent,
+  },
+  routeHint: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
   tabRow: {
     gap: 12,
   },
@@ -566,6 +816,17 @@ const styles = StyleSheet.create({
     color: DuocodePalette.text,
     fontSize: 15,
     lineHeight: 22,
+  },
+  challengeTitle: {
+    color: DuocodePalette.text,
+    fontSize: 20,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  challengeSubtitle: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
   },
   pills: {
     flexDirection: 'row',
@@ -624,6 +885,47 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '900',
     fontFamily: Fonts.mono,
+  },
+  guidanceCard: {
+    backgroundColor: '#101F33',
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+  },
+  guidanceLead: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  guidanceSteps: {
+    gap: 10,
+  },
+  guidanceStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  guidanceStepIndex: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    color: DuocodePalette.accent,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  guidanceStepText: {
+    flex: 1,
+    color: '#C5D5EB',
+    fontSize: 13,
+    lineHeight: 19,
   },
   optionList: {
     gap: 12,
