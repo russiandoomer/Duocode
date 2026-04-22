@@ -66,24 +66,32 @@ function buildModeMix(topic: LearnerTopic) {
 }
 
 function buildChallengeTitle(exercise: LearnerExercise) {
-  switch (exercise.mode) {
-    case 'choice':
-      return 'Selecciona la mejor respuesta';
-    case 'text':
-      return 'Completa la idea';
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'Elige la respuesta correcta';
+    case 'completion':
+      return 'Completa lo que falta';
+    case 'prediction':
+      return 'Escribe que salida produce';
+    case 'debugging':
+      return 'Corrige el error del fragmento';
     default:
-      return 'Escribe el codigo que falta';
+      return 'Escribe o corrige el codigo';
   }
 }
 
 function buildChallengeGuidance(exercise: LearnerExercise) {
-  switch (exercise.mode) {
-    case 'choice':
-      return 'Lee el bloque o la idea principal y elige la opcion que completa mejor el concepto. No hace falta escribir nada, solo seleccionar la opcion correcta.';
-    case 'text':
-      return 'Mira el ejemplo y escribe solo la palabra, operador o expresion que falta. No copies todo el codigo: responde unicamente la parte que completa la idea.';
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'Aqui no escribes codigo. Solo debes leer la idea o el fragmento y escoger una sola opcion: la que mejor completa o explica el concepto.';
+    case 'completion':
+      return 'Debes averiguar que palabra, operador o expresion falta. Escribe solo esa pieza faltante, no copies todo el codigo.';
+    case 'prediction':
+      return 'Debes mirar el fragmento y responder exactamente que saldria al ejecutarlo. Si imprime algo en consola, escribe esa salida tal como aparece.';
+    case 'debugging':
+      return 'Debes detectar que esta mal en el fragmento. Corrige la palabra, simbolo o parte incorrecta para que la idea quede bien escrita.';
     default:
-      return 'Edita el codigo respetando la estructura base. Mantén el nombre de la funcion y cambia solo lo necesario para que el resultado pase las pruebas.';
+      return 'Debes editar el codigo del editor. Mantén la estructura base y cambia solo lo necesario para que la solucion funcione.';
   }
 }
 
@@ -99,6 +107,34 @@ function buildChallengeSteps(exercise: LearnerExercise) {
       return ['Observa el ejemplo.', 'Identifica la parte faltante.', 'Escribe solo esa pieza y revisa.'];
     default:
       return ['Lee el objetivo del reto.', 'Completa o corrige la funcion.', 'Revisa y ejecuta la validacion.'];
+  }
+}
+
+function buildChallengeAnswerRule(exercise: LearnerExercise) {
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'Responde seleccionando una opcion. No escribas texto.';
+    case 'completion':
+      return 'Responde solo con la pieza faltante: una palabra, operador o expresion corta.';
+    case 'prediction':
+      return 'Responde exactamente con la salida esperada. No expliques, no agregues texto extra.';
+    case 'debugging':
+      return 'Responde con la correccion necesaria. Si el error es pequeno, escribe solo la parte correcta; si hace falta, corrige la linea clave.';
+    default:
+      return 'Responde editando el codigo completo dentro del editor.';
+  }
+}
+
+function buildSnippetLabel(exercise: LearnerExercise) {
+  switch (exercise.kind) {
+    case 'prediction':
+      return 'fragmento que debes analizar';
+    case 'debugging':
+      return 'fragmento con error';
+    case 'completion':
+      return 'fragmento base';
+    default:
+      return 'fragmento de referencia';
   }
 }
 
@@ -394,7 +430,10 @@ export default function LessonScreen() {
               <Text style={styles.cardTitle}>reto actual</Text>
               <Text style={styles.challengeTitle}>{buildChallengeTitle(selectedExercise)}</Text>
               <Text style={styles.challengeSubtitle}>{selectedExercise.title}</Text>
-              <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
+              <View style={styles.promptShell}>
+                <Text style={styles.promptLabel}>pregunta</Text>
+                <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
+              </View>
               <View style={styles.pills}>
                 <Text style={styles.pill}>{selectedExercise.lessonTypeLabel}</Text>
                 <Text style={styles.pill}>{rewardLabel(selectedExercise)}</Text>
@@ -429,6 +468,10 @@ export default function LessonScreen() {
 
               <View style={styles.guidanceCard}>
                 <Text style={styles.guidanceLead}>{buildChallengeGuidance(selectedExercise)}</Text>
+                <View style={styles.answerRuleBox}>
+                  <Text style={styles.answerRuleLabel}>como debes responder</Text>
+                  <Text style={styles.answerRuleText}>{buildChallengeAnswerRule(selectedExercise)}</Text>
+                </View>
                 <View style={styles.guidanceSteps}>
                   {buildChallengeSteps(selectedExercise).map((step, index) => (
                     <View key={`${selectedExercise.id}-step-${index + 1}`} style={styles.guidanceStep}>
@@ -459,6 +502,7 @@ export default function LessonScreen() {
                 <>
                   {selectedExercise.codeSnippet ? (
                     <View style={styles.snippetBox}>
+                      <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
                       {selectedExercise.codeSnippet.split('\n').map((line, index) => (
                         <Text key={`${selectedExercise.id}-snippet-${index + 1}`} style={styles.snippetLine}>
                           {line || ' '}
@@ -481,17 +525,29 @@ export default function LessonScreen() {
                   />
                 </>
               ) : (
-                <TextInput
-                  value={editorCode}
-                  onChangeText={setEditorCode}
-                  multiline
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  spellCheck={false}
-                  textAlignVertical="top"
-                  style={styles.codeInput}
-                  editable={!selectedExercise.completed}
-                />
+                <>
+                  {selectedExercise.codeSnippet ? (
+                    <View style={styles.snippetBox}>
+                      <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
+                      {selectedExercise.codeSnippet.split('\n').map((line, index) => (
+                        <Text key={`${selectedExercise.id}-code-snippet-${index + 1}`} style={styles.snippetLine}>
+                          {line || ' '}
+                        </Text>
+                      ))}
+                    </View>
+                  ) : null}
+                  <TextInput
+                    value={editorCode}
+                    onChangeText={setEditorCode}
+                    multiline
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                    textAlignVertical="top"
+                    style={styles.codeInput}
+                    editable={!selectedExercise.completed}
+                  />
+                </>
               )}
             </View>
 
@@ -814,8 +870,23 @@ const styles = StyleSheet.create({
   },
   promptText: {
     color: DuocodePalette.text,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 21,
+    lineHeight: 30,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  promptShell: {
+    backgroundColor: '#12233A',
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 20,
+    padding: 16,
+    gap: 10,
+  },
+  promptLabel: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
   },
   challengeTitle: {
     color: DuocodePalette.text,
@@ -899,6 +970,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
+  answerRuleBox: {
+    backgroundColor: '#0F1A2D',
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 16,
+    padding: 12,
+    gap: 4,
+  },
+  answerRuleLabel: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  answerRuleText: {
+    color: '#D8E6FB',
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '700',
+  },
   guidanceSteps: {
     gap: 10,
   },
@@ -961,10 +1051,16 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 4,
   },
+  snippetLabel: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+    marginBottom: 4,
+  },
   snippetLine: {
     color: DuocodePalette.code,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 23,
     fontFamily: Fonts.mono,
   },
   answerInput: {
