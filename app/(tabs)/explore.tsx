@@ -9,7 +9,7 @@ import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
 import { groupCourseTopics } from '@/lib/duocode-curriculum';
 import type { DecoratedLesson } from '@/lib/duocode-curriculum';
 
-const PATH_OFFSETS = [0, 90, 148, 90, 0];
+const PATH_OFFSETS = [0, 116, 188, 116, 0];
 
 function LoadingState() {
   return (
@@ -50,6 +50,7 @@ export default function ExploreScreen() {
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [unitsExpanded, setUnitsExpanded] = useState(true);
+  const [completedUnitsExpanded, setCompletedUnitsExpanded] = useState(false);
   const [modalLessonId, setModalLessonId] = useState<string | null>(null);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
@@ -86,6 +87,34 @@ export default function ExploreScreen() {
     courseLevels[0] ||
     null;
 
+  const autoCurrentLesson = useMemo(() => {
+    if (!selectedLevel) {
+      return null;
+    }
+
+    const lessons = selectedLevel.units.flatMap((unit) => unit.lessons);
+
+    return (
+      lessons.find((lesson) => !lesson.isLocked && lesson.progressPercent < 100) ||
+      lessons.find((lesson) => !lesson.isLocked) ||
+      lessons[lessons.length - 1] ||
+      null
+    );
+  }, [selectedLevel]);
+
+  const autoCurrentUnit = useMemo(() => {
+    if (!selectedLevel) {
+      return null;
+    }
+
+    return (
+      selectedLevel.units.find((unit) => unit.id === autoCurrentLesson?.unitId) ||
+      selectedLevel.units.find((unit) => unit.progressPercent < 100) ||
+      selectedLevel.units[selectedLevel.units.length - 1] ||
+      null
+    );
+  }, [autoCurrentLesson?.unitId, selectedLevel]);
+
   useEffect(() => {
     if (!selectedLevel?.units.length) {
       setSelectedUnitId(null);
@@ -100,13 +129,17 @@ export default function ExploreScreen() {
         return requestedUnit.id;
       }
 
+      if (autoCurrentUnit && !autoCurrentUnit.isLocked) {
+        return autoCurrentUnit.id;
+      }
+
       if (current && selectedLevel.units.some((unit) => unit.id === current && !unit.isLocked)) {
         return current;
       }
 
       return selectedLevel.units.find((unit) => !unit.isLocked)?.id || selectedLevel.units[0].id;
     });
-  }, [allLessons, requestedTopicId, selectedLevel]);
+  }, [allLessons, autoCurrentUnit, requestedTopicId, selectedLevel]);
 
   const selectedUnit =
     selectedLevel?.units.find((unit) => unit.id === selectedUnitId) ||
@@ -127,13 +160,17 @@ export default function ExploreScreen() {
         return requestedLesson.id;
       }
 
+      if (selectedUnit.id === autoCurrentUnit?.id && autoCurrentLesson && !autoCurrentLesson.isLocked) {
+        return autoCurrentLesson.id;
+      }
+
       if (current && selectedUnit.lessons.some((lesson) => lesson.id === current && !lesson.isLocked)) {
         return current;
       }
 
       return selectedUnit.lessons.find((lesson) => !lesson.isLocked)?.id || selectedUnit.lessons[0].id;
     });
-  }, [requestedTopicId, selectedUnit]);
+  }, [autoCurrentLesson, autoCurrentUnit?.id, requestedTopicId, selectedUnit]);
 
   const selectedLesson =
     selectedUnit?.lessons.find((lesson) => lesson.id === selectedLessonId) ||
@@ -145,6 +182,35 @@ export default function ExploreScreen() {
     allLessons.find((lesson) => lesson.id === modalLessonId) ||
     null;
   const selectedExercise = getFirstPendingExercise(lessonForModal || selectedLesson);
+  const autoCurrentExercise = getFirstPendingExercise(autoCurrentLesson);
+  const queuedUnits = useMemo(() => {
+    if (!selectedLevel) {
+      return [];
+    }
+
+    return selectedLevel.units
+      .filter((unit) => unit.progressPercent < 100)
+      .slice()
+      .sort((left, right) => {
+        if (left.id === autoCurrentUnit?.id) {
+          return -1;
+        }
+
+        if (right.id === autoCurrentUnit?.id) {
+          return 1;
+        }
+
+        return left.unitNumber - right.unitNumber;
+      });
+  }, [autoCurrentUnit?.id, selectedLevel]);
+  const completedUnits = useMemo(
+    () =>
+      selectedLevel?.units
+        .filter((unit) => unit.progressPercent >= 100)
+        .slice()
+        .sort((left, right) => left.unitNumber - right.unitNumber) || [],
+    [selectedLevel]
+  );
 
   if (loading || !dashboard) {
     return <LoadingState />;
@@ -194,31 +260,39 @@ export default function ExploreScreen() {
             <View style={styles.focusHeader}>
               <View style={styles.focusCopy}>
                 <Text style={styles.focusEyebrow}>{selectedLevel.name}</Text>
-                <Text style={styles.focusTitle}>{selectedUnit?.title || 'Sin unidad'}</Text>
+                <Text style={styles.focusTitle}>{autoCurrentUnit?.title || 'Sin unidad'}</Text>
                 <Text style={styles.focusMeta}>
-                  {selectedLesson
-                    ? `Leccion ${selectedLesson.lessonNumber}: ${selectedLesson.title}`
+                  {autoCurrentLesson
+                    ? `Clase sugerida: Leccion ${autoCurrentLesson.lessonNumber} · ${autoCurrentLesson.title}`
                     : 'Selecciona una leccion para empezar.'}
                 </Text>
               </View>
 
-              <Pressable style={styles.focusButton} onPress={() => setUnitsExpanded((value) => !value)}>
-                <Text style={styles.focusButtonText}>{unitsExpanded ? 'OCULTAR UNIDADES' : 'VER UNIDADES'}</Text>
-              </Pressable>
+              <View style={styles.focusActions}>
+                <Pressable style={styles.focusButton} onPress={() => setUnitsExpanded((value) => !value)}>
+                  <Text style={styles.focusButtonText}>{unitsExpanded ? 'OCULTAR UNIDADES' : 'VER UNIDADES'}</Text>
+                </Pressable>
+
+                {autoCurrentLesson && autoCurrentExercise ? (
+                  <Pressable style={styles.focusStartButton} onPress={() => openLesson(autoCurrentLesson)}>
+                    <Text style={styles.focusStartButtonText}>EMPEZAR CLASE</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             </View>
 
             <View style={styles.focusInfoRow}>
               <View style={styles.focusInfoCard}>
                 <Text style={styles.focusInfoLabel}>unidad actual</Text>
                 <Text style={styles.focusInfoValue}>
-                  {selectedUnit ? `U${selectedUnit.unitNumber}` : 'Pendiente'}
+                  {autoCurrentUnit ? `U${autoCurrentUnit.unitNumber}` : 'Pendiente'}
                 </Text>
               </View>
 
               <View style={styles.focusInfoCard}>
                 <Text style={styles.focusInfoLabel}>leccion actual</Text>
                 <Text style={styles.focusInfoValue}>
-                  {selectedLesson ? `L${selectedLesson.lessonNumber}` : 'Pendiente'}
+                  {autoCurrentLesson ? `L${autoCurrentLesson.lessonNumber}` : 'Pendiente'}
                 </Text>
               </View>
 
@@ -272,8 +346,9 @@ export default function ExploreScreen() {
 
             {unitsExpanded ? (
               <View style={styles.unitList}>
-                {selectedLevel.units.map((unit) => {
+                {queuedUnits.map((unit) => {
                   const isSelected = unit.id === selectedUnit?.id;
+                  const isCurrent = unit.id === autoCurrentUnit?.id;
 
                   return (
                     <Pressable
@@ -290,7 +365,9 @@ export default function ExploreScreen() {
                       }}>
                       <View style={styles.unitHeader}>
                         <View style={styles.unitCopy}>
-                          <Text style={styles.unitEyebrow}>{`UNIDAD ${unit.unitNumber}`}</Text>
+                          <Text style={styles.unitEyebrow}>
+                            {isCurrent ? `UNIDAD ${unit.unitNumber} · AHORA` : `UNIDAD ${unit.unitNumber}`}
+                          </Text>
                           <Text style={styles.unitTitle}>{unit.title}</Text>
                           <Text style={styles.unitMeta}>{`${unit.completedLessons}/${unit.lessonCount} lecciones`}</Text>
                         </View>
@@ -304,6 +381,41 @@ export default function ExploreScreen() {
                     </Pressable>
                   );
                 })}
+
+                {completedUnits.length ? (
+                  <View style={styles.completedUnitsShell}>
+                    <Pressable
+                      style={styles.completedUnitsToggle}
+                      onPress={() => setCompletedUnitsExpanded((value) => !value)}>
+                      <View style={styles.completedUnitsCopy}>
+                        <Text style={styles.completedUnitsTitle}>unidades terminadas</Text>
+                        <Text style={styles.completedUnitsMeta}>{`${completedUnits.length} completadas`}</Text>
+                      </View>
+
+                      <Text style={styles.completedUnitsAction}>
+                        {completedUnitsExpanded ? 'OCULTAR' : 'VER'}
+                      </Text>
+                    </Pressable>
+
+                    {completedUnitsExpanded ? (
+                      <View style={styles.completedUnitsList}>
+                        {completedUnits.map((unit) => {
+                          const isSelected = unit.id === selectedUnit?.id;
+
+                          return (
+                            <Pressable
+                              key={unit.id}
+                              style={[styles.completedUnitCard, isSelected && styles.completedUnitCardSelected]}
+                              onPress={() => setSelectedUnitId(unit.id)}>
+                              <Text style={styles.completedUnitEyebrow}>{`UNIDAD ${unit.unitNumber}`}</Text>
+                              <Text style={styles.completedUnitTitle}>{unit.title}</Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
               </View>
             ) : (
               <View style={styles.collapsedHint}>
@@ -482,7 +594,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
   },
   heroTitle: {
-    color: DuocodePalette.surface,
+    color: DuocodePalette.text,
     fontSize: 26,
     fontWeight: '900',
     fontFamily: Fonts.mono,
@@ -506,23 +618,27 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 16,
   },
+  focusActions: {
+    gap: 10,
+    alignItems: 'flex-end',
+  },
   focusCopy: {
     flex: 1,
     gap: 6,
   },
   focusEyebrow: {
-    color: DuocodePalette.code,
+    color: DuocodePalette.terminalBlue,
     fontSize: 12,
     fontFamily: Fonts.mono,
   },
   focusTitle: {
-    color: DuocodePalette.surface,
+    color: DuocodePalette.text,
     fontSize: 21,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
   focusMeta: {
-    color: DuocodePalette.muted,
+    color: '#C9D8F0',
     fontSize: 13,
     lineHeight: 19,
   },
@@ -536,6 +652,20 @@ const styles = StyleSheet.create({
   },
   focusButtonText: {
     color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  focusStartButton: {
+    backgroundColor: '#163325',
+    borderWidth: 1,
+    borderColor: DuocodePalette.green,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  focusStartButtonText: {
+    color: DuocodePalette.code,
     fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
@@ -556,13 +686,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   focusInfoLabel: {
-    color: DuocodePalette.muted,
+    color: '#A9C5E8',
     fontSize: 11,
     fontFamily: Fonts.mono,
   },
   focusInfoValue: {
-    color: DuocodePalette.surface,
-    fontSize: 15,
+    color: DuocodePalette.text,
+    fontSize: 17,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
@@ -586,7 +716,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   panelMeta: {
-    color: DuocodePalette.code,
+    color: DuocodePalette.terminalBlue,
     fontSize: 12,
     fontFamily: Fonts.mono,
     flex: 1,
@@ -661,23 +791,23 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   unitEyebrow: {
-    color: DuocodePalette.code,
+    color: DuocodePalette.terminalBlue,
     fontSize: 12,
     fontFamily: Fonts.mono,
   },
   unitTitle: {
-    color: DuocodePalette.surface,
+    color: DuocodePalette.text,
     fontSize: 18,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
   unitMeta: {
-    color: DuocodePalette.muted,
+    color: '#B6C7E3',
     fontSize: 12,
     lineHeight: 18,
   },
   unitProgress: {
-    color: DuocodePalette.accent,
+    color: DuocodePalette.code,
     fontSize: 16,
     fontWeight: '900',
     fontFamily: Fonts.mono,
@@ -700,15 +830,75 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   collapsedHintText: {
-    color: DuocodePalette.muted,
+    color: '#B6C7E3',
     fontSize: 13,
     lineHeight: 19,
   },
+  completedUnitsShell: {
+    gap: 10,
+    marginTop: 4,
+  },
+  completedUnitsToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+  },
+  completedUnitsCopy: {
+    gap: 4,
+  },
+  completedUnitsTitle: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  completedUnitsMeta: {
+    color: '#B6C7E3',
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+  },
+  completedUnitsAction: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  completedUnitsList: {
+    gap: 10,
+  },
+  completedUnitCard: {
+    backgroundColor: '#101C2F',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 4,
+  },
+  completedUnitCardSelected: {
+    borderColor: DuocodePalette.accent,
+  },
+  completedUnitEyebrow: {
+    color: '#9DB8DA',
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  completedUnitTitle: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
   pathShell: {
     position: 'relative',
-    paddingVertical: 18,
-    paddingHorizontal: 14,
-    paddingBottom: 26,
+    paddingVertical: 22,
+    paddingHorizontal: 26,
+    paddingBottom: 34,
   },
   pathRail: {
     position: 'absolute',
@@ -721,7 +911,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#132844',
   },
   lessonRow: {
-    minHeight: 178,
+    minHeight: 196,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -847,7 +1037,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalBadgeValue: {
-    color: DuocodePalette.surface,
+    color: DuocodePalette.text,
     fontSize: 16,
     fontWeight: '900',
     fontFamily: Fonts.mono,
