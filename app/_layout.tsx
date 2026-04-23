@@ -23,6 +23,7 @@ function AuthRedirector() {
     const inLogin = topSegment === 'login';
     const inAdmin = topSegment === 'admin';
     const inLesson = topSegment === 'lesson';
+    const inPractice = topSegment === 'practice';
 
     if (!user && !inLogin) {
       router.replace('/login');
@@ -34,7 +35,7 @@ function AuthRedirector() {
       return;
     }
 
-    if (user?.role === 'student' && !inTabs && !inLesson) {
+    if (user?.role === 'student' && !inTabs && !inLesson && !inPractice) {
       router.replace('/(tabs)');
     }
   }, [loading, router, user, segments]);
@@ -53,6 +54,7 @@ function RootNavigator() {
           <Stack.Screen name="login" />
           <Stack.Screen name="admin" />
           <Stack.Screen name="lesson" />
+          <Stack.Screen name="practice" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
