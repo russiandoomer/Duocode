@@ -19,6 +19,8 @@ const MAPPING = {
   'book.fill': 'school',
   'person.fill': 'person',
   magnifyingglass: 'search',
+  'terminal.fill': 'terminal',
+  'square.and.pencil': 'edit-note',
   'gamecontroller.fill': 'videogame-asset',
   'chart.bar.fill': 'bar-chart',
   'chevron.left.forwardslash.chevron.right': 'code',
