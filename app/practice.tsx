@@ -21,8 +21,18 @@ function LoadingState() {
   );
 }
 
+function getSafePracticeXp(exercise: LearnerExercise) {
+  const reward = Number(exercise.practiceXpReward);
+
+  if (Number.isFinite(reward) && reward > 0) {
+    return reward;
+  }
+
+  return Math.max(5, Math.round(Number(exercise.xpReward || 0) * 0.35));
+}
+
 function rewardLabel(exercise: LearnerExercise) {
-  return `+${exercise.practiceXpReward} XP practica`;
+  return `+${getSafePracticeXp(exercise)} XP practica`;
 }
 
 function findInitialExercise(topic: LearnerTopic | null, requestedExerciseId?: string) {
@@ -51,6 +61,45 @@ function buildPracticeTitle(exercise: LearnerExercise) {
       return 'Repasa corrigiendo el error';
     default:
       return 'Repasa resolviendo el codigo';
+  }
+}
+
+function getExerciseShortTitle(exercise: LearnerExercise) {
+  const title = String(exercise.title || '');
+  const parts = title.split('·').map((part) => part.trim()).filter(Boolean);
+
+  return parts[parts.length - 1] || title;
+}
+
+function buildPracticeQuestion(exercise: LearnerExercise) {
+  const shortTitle = getExerciseShortTitle(exercise);
+
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return `¿Que opcion describe correctamente ${shortTitle.toLowerCase()}?`;
+    case 'completion':
+      return `¿Que palabra, operador o expresion falta en el fragmento de ${shortTitle.toLowerCase()}?`;
+    case 'prediction':
+      return `¿Que salida exacta produce este fragmento de ${shortTitle.toLowerCase()}?`;
+    case 'debugging':
+      return `¿Que esta mal en este fragmento de ${shortTitle.toLowerCase()} y como se corrige?`;
+    default:
+      return exercise.prompt;
+  }
+}
+
+function buildPracticeQuestionHint(exercise: LearnerExercise) {
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'Lee las opciones y marca una sola: la que describe mejor el concepto.';
+    case 'completion':
+      return 'No copies todo el codigo. Escribe solo la pieza que falta.';
+    case 'prediction':
+      return 'Tu respuesta debe ser exactamente la salida final, sin texto extra.';
+    case 'debugging':
+      return 'Tu respuesta debe decir cual es la correccion principal del error.';
+    default:
+      return 'Resuelve el reto directamente en el editor.';
   }
 }
 
@@ -178,7 +227,7 @@ export default function PracticeScreen() {
       ? getChoiceOption(selectedExercise, evaluation.expectedSelectionId || null)
       : null;
   const totalPracticeXp = useMemo(
-    () => selectedTopic?.exercises.reduce((total, exercise) => total + exercise.practiceXpReward, 0) || 0,
+    () => selectedTopic?.exercises.reduce((total, exercise) => total + getSafePracticeXp(exercise), 0) || 0,
     [selectedTopic]
   );
 
@@ -327,15 +376,16 @@ export default function PracticeScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>reto de repaso actual</Text>
               <Text style={styles.challengeTitle}>{buildPracticeTitle(selectedExercise)}</Text>
-              <Text style={styles.challengeSubtitle}>{selectedExercise.title}</Text>
+              <Text style={styles.challengeSubtitle}>{getExerciseShortTitle(selectedExercise)}</Text>
               <View style={styles.promptShell}>
-                <Text style={styles.promptLabel}>pregunta</Text>
-                <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
+                <Text style={styles.promptLabel}>pregunta principal</Text>
+                <Text style={styles.promptText}>{buildPracticeQuestion(selectedExercise)}</Text>
+                <Text style={styles.promptHint}>{buildPracticeQuestionHint(selectedExercise)}</Text>
               </View>
               <View style={styles.pills}>
                 <Text style={styles.pill}>{selectedExercise.lessonTypeLabel}</Text>
                 <Text style={styles.pill}>{rewardLabel(selectedExercise)}</Text>
-                <Text style={styles.pill}>mismo tema, nuevo intento</Text>
+                <Text style={styles.pill}>solo repaso</Text>
               </View>
             </View>
 
@@ -372,12 +422,16 @@ export default function PracticeScreen() {
                 <View style={styles.optionList}>
                   {selectedExercise.choiceOptions.map((option) => {
                     const isActive = option.id === selectedOptionId;
+                    const optionBadge = option.id.toUpperCase();
                     return (
                       <Pressable
                         key={option.id}
                         style={[styles.optionCard, isActive && styles.optionCardSelected]}
                         onPress={() => setSelectedOptionId(option.id)}>
-                        <Text style={styles.optionTitle}>{option.label}</Text>
+                        <View style={styles.optionHeader}>
+                          <Text style={styles.optionBadge}>{optionBadge}</Text>
+                          <Text style={styles.optionTitle}>{isActive ? 'respuesta seleccionada' : 'respuesta posible'}</Text>
+                        </View>
                         <Text style={styles.optionDetail}>{option.detail}</Text>
                       </Pressable>
                     );
@@ -696,6 +750,11 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
+  promptHint: {
+    color: '#D4E2F8',
+    fontSize: 13,
+    lineHeight: 19,
+  },
   pills: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -817,6 +876,25 @@ const styles = StyleSheet.create({
   optionList: {
     gap: 12,
   },
+  optionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  optionBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
+    lineHeight: 26,
+  },
   optionCard: {
     backgroundColor: DuocodePalette.surfaceAlt,
     borderWidth: 1,
@@ -830,15 +908,16 @@ const styles = StyleSheet.create({
     backgroundColor: DuocodePalette.accentSoft,
   },
   optionTitle: {
-    color: DuocodePalette.text,
-    fontSize: 13,
+    color: '#CFE0F8',
+    fontSize: 11,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
   optionDetail: {
-    color: DuocodePalette.muted,
-    fontSize: 12,
-    lineHeight: 18,
+    color: DuocodePalette.text,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '800',
   },
   snippetBox: {
     backgroundColor: DuocodePalette.surfaceAlt,
