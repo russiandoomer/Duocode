@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { DuocodePalette } from '@/constants/duocode-theme';
 import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
 
-const PRACTICE_CARD_WIDTH = 286;
+const TOPICS_PER_PAGE = 5;
 
 function LoadingState() {
   return (
@@ -25,6 +35,7 @@ export default function PracticeHubScreen() {
   const params = useLocalSearchParams<{ topicId?: string | string[] }>();
   const { dashboard, loading } = useLearnerDashboard();
   const sliderRef = useRef<ScrollView | null>(null);
+  const { width } = useWindowDimensions();
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
@@ -63,6 +74,17 @@ export default function PracticeHubScreen() {
     0,
     practiceTopics.findIndex((topic) => topic.id === selectedTopic?.id)
   );
+  const practicePages = useMemo(() => {
+    const pages = [];
+
+    for (let index = 0; index < practiceTopics.length; index += TOPICS_PER_PAGE) {
+      pages.push(practiceTopics.slice(index, index + TOPICS_PER_PAGE));
+    }
+
+    return pages;
+  }, [practiceTopics]);
+  const currentPageIndex = Math.floor(selectedTopicIndex / TOPICS_PER_PAGE);
+  const pageWidth = Math.max(width - 72, 280);
   const totalPracticeXp = useMemo(
     () => selectedTopic?.exercises.reduce((total, exercise) => total + exercise.practiceXpReward, 0) || 0,
     [selectedTopic]
@@ -74,23 +96,31 @@ export default function PracticeHubScreen() {
     }
 
     sliderRef.current?.scrollTo({
-      x: selectedTopicIndex * (PRACTICE_CARD_WIDTH + 14),
+      x: currentPageIndex * pageWidth,
       animated: true,
     });
-  }, [selectedTopic, selectedTopicIndex]);
+  }, [currentPageIndex, pageWidth, selectedTopic]);
 
   if (loading || !dashboard) {
     return <LoadingState />;
   }
 
-  function selectTopicByIndex(index: number) {
-    const nextTopic = practiceTopics[index];
+  function selectPageByIndex(pageIndex: number) {
+    const nextPage = practicePages[pageIndex];
 
-    if (!nextTopic) {
+    if (!nextPage?.length) {
       return;
     }
 
-    setSelectedTopicId(nextTopic.id);
+    setSelectedTopicId(nextPage[0].id);
+  }
+
+  function handlePageScrollEnd(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const nextPageIndex = Math.round(event.nativeEvent.contentOffset.x / pageWidth);
+
+    if (nextPageIndex !== currentPageIndex) {
+      selectPageByIndex(nextPageIndex);
+    }
   }
 
   function openPracticeTopic() {
@@ -155,24 +185,24 @@ export default function PracticeHubScreen() {
         <View style={styles.card}>
           <View style={styles.sectionHeader}>
             <Text style={styles.cardTitle}>temas por practicar</Text>
-            <Text style={styles.sectionMeta}>{`${selectedTopicIndex + 1}/${practiceTopics.length}`}</Text>
+            <Text style={styles.sectionMeta}>{`pagina ${currentPageIndex + 1}/${practicePages.length}`}</Text>
           </View>
 
           <View style={styles.sliderControls}>
             <Pressable
-              style={[styles.navButton, selectedTopicIndex === 0 && styles.navButtonDisabled]}
-              onPress={() => selectTopicByIndex(selectedTopicIndex - 1)}
-              disabled={selectedTopicIndex === 0}>
+              style={[styles.navButton, currentPageIndex === 0 && styles.navButtonDisabled]}
+              onPress={() => selectPageByIndex(currentPageIndex - 1)}
+              disabled={currentPageIndex === 0}>
               <Text style={styles.navButtonText}>← ANTERIOR</Text>
             </Pressable>
 
             <Pressable
               style={[
                 styles.navButton,
-                selectedTopicIndex === practiceTopics.length - 1 && styles.navButtonDisabled,
+                currentPageIndex === practicePages.length - 1 && styles.navButtonDisabled,
               ]}
-              onPress={() => selectTopicByIndex(selectedTopicIndex + 1)}
-              disabled={selectedTopicIndex === practiceTopics.length - 1}>
+              onPress={() => selectPageByIndex(currentPageIndex + 1)}
+              disabled={currentPageIndex === practicePages.length - 1}>
               <Text style={styles.navButtonText}>SIGUIENTE →</Text>
             </Pressable>
           </View>
@@ -180,30 +210,50 @@ export default function PracticeHubScreen() {
           <ScrollView
             ref={sliderRef}
             horizontal
-            snapToInterval={PRACTICE_CARD_WIDTH + 14}
-            decelerationRate="fast"
+            pagingEnabled
             showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handlePageScrollEnd}
             contentContainerStyle={styles.slider}>
-            {practiceTopics.map((topic) => {
-              const isSelected = topic.id === selectedTopic?.id;
-              return (
-                <Pressable
-                  key={topic.id}
-                  style={[styles.slide, isSelected && styles.slideSelected]}
-                  onPress={() => setSelectedTopicId(topic.id)}>
-                  <Text style={styles.slideEyebrow}>{topic.level}</Text>
-                  <Text style={styles.slideTitle}>{topic.title}</Text>
-                  <Text style={styles.slideText}>{topic.lessonGoal}</Text>
-                  <Text style={styles.slideMeta}>{`${topic.exercises.length} retos rehechos · ${topic.progressPercent}% de la leccion base`}</Text>
-                </Pressable>
-              );
-            })}
+            {practicePages.map((pageTopics, pageIndex) => (
+              <View key={`practice-page-${pageIndex + 1}`} style={[styles.slidePage, { width: pageWidth }]}>
+                <Text style={styles.pageLabel}>{`bloque ${pageIndex + 1}`}</Text>
+                <View style={styles.pageTopics}>
+                  {pageTopics.map((topic, topicIndex) => {
+                    const isSelected = topic.id === selectedTopic?.id;
+                    return (
+                      <Pressable
+                        key={topic.id}
+                        style={[styles.slide, isSelected && styles.slideSelected]}
+                        onPress={() => setSelectedTopicId(topic.id)}>
+                        <View style={styles.slideHeader}>
+                          <Text style={styles.slideEyebrow}>{`${topic.level} · ${pageIndex * TOPICS_PER_PAGE + topicIndex + 1}`}</Text>
+                          {isSelected ? <Text style={styles.slideChip}>ACTIVO</Text> : null}
+                        </View>
+                        <Text style={styles.slideTitle}>{topic.title}</Text>
+                        <Text style={styles.slideText}>{topic.lessonGoal}</Text>
+                        <Text style={styles.slideMeta}>{`${topic.exercises.length} retos rehechos · ${topic.progressPercent}% de la leccion base`}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
           </ScrollView>
 
           <View style={styles.pagination}>
-            {practiceTopics.map((topic) => {
-              const isActive = topic.id === selectedTopic?.id;
-              return <View key={topic.id} style={[styles.paginationDot, isActive && styles.paginationDotActive]} />;
+            {practicePages.map((_, pageIndex) => {
+              const isActive = pageIndex === currentPageIndex;
+
+              return (
+                <Pressable
+                  key={`practice-dot-${pageIndex + 1}`}
+                  style={[styles.paginationDot, isActive && styles.paginationDotActive]}
+                  onPress={() => selectPageByIndex(pageIndex)}>
+                  <Text style={[styles.paginationDotText, isActive && styles.paginationDotTextActive]}>
+                    {pageIndex + 1}
+                  </Text>
+                </Pressable>
+              );
             })}
           </View>
         </View>
@@ -379,11 +429,21 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
   },
   slider: {
-    gap: 14,
-    paddingRight: 14,
+    gap: 0,
+  },
+  slidePage: {
+    gap: 12,
+    paddingRight: 12,
+  },
+  pageLabel: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  pageTopics: {
+    gap: 12,
   },
   slide: {
-    width: PRACTICE_CARD_WIDTH,
     backgroundColor: DuocodePalette.surfaceAlt,
     borderRadius: 22,
     borderWidth: 1,
@@ -395,10 +455,27 @@ const styles = StyleSheet.create({
     borderColor: DuocodePalette.accent,
     backgroundColor: DuocodePalette.accentSoft,
   },
+  slideHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
   slideEyebrow: {
     color: DuocodePalette.code,
     fontSize: 11,
     fontFamily: Fonts.mono,
+  },
+  slideChip: {
+    backgroundColor: '#163325',
+    borderWidth: 1,
+    borderColor: DuocodePalette.green,
+    borderRadius: 999,
+    color: DuocodePalette.code,
+    fontSize: 10,
+    fontFamily: Fonts.mono,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   slideTitle: {
     color: DuocodePalette.text,
@@ -423,14 +500,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    minWidth: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#305072',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   paginationDotActive: {
-    width: 22,
     backgroundColor: DuocodePalette.accent,
+  },
+  paginationDotText: {
+    color: '#D7E7FC',
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+    fontWeight: '900',
+  },
+  paginationDotTextActive: {
+    color: DuocodePalette.surface,
   },
   contextItem: {
     backgroundColor: DuocodePalette.surfaceAlt,
