@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
+  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -37,6 +38,7 @@ export default function PracticeHubScreen() {
   const sliderRef = useRef<ScrollView | null>(null);
   const { width } = useWindowDimensions();
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [detailVisible, setDetailVisible] = useState(false);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
   const practiceTopics = useMemo(
@@ -128,12 +130,19 @@ export default function PracticeHubScreen() {
       return;
     }
 
+    setDetailVisible(false);
+
     router.push({
       pathname: '/practice',
       params: {
         topicId: selectedTopic.id,
       },
     });
+  }
+
+  function openPracticeDetail(topicId: string) {
+    setSelectedTopicId(topicId);
+    setDetailVisible(true);
   }
 
   if (!practiceTopics.length) {
@@ -224,7 +233,7 @@ export default function PracticeHubScreen() {
                       <Pressable
                         key={topic.id}
                         style={[styles.slide, isSelected && styles.slideSelected]}
-                        onPress={() => setSelectedTopicId(topic.id)}>
+                        onPress={() => openPracticeDetail(topic.id)}>
                         <View style={styles.slideHeader}>
                           <Text style={styles.slideEyebrow}>{`${topic.level} · ${pageIndex * TOPICS_PER_PAGE + topicIndex + 1}`}</Text>
                           {isSelected ? <Text style={styles.slideChip}>ACTIVO</Text> : null}
@@ -257,50 +266,70 @@ export default function PracticeHubScreen() {
             })}
           </View>
         </View>
+      </ScrollView>
 
-        {selectedTopic ? (
-          <>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>contexto del tema</Text>
+      <Modal
+        visible={detailVisible && Boolean(selectedTopic)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDetailVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setDetailVisible(false)} />
 
-              <View style={styles.contextItem}>
-                <Text style={styles.contextLabel}>que estas repasando</Text>
-                <Text style={styles.contextValue}>{selectedTopic.lessonGoal}</Text>
-              </View>
+          <View style={styles.modalCard}>
+            {selectedTopic ? (
+              <>
+                <View style={styles.modalHeader}>
+                  <View style={styles.modalHeaderCopy}>
+                    <Text style={styles.modalEyebrow}>{`${selectedTopic.level} · ${selectedTopic.unitTitle}`}</Text>
+                    <Text style={styles.modalTitle}>{selectedTopic.title}</Text>
+                    <Text style={styles.modalText}>
+                      Repaso de una leccion ya completada. Aqui no avanzas contenido nuevo: solo refuerzas lo aprendido.
+                    </Text>
+                  </View>
 
-              <View style={styles.contextItem}>
-                <Text style={styles.contextLabel}>de donde viene</Text>
-                <Text style={styles.contextValue}>
-                  Este repaso sale de la misma leccion que ya completaste en `Clases`. No desbloquea contenido nuevo; solo refuerza lo aprendido.
-                </Text>
-              </View>
+                  <Pressable style={styles.modalCloseButton} onPress={() => setDetailVisible(false)}>
+                    <Text style={styles.modalCloseButtonText}>CERRAR</Text>
+                  </Pressable>
+                </View>
 
-              <View style={styles.contextItem}>
-                <Text style={styles.contextLabel}>que ganas aqui</Text>
-                <Text style={styles.contextValue}>
-                  Rehaces los retos ya aprobados con menos recompensa, pero mantienes el tema fresco y mejoras seguridad al responder.
-                </Text>
-              </View>
-            </View>
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionLabel}>que vas a reforzar</Text>
+                  <Text style={styles.modalSectionText}>{selectedTopic.lessonGoal}</Text>
+                </View>
 
-            <View style={styles.card}>
-              <View style={styles.practiceSummary}>
-                <View style={styles.practiceSummaryCopy}>
-                  <Text style={styles.contextLabel}>repaso seleccionado</Text>
-                  <Text style={styles.practiceSummaryTitle}>{selectedTopic.title}</Text>
-                  <Text style={styles.practiceSummaryText}>
-                    {`${selectedTopic.exercises.length} retos disponibles · ${totalPracticeXp} XP en total si vuelves a completarlos.`}
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionLabel}>como funciona</Text>
+                  <Text style={styles.modalSectionText}>
+                    Rehaces la misma base de la leccion original con menor XP, para recordar mejor y responder con mas seguridad.
                   </Text>
+                </View>
+
+                <View style={styles.modalBadgeRow}>
+                  <View style={styles.modalBadge}>
+                    <Text style={styles.modalBadgeValue}>{`${selectedTopic.exercises.length}`}</Text>
+                    <Text style={styles.modalBadgeLabel}>retos</Text>
+                  </View>
+
+                  <View style={styles.modalBadge}>
+                    <Text style={styles.modalBadgeValue}>{`${totalPracticeXp} XP`}</Text>
+                    <Text style={styles.modalBadgeLabel}>recompensa total</Text>
+                  </View>
+
+                  <View style={styles.modalBadge}>
+                    <Text style={styles.modalBadgeValue}>35%</Text>
+                    <Text style={styles.modalBadgeLabel}>del XP original</Text>
+                  </View>
                 </View>
 
                 <Pressable style={styles.primaryButton} onPress={openPracticeTopic}>
                   <Text style={styles.primaryButtonText}>ABRIR REPASO</Text>
                 </Pressable>
-              </View>
-            </View>
-          </>
-        ) : null}
-      </ScrollView>
+              </>
+            ) : null}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -520,48 +549,6 @@ const styles = StyleSheet.create({
   paginationDotTextActive: {
     color: DuocodePalette.surface,
   },
-  contextItem: {
-    backgroundColor: DuocodePalette.surfaceAlt,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    borderRadius: 18,
-    padding: 14,
-    gap: 6,
-  },
-  contextLabel: {
-    color: DuocodePalette.code,
-    fontSize: 11,
-    fontFamily: Fonts.mono,
-  },
-  contextValue: {
-    color: DuocodePalette.text,
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: '800',
-    fontFamily: Fonts.mono,
-  },
-  practiceSummary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 14,
-    flexWrap: 'wrap',
-  },
-  practiceSummaryCopy: {
-    flex: 1,
-    gap: 6,
-  },
-  practiceSummaryTitle: {
-    color: DuocodePalette.text,
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  practiceSummaryText: {
-    color: '#C8D7EE',
-    fontSize: 13,
-    lineHeight: 19,
-  },
   primaryButton: {
     backgroundColor: DuocodePalette.accentSoft,
     borderWidth: 1,
@@ -575,6 +562,114 @@ const styles = StyleSheet.create({
     color: DuocodePalette.accent,
     fontSize: 13,
     fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(3, 7, 18, 0.78)',
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 560,
+    backgroundColor: DuocodePalette.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 20,
+    gap: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 16,
+  },
+  modalHeaderCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  modalEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 12,
+    fontFamily: Fonts.mono,
+  },
+  modalTitle: {
+    color: DuocodePalette.text,
+    fontSize: 22,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  modalText: {
+    color: DuocodePalette.muted,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  modalSection: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 6,
+  },
+  modalSectionLabel: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  modalSectionText: {
+    color: DuocodePalette.text,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '800',
+    fontFamily: Fonts.mono,
+  },
+  modalCloseButton: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  modalCloseButtonText: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  modalBadgeRow: {
+    flexDirection: 'row',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  modalBadge: {
+    flex: 1,
+    minWidth: 120,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 4,
+    alignItems: 'center',
+  },
+  modalBadgeValue: {
+    color: DuocodePalette.text,
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
+  },
+  modalBadgeLabel: {
+    color: DuocodePalette.muted,
+    fontSize: 11,
     fontFamily: Fonts.mono,
   },
 });
