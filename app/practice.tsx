@@ -64,6 +64,21 @@ function buildPracticeTitle(exercise: LearnerExercise) {
   }
 }
 
+function buildPracticePromptLabel(exercise: LearnerExercise) {
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'pregunta que debes responder';
+    case 'completion':
+      return 'pieza que debes completar';
+    case 'prediction':
+      return 'salida que debes escribir';
+    case 'debugging':
+      return 'error que debes corregir';
+    default:
+      return 'reto que debes resolver';
+  }
+}
+
 function getExerciseShortTitle(exercise: LearnerExercise) {
   const title = String(exercise.title || '');
   const parts = title.split('·').map((part) => part.trim()).filter(Boolean);
@@ -91,7 +106,7 @@ function buildPracticeQuestion(exercise: LearnerExercise) {
 function buildPracticeQuestionHint(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'multiple-choice':
-      return 'Lee las opciones y marca una sola: la que describe mejor el concepto.';
+      return 'Toca una sola opcion, no escribes nada y despues pulsa REVISAR.';
     case 'completion':
       return 'No copies todo el codigo. Escribe solo la pieza que falta.';
     case 'prediction':
@@ -173,6 +188,8 @@ export default function PracticeScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(false);
+  const [showContext, setShowContext] = useState(false);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
   const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
@@ -206,6 +223,7 @@ export default function PracticeScreen() {
       setAnswerText('');
       setSelectedOptionId(null);
       setEvaluation(null);
+      setShowGuidance(false);
       return;
     }
 
@@ -217,6 +235,7 @@ export default function PracticeScreen() {
       );
       setEvaluation(null);
       setHydratedExerciseId(selectedExercise.id);
+      setShowGuidance(false);
     }
   }, [hydratedExerciseId, selectedExercise]);
 
@@ -318,7 +337,7 @@ export default function PracticeScreen() {
           <Text style={styles.heroEyebrow}>REPASO DE LA MISMA LECCION</Text>
           <Text style={styles.heroTitle}>{selectedTopic.title}</Text>
           <Text style={styles.heroText}>
-            Esto no es una clase nueva. Es el mismo tema que ya completaste, rehecho para fijarlo mejor con una recompensa menor.
+            Rehaces un tema que ya aprobaste para fijarlo mejor con solo el 35% del XP original.
           </Text>
 
           <View style={styles.heroBadges}>
@@ -338,19 +357,29 @@ export default function PracticeScreen() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>contexto del repaso</Text>
-          <View style={styles.contextList}>
-            <View style={styles.contextItem}>
-              <Text style={styles.contextLabel}>que estas reheciendo</Text>
-              <Text style={styles.contextValue}>{selectedTopic.lessonGoal}</Text>
-            </View>
-            <View style={styles.contextItem}>
-              <Text style={styles.contextLabel}>por que existe practica</Text>
-              <Text style={styles.contextValue}>
-                Practica sirve para volver a hacer la misma leccion cuando ya la aprobaste. Te ayuda a recordar mejor sin mezclarlo con el avance principal.
-              </Text>
-            </View>
+          <View style={styles.rowBetween}>
+            <Text style={styles.cardTitle}>contexto del repaso</Text>
+            <Pressable
+              style={[styles.guideToggle, showContext && styles.guideToggleActive]}
+              onPress={() => setShowContext((current) => !current)}>
+              <Text style={styles.guideToggleText}>{showContext ? 'HIDE CONTEXTO' : 'SHOW CONTEXTO'}</Text>
+            </Pressable>
           </View>
+          <Text style={styles.bodyText}>Vuelves a hacer la misma idea, pero como repaso rapido y con menor XP.</Text>
+          {showContext ? (
+            <View style={styles.contextList}>
+              <View style={styles.contextItem}>
+                <Text style={styles.contextLabel}>que estas reheciendo</Text>
+                <Text style={styles.contextValue}>{selectedTopic.lessonGoal}</Text>
+              </View>
+              <View style={styles.contextItem}>
+                <Text style={styles.contextLabel}>por que existe practica</Text>
+                <Text style={styles.contextValue}>
+                  Practica sirve para volver a hacer la misma leccion cuando ya la aprobaste. Te ayuda a recordar mejor sin mezclarlo con el avance principal.
+                </Text>
+              </View>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.card}>
@@ -378,7 +407,7 @@ export default function PracticeScreen() {
               <Text style={styles.challengeTitle}>{buildPracticeTitle(selectedExercise)}</Text>
               <Text style={styles.challengeSubtitle}>{getExerciseShortTitle(selectedExercise)}</Text>
               <View style={styles.promptShell}>
-                <Text style={styles.promptLabel}>pregunta principal</Text>
+                <Text style={styles.promptLabel}>{buildPracticePromptLabel(selectedExercise)}</Text>
                 <Text style={styles.promptText}>{buildPracticeQuestion(selectedExercise)}</Text>
                 <Text style={styles.promptHint}>{buildPracticeQuestionHint(selectedExercise)}</Text>
               </View>
@@ -402,27 +431,48 @@ export default function PracticeScreen() {
                 </View>
               </View>
 
-              <View style={styles.guidanceCard}>
-                <Text style={styles.guidanceLead}>{buildPracticeGuidance(selectedExercise)}</Text>
-                <View style={styles.answerRuleBox}>
-                  <Text style={styles.answerRuleLabel}>como debes responder</Text>
-                  <Text style={styles.answerRuleText}>{buildPracticeAnswerRule(selectedExercise)}</Text>
+              <Pressable
+                style={[styles.guideToggle, showGuidance && styles.guideToggleActive]}
+                onPress={() => setShowGuidance((current) => !current)}>
+                <Text style={styles.guideToggleText}>{showGuidance ? 'HIDE GUIA' : 'SHOW GUIA'}</Text>
+                <Text style={styles.guideToggleHint}>
+                  {showGuidance
+                    ? 'Oculta los pasos extra y deja visible solo el reto.'
+                    : 'Abre una ayuda corta si quieres ver como responder este reto.'}
+                </Text>
+              </Pressable>
+
+              {showGuidance ? (
+                <View style={styles.guidanceCard}>
+                  <Text style={styles.guidanceLead}>{buildPracticeGuidance(selectedExercise)}</Text>
+                  <View style={styles.answerRuleBox}>
+                    <Text style={styles.answerRuleLabel}>como debes responder</Text>
+                    <Text style={styles.answerRuleText}>{buildPracticeAnswerRule(selectedExercise)}</Text>
+                  </View>
+                  <View style={styles.guidanceSteps}>
+                    {buildPracticeSteps(selectedExercise).map((step, index) => (
+                      <View key={`${selectedExercise.id}-practice-step-${index + 1}`} style={styles.guidanceStep}>
+                        <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
+                        <Text style={styles.guidanceStepText}>{step}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-                <View style={styles.guidanceSteps}>
-                  {buildPracticeSteps(selectedExercise).map((step, index) => (
-                    <View key={`${selectedExercise.id}-practice-step-${index + 1}`} style={styles.guidanceStep}>
-                      <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
-                      <Text style={styles.guidanceStepText}>{step}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
+              ) : null}
 
               {selectedExercise.mode === 'choice' ? (
                 <View style={styles.optionList}>
+                  <View style={styles.choiceInfoCard}>
+                    <Text style={styles.choiceInfoEyebrow}>elige 1 opcion</Text>
+                    <Text style={styles.choiceInfoText}>
+                      Toca la tarjeta que mejor responde la pregunta. Cuando ya la tengas elegida, pulsa `REVISAR`.
+                    </Text>
+                  </View>
                   {selectedExercise.choiceOptions.map((option) => {
                     const isActive = option.id === selectedOptionId;
                     const optionBadge = option.id.toUpperCase();
+                    const optionHeading = option.label?.trim() || `Opcion ${optionBadge}`;
+                    const optionBody = option.detail?.trim() || optionHeading;
                     return (
                       <Pressable
                         key={option.id}
@@ -430,9 +480,10 @@ export default function PracticeScreen() {
                         onPress={() => setSelectedOptionId(option.id)}>
                         <View style={styles.optionHeader}>
                           <Text style={styles.optionBadge}>{optionBadge}</Text>
-                          <Text style={styles.optionTitle}>{isActive ? 'respuesta seleccionada' : 'respuesta posible'}</Text>
+                          <Text style={styles.optionTitle}>{optionHeading}</Text>
+                          {isActive ? <Text style={styles.optionStatus}>elegida</Text> : null}
                         </View>
-                        <Text style={styles.optionDetail}>{option.detail}</Text>
+                        <Text style={styles.optionDetail}>{optionBody}</Text>
                       </Pressable>
                     );
                   })}
@@ -813,6 +864,29 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
+  guideToggle: {
+    backgroundColor: '#0F1A2D',
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 18,
+    padding: 14,
+    gap: 4,
+  },
+  guideToggleActive: {
+    borderColor: DuocodePalette.accent,
+    backgroundColor: '#112743',
+  },
+  guideToggleText: {
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  guideToggleHint: {
+    color: '#C9D9F0',
+    fontSize: 12,
+    lineHeight: 18,
+  },
   guidanceCard: {
     backgroundColor: '#101F33',
     borderWidth: 1,
@@ -876,10 +950,30 @@ const styles = StyleSheet.create({
   optionList: {
     gap: 12,
   },
+  choiceInfoCard: {
+    backgroundColor: '#0F1A2D',
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    padding: 14,
+    gap: 6,
+  },
+  choiceInfoEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  choiceInfoText: {
+    color: '#D7E6FB',
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
   optionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    justifyContent: 'space-between',
   },
   optionBadge: {
     width: 28,
@@ -908,10 +1002,24 @@ const styles = StyleSheet.create({
     backgroundColor: DuocodePalette.accentSoft,
   },
   optionTitle: {
+    flex: 1,
     color: '#CFE0F8',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
+  },
+  optionStatus: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 999,
+    color: DuocodePalette.accent,
+    fontSize: 10,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    overflow: 'hidden',
   },
   optionDetail: {
     color: DuocodePalette.text,

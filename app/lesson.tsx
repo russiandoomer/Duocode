@@ -80,6 +80,36 @@ function buildChallengeTitle(exercise: LearnerExercise) {
   }
 }
 
+function buildChallengePromptLabel(exercise: LearnerExercise) {
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'pregunta que debes responder';
+    case 'completion':
+      return 'pieza que debes completar';
+    case 'prediction':
+      return 'salida que debes escribir';
+    case 'debugging':
+      return 'error que debes corregir';
+    default:
+      return 'reto que debes resolver';
+  }
+}
+
+function buildChallengePromptHint(exercise: LearnerExercise) {
+  switch (exercise.kind) {
+    case 'multiple-choice':
+      return 'Toca una sola opcion, no escribes codigo y luego pulsa REVISAR.';
+    case 'completion':
+      return 'Escribe solo la palabra, operador o expresion faltante. No copies todo el fragmento.';
+    case 'prediction':
+      return 'Tu respuesta debe ser exactamente la salida del codigo, sin texto extra.';
+    case 'debugging':
+      return 'Corrige solo la parte clave que esta mal para que el fragmento quede bien.';
+    default:
+      return 'Edita el codigo del editor hasta que el reto quede correcto.';
+  }
+}
+
 function buildChallengeGuidance(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'multiple-choice':
@@ -169,6 +199,8 @@ export default function LessonScreen() {
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
   const [queuedNextExerciseId, setQueuedNextExerciseId] = useState<string | null>(null);
+  const [showGuidance, setShowGuidance] = useState(false);
+  const [showLessonContext, setShowLessonContext] = useState(false);
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
   const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
@@ -193,6 +225,7 @@ export default function LessonScreen() {
       setAnswerText('');
       setSelectedOptionId(null);
       setEvaluation(null);
+      setShowGuidance(false);
       return;
     }
 
@@ -204,6 +237,7 @@ export default function LessonScreen() {
       );
       setEvaluation(null);
       setHydratedExerciseId(selectedExercise.id);
+      setShowGuidance(false);
     }
   }, [hydratedExerciseId, selectedExercise]);
 
@@ -348,21 +382,31 @@ export default function LessonScreen() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>que vas a tocar</Text>
-          <View style={styles.summaryList}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>concepto</Text>
-              <Text style={styles.summaryValue}>{selectedTopic.description}</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>dinamica</Text>
-              <Text style={styles.summaryValue}>{buildModeMix(selectedTopic) || 'reto guiado'}</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>meta</Text>
-              <Text style={styles.summaryValue}>{selectedTopic.stageGoal}</Text>
-            </View>
+          <View style={styles.rowBetween}>
+            <Text style={styles.cardTitle}>que vas a tocar</Text>
+            <Pressable
+              style={[styles.guideToggle, showLessonContext && styles.guideToggleActive]}
+              onPress={() => setShowLessonContext((current) => !current)}>
+              <Text style={styles.guideToggleText}>{showLessonContext ? 'HIDE CONTEXTO' : 'SHOW CONTEXTO'}</Text>
+            </Pressable>
           </View>
+          <Text style={styles.bodyText}>{selectedTopic.description}</Text>
+          {showLessonContext ? (
+            <View style={styles.summaryList}>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>concepto</Text>
+                <Text style={styles.summaryValue}>{selectedTopic.description}</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>dinamica</Text>
+                <Text style={styles.summaryValue}>{buildModeMix(selectedTopic) || 'reto guiado'}</Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>meta</Text>
+                <Text style={styles.summaryValue}>{selectedTopic.stageGoal}</Text>
+              </View>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.card}>
@@ -418,10 +462,6 @@ export default function LessonScreen() {
               );
             })}
           </View>
-
-          <Text style={styles.routeHint}>
-            Los retos ya resueltos se cierran en esta vista. Al final vuelven como repaso en `Practica`.
-          </Text>
         </View>
 
         {selectedExercise ? (
@@ -431,8 +471,9 @@ export default function LessonScreen() {
               <Text style={styles.challengeTitle}>{buildChallengeTitle(selectedExercise)}</Text>
               <Text style={styles.challengeSubtitle}>{selectedExercise.title}</Text>
               <View style={styles.promptShell}>
-                <Text style={styles.promptLabel}>pregunta</Text>
+                <Text style={styles.promptLabel}>{buildChallengePromptLabel(selectedExercise)}</Text>
                 <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
+                <Text style={styles.promptHint}>{buildChallengePromptHint(selectedExercise)}</Text>
               </View>
               <View style={styles.pills}>
                 <Text style={styles.pill}>{selectedExercise.lessonTypeLabel}</Text>
@@ -466,34 +507,60 @@ export default function LessonScreen() {
                 )}
               </View>
 
-              <View style={styles.guidanceCard}>
-                <Text style={styles.guidanceLead}>{buildChallengeGuidance(selectedExercise)}</Text>
-                <View style={styles.answerRuleBox}>
-                  <Text style={styles.answerRuleLabel}>como debes responder</Text>
-                  <Text style={styles.answerRuleText}>{buildChallengeAnswerRule(selectedExercise)}</Text>
+              <Pressable
+                style={[styles.guideToggle, showGuidance && styles.guideToggleActive]}
+                onPress={() => setShowGuidance((current) => !current)}>
+                <Text style={styles.guideToggleText}>{showGuidance ? 'HIDE GUIA' : 'SHOW GUIA'}</Text>
+                <Text style={styles.guideToggleHint}>
+                  {showGuidance
+                    ? 'Oculta los pasos extra y deja visible solo el reto actual.'
+                    : 'Abre una ayuda corta si quieres ver como responder este reto.'}
+                </Text>
+              </Pressable>
+
+              {showGuidance ? (
+                <View style={styles.guidanceCard}>
+                  <Text style={styles.guidanceLead}>{buildChallengeGuidance(selectedExercise)}</Text>
+                  <View style={styles.answerRuleBox}>
+                    <Text style={styles.answerRuleLabel}>como debes responder</Text>
+                    <Text style={styles.answerRuleText}>{buildChallengeAnswerRule(selectedExercise)}</Text>
+                  </View>
+                  <View style={styles.guidanceSteps}>
+                    {buildChallengeSteps(selectedExercise).map((step, index) => (
+                      <View key={`${selectedExercise.id}-step-${index + 1}`} style={styles.guidanceStep}>
+                        <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
+                        <Text style={styles.guidanceStepText}>{step}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-                <View style={styles.guidanceSteps}>
-                  {buildChallengeSteps(selectedExercise).map((step, index) => (
-                    <View key={`${selectedExercise.id}-step-${index + 1}`} style={styles.guidanceStep}>
-                      <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
-                      <Text style={styles.guidanceStepText}>{step}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
+              ) : null}
 
               {selectedExercise.mode === 'choice' ? (
                 <View style={styles.optionList}>
+                  <View style={styles.choiceInfoCard}>
+                    <Text style={styles.choiceInfoEyebrow}>elige 1 opcion</Text>
+                    <Text style={styles.choiceInfoText}>
+                      Toca la tarjeta que mejor responde la pregunta. Cuando ya la tengas elegida, pulsa `REVISAR`.
+                    </Text>
+                  </View>
                   {selectedExercise.choiceOptions.map((option) => {
                     const isActive = option.id === selectedOptionId;
+                    const optionBadge = option.id.toUpperCase();
+                    const optionHeading = option.label?.trim() || `Opcion ${optionBadge}`;
+                    const optionBody = option.detail?.trim() || optionHeading;
                     return (
                       <Pressable
                         key={option.id}
                         style={[styles.optionCard, isActive && styles.optionCardSelected]}
                         onPress={() => setSelectedOptionId(option.id)}
                         disabled={selectedExercise.completed}>
-                        <Text style={styles.optionTitle}>{option.label}</Text>
-                        <Text style={styles.optionDetail}>{option.detail}</Text>
+                        <View style={styles.optionHeader}>
+                          <Text style={styles.optionBadge}>{optionBadge}</Text>
+                          <Text style={styles.optionTitle}>{optionHeading}</Text>
+                          {isActive ? <Text style={styles.optionStatus}>elegida</Text> : null}
+                        </View>
+                        <Text style={styles.optionDetail}>{optionBody}</Text>
                       </Pressable>
                     );
                   })}
@@ -888,6 +955,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: Fonts.mono,
   },
+  promptHint: {
+    color: '#D4E2F8',
+    fontSize: 13,
+    lineHeight: 19,
+  },
   challengeTitle: {
     color: DuocodePalette.text,
     fontSize: 20,
@@ -957,6 +1029,30 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
+  guideToggle: {
+    backgroundColor: '#0F1A2D',
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  guideToggleActive: {
+    borderColor: DuocodePalette.accent,
+    backgroundColor: '#112743',
+  },
+  guideToggleText: {
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  guideToggleHint: {
+    color: '#C9D9F0',
+    fontSize: 12,
+    lineHeight: 18,
+  },
   guidanceCard: {
     backgroundColor: '#101F33',
     borderWidth: 1,
@@ -1020,6 +1116,45 @@ const styles = StyleSheet.create({
   optionList: {
     gap: 12,
   },
+  choiceInfoCard: {
+    backgroundColor: '#0F1A2D',
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    padding: 14,
+    gap: 6,
+  },
+  choiceInfoEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  choiceInfoText: {
+    color: '#D7E6FB',
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
+  optionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    justifyContent: 'space-between',
+  },
+  optionBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    textAlign: 'center',
+    lineHeight: 26,
+  },
   optionCard: {
     backgroundColor: DuocodePalette.surfaceAlt,
     borderWidth: 1,
@@ -1033,15 +1168,30 @@ const styles = StyleSheet.create({
     backgroundColor: DuocodePalette.accentSoft,
   },
   optionTitle: {
-    color: DuocodePalette.text,
-    fontSize: 13,
+    flex: 1,
+    color: '#CFE0F8',
+    fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
+  optionStatus: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 999,
+    color: DuocodePalette.accent,
+    fontSize: 10,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    overflow: 'hidden',
+  },
   optionDetail: {
-    color: DuocodePalette.muted,
-    fontSize: 12,
-    lineHeight: 18,
+    color: DuocodePalette.text,
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '800',
   },
   snippetBox: {
     backgroundColor: DuocodePalette.surfaceAlt,
