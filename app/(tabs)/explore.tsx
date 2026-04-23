@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { NeonLessonNode } from '@/components/duocode/neon-lesson-node';
 import { DuocodePalette } from '@/constants/duocode-theme';
@@ -8,8 +8,6 @@ import { Fonts } from '@/constants/theme';
 import { useLearnerDashboard } from '@/hooks/use-learner-dashboard';
 import { groupCourseTopics } from '@/lib/duocode-curriculum';
 import type { DecoratedLesson } from '@/lib/duocode-curriculum';
-
-const PATH_OFFSETS = [0, 116, 188, 116, 0];
 
 function LoadingState() {
   return (
@@ -65,12 +63,13 @@ function buildLessonModeMix(lesson: DecoratedLesson) {
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const { width: viewportWidth } = useWindowDimensions();
   const params = useLocalSearchParams<{ topicId?: string | string[] }>();
   const { dashboard, loading } = useLearnerDashboard();
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
-  const [unitsExpanded, setUnitsExpanded] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [completedUnitsExpanded, setCompletedUnitsExpanded] = useState(false);
   const [modalLessonId, setModalLessonId] = useState<string | null>(null);
 
@@ -204,6 +203,22 @@ export default function ExploreScreen() {
     null;
   const modalExercise = getFirstPendingExercise(lessonForModal);
   const autoCurrentExercise = getFirstPendingExercise(autoCurrentLesson);
+  const isWideLayout = viewportWidth >= 1180;
+  const pathOffsets = useMemo(() => {
+    if (viewportWidth >= 1480) {
+      return [0, 148, 236, 148, 0];
+    }
+
+    if (viewportWidth >= 1180) {
+      return [0, 118, 188, 118, 0];
+    }
+
+    if (viewportWidth >= 860) {
+      return [0, 78, 132, 78, 0];
+    }
+
+    return [0, 40, 72, 40, 0];
+  }, [viewportWidth]);
   const queuedUnits = useMemo(() => {
     if (!selectedLevel) {
       return [];
@@ -263,74 +278,31 @@ export default function ExploreScreen() {
     setModalLessonId(lesson.id);
   }
 
-  return (
-    <>
-      <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-        <View style={styles.heroCard}>
-          <Text style={styles.heroLabel}>course.navigator()</Text>
-          <Text style={styles.heroTitle}>Aprender por unidad</Text>
-          <Text style={styles.heroText}>
-            Siempre ves en que unidad y en que leccion vas. El detalle completo aparece solo cuando
-            abres una leccion del camino.
-          </Text>
+  function renderSidebar() {
+    if (!selectedLevel) {
+      return null;
+    }
+
+    return (
+      <View style={styles.sidebarPanel}>
+        <View style={styles.sidebarHeader}>
+          <View style={styles.sidebarHeaderCopy}>
+            <Text style={styles.sidebarLabel}>course.panel()</Text>
+            <Text style={styles.sidebarTitle}>Niveles y unidades</Text>
+          </View>
+
+          <Pressable style={styles.sidebarToggleButton} onPress={() => setSidebarVisible(false)}>
+            <Text style={styles.sidebarToggleButtonText}>OCULTAR</Text>
+          </Pressable>
         </View>
 
-        {selectedLevel ? (
-          <View style={styles.focusCard}>
-            <View style={styles.focusHeader}>
-              <View style={styles.focusCopy}>
-                <Text style={styles.focusEyebrow}>{selectedLevel.name}</Text>
-                <Text style={styles.focusTitle}>{autoCurrentUnit?.title || 'Sin unidad'}</Text>
-                <Text style={styles.focusMeta}>
-                  {autoCurrentLesson
-                    ? `Clase sugerida: Leccion ${autoCurrentLesson.lessonNumber} · ${autoCurrentLesson.title}`
-                    : 'Selecciona una leccion para empezar.'}
-                </Text>
-              </View>
-
-              <View style={styles.focusActions}>
-                <Pressable style={styles.focusButton} onPress={() => setUnitsExpanded((value) => !value)}>
-                  <Text style={styles.focusButtonText}>{unitsExpanded ? 'OCULTAR UNIDADES' : 'VER UNIDADES'}</Text>
-                </Pressable>
-
-                {autoCurrentLesson && autoCurrentExercise ? (
-                  <Pressable style={styles.focusStartButton} onPress={() => openLesson(autoCurrentLesson)}>
-                    <Text style={styles.focusStartButtonText}>EMPEZAR CLASE</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
-
-            <View style={styles.focusInfoRow}>
-              <View style={styles.focusInfoCard}>
-                <Text style={styles.focusInfoLabel}>unidad actual</Text>
-                <Text style={styles.focusInfoValue}>
-                  {autoCurrentUnit ? `U${autoCurrentUnit.unitNumber}` : 'Pendiente'}
-                </Text>
-              </View>
-
-              <View style={styles.focusInfoCard}>
-                <Text style={styles.focusInfoLabel}>leccion actual</Text>
-                <Text style={styles.focusInfoValue}>
-                  {autoCurrentLesson ? `L${autoCurrentLesson.lessonNumber}` : 'Pendiente'}
-                </Text>
-              </View>
-
-              <View style={styles.focusInfoCard}>
-                <Text style={styles.focusInfoLabel}>progreso</Text>
-                <Text style={styles.focusInfoValue}>{`${selectedLevel.progressPercent}%`}</Text>
-              </View>
-            </View>
-          </View>
-        ) : null}
-
-        <View style={styles.panel}>
+        <View style={styles.sidebarSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.panelTitle}>niveles</Text>
             <Text style={styles.panelMeta}>{`${courseLevels.length} niveles`}</Text>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.levelRow}>
+          <View style={styles.sidebarLevelList}>
             {courseLevels.map((level) => {
               const isSelected = level.id === selectedLevel?.id;
 
@@ -339,6 +311,7 @@ export default function ExploreScreen() {
                   key={level.id}
                   style={[
                     styles.levelChip,
+                    styles.sidebarLevelChip,
                     isSelected && styles.levelChipSelected,
                     level.isLocked && styles.levelChipLocked,
                   ]}
@@ -354,134 +327,198 @@ export default function ExploreScreen() {
                 </Pressable>
               );
             })}
-          </ScrollView>
+          </View>
         </View>
 
-        {selectedLevel ? (
-          <View style={styles.panel}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.panelTitle}>panel de unidades</Text>
-              <Text style={styles.panelMeta}>{selectedLevel.objective}</Text>
-            </View>
+        <View style={styles.sidebarSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.panelTitle}>panel de unidades</Text>
+            <Text style={styles.panelMeta}>ruta lateral</Text>
+          </View>
 
-            {unitsExpanded ? (
-              <View style={styles.unitList}>
-                {queuedUnits.map((unit) => {
-                  const isSelected = unit.id === selectedUnit?.id;
-                  const isCurrent = unit.id === autoCurrentUnit?.id;
+          <Text style={styles.sidebarObjective}>{selectedLevel.objective}</Text>
 
-                  return (
-                    <Pressable
-                      key={unit.id}
-                      style={[
-                        styles.unitCard,
-                        isSelected && styles.unitCardSelected,
-                        unit.isLocked && styles.unitCardLocked,
-                      ]}
-                      onPress={() => {
-                        if (!unit.isLocked) {
-                          setSelectedUnitId(unit.id);
-                        }
-                      }}>
-                      <View style={styles.unitHeader}>
-                        <View style={styles.unitCopy}>
-                          <Text style={styles.unitEyebrow}>
-                            {isCurrent ? `UNIDAD ${unit.unitNumber} · AHORA` : `UNIDAD ${unit.unitNumber}`}
-                          </Text>
-                          <Text style={styles.unitTitle}>{unit.title}</Text>
-                          <Text style={styles.unitMeta}>{`${unit.completedLessons}/${unit.lessonCount} lecciones`}</Text>
-                        </View>
+          <View style={styles.unitList}>
+            {queuedUnits.map((unit) => {
+              const isSelected = unit.id === selectedUnit?.id;
+              const isCurrent = unit.id === autoCurrentUnit?.id;
 
-                        <Text style={styles.unitProgress}>{`${unit.progressPercent}%`}</Text>
-                      </View>
-
-                      <View style={styles.progressTrack}>
-                        <View style={[styles.progressFill, { width: `${unit.progressPercent}%` }]} />
-                      </View>
-                    </Pressable>
-                  );
-                })}
-
-                {completedUnits.length ? (
-                  <View style={styles.completedUnitsShell}>
-                    <Pressable
-                      style={styles.completedUnitsToggle}
-                      onPress={() => setCompletedUnitsExpanded((value) => !value)}>
-                      <View style={styles.completedUnitsCopy}>
-                        <Text style={styles.completedUnitsTitle}>unidades terminadas</Text>
-                        <Text style={styles.completedUnitsMeta}>{`${completedUnits.length} completadas`}</Text>
-                      </View>
-
-                      <Text style={styles.completedUnitsAction}>
-                        {completedUnitsExpanded ? 'OCULTAR' : 'VER'}
+              return (
+                <Pressable
+                  key={unit.id}
+                  style={[
+                    styles.unitCard,
+                    styles.sidebarUnitCard,
+                    isSelected && styles.unitCardSelected,
+                    unit.isLocked && styles.unitCardLocked,
+                  ]}
+                  onPress={() => {
+                    if (!unit.isLocked) {
+                      setSelectedUnitId(unit.id);
+                    }
+                  }}>
+                  <View style={styles.unitHeader}>
+                    <View style={styles.unitCopy}>
+                      <Text style={styles.unitEyebrow}>
+                        {isCurrent ? `UNIDAD ${unit.unitNumber} · AHORA` : `UNIDAD ${unit.unitNumber}`}
                       </Text>
-                    </Pressable>
+                      <Text style={styles.unitTitle}>{unit.title}</Text>
+                      <Text style={styles.unitMeta}>{`${unit.completedLessons}/${unit.lessonCount} lecciones`}</Text>
+                    </View>
 
-                    {completedUnitsExpanded ? (
-                      <View style={styles.completedUnitsList}>
-                        {completedUnits.map((unit) => {
-                          const isSelected = unit.id === selectedUnit?.id;
-
-                          return (
-                            <Pressable
-                              key={unit.id}
-                              style={[styles.completedUnitCard, isSelected && styles.completedUnitCardSelected]}
-                              onPress={() => setSelectedUnitId(unit.id)}>
-                              <Text style={styles.completedUnitEyebrow}>{`UNIDAD ${unit.unitNumber}`}</Text>
-                              <Text style={styles.completedUnitTitle}>{unit.title}</Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                    ) : null}
+                    <Text style={styles.unitProgress}>{`${unit.progressPercent}%`}</Text>
                   </View>
+
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${unit.progressPercent}%` }]} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {completedUnits.length ? (
+            <View style={styles.completedUnitsShell}>
+              <Pressable
+                style={styles.completedUnitsToggle}
+                onPress={() => setCompletedUnitsExpanded((value) => !value)}>
+                <View style={styles.completedUnitsCopy}>
+                  <Text style={styles.completedUnitsTitle}>unidades terminadas</Text>
+                  <Text style={styles.completedUnitsMeta}>{`${completedUnits.length} completadas`}</Text>
+                </View>
+
+                <Text style={styles.completedUnitsAction}>{completedUnitsExpanded ? 'OCULTAR' : 'VER'}</Text>
+              </Pressable>
+
+              {completedUnitsExpanded ? (
+                <View style={styles.completedUnitsList}>
+                  {completedUnits.map((unit) => {
+                    const isSelected = unit.id === selectedUnit?.id;
+
+                    return (
+                      <Pressable
+                        key={unit.id}
+                        style={[styles.completedUnitCard, isSelected && styles.completedUnitCardSelected]}
+                        onPress={() => setSelectedUnitId(unit.id)}>
+                        <Text style={styles.completedUnitEyebrow}>{`UNIDAD ${unit.unitNumber}`}</Text>
+                        <Text style={styles.completedUnitTitle}>{unit.title}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+        <View style={[styles.workspace, isWideLayout && sidebarVisible && styles.workspaceWide]}>
+          {isWideLayout && sidebarVisible ? <View style={styles.sidebarDockInline}>{renderSidebar()}</View> : null}
+
+          <View style={styles.mainColumn}>
+            {selectedLevel ? (
+              <View style={styles.pathHeroCard}>
+                <View style={styles.pathHeroTopRow}>
+                  <Pressable
+                    style={[styles.pathHeroToggle, sidebarVisible && styles.pathHeroToggleActive]}
+                    onPress={() => setSidebarVisible((value) => !value)}>
+                    <Text style={styles.pathHeroToggleText}>
+                      {sidebarVisible ? 'OCULTAR PANEL' : 'VER PANEL'}
+                    </Text>
+                  </Pressable>
+
+                  <Text style={styles.pathHeroLabel}>{selectedLevel.name}</Text>
+                </View>
+
+                <Text style={styles.pathHeroTitle}>{selectedUnit?.title || autoCurrentUnit?.title || 'Sin unidad activa'}</Text>
+                <Text style={styles.pathHeroText}>
+                  {autoCurrentLesson
+                    ? `Leccion actual: L${autoCurrentLesson.lessonNumber} · ${autoCurrentLesson.title}`
+                    : 'Elige una leccion del camino para ver su detalle y empezar.'}
+                </Text>
+
+                <View style={styles.pathHeroStats}>
+                  <View style={styles.pathHeroStatCard}>
+                    <Text style={styles.pathHeroStatLabel}>unidad actual</Text>
+                    <Text style={styles.pathHeroStatValue}>
+                      {autoCurrentUnit ? `U${autoCurrentUnit.unitNumber}` : 'Pendiente'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.pathHeroStatCard}>
+                    <Text style={styles.pathHeroStatLabel}>leccion actual</Text>
+                    <Text style={styles.pathHeroStatValue}>
+                      {autoCurrentLesson ? `L${autoCurrentLesson.lessonNumber}` : 'Pendiente'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.pathHeroStatCard}>
+                    <Text style={styles.pathHeroStatLabel}>progreso</Text>
+                    <Text style={styles.pathHeroStatValue}>{`${selectedLevel.progressPercent}%`}</Text>
+                  </View>
+                </View>
+
+                {autoCurrentLesson && autoCurrentExercise ? (
+                  <Pressable style={styles.focusStartButton} onPress={() => openLesson(autoCurrentLesson)}>
+                    <Text style={styles.focusStartButtonText}>EMPEZAR CLASE</Text>
+                  </Pressable>
                 ) : null}
               </View>
-            ) : (
-              <View style={styles.collapsedHint}>
-                <Text style={styles.collapsedHintText}>
-                  El panel esta contraido. Aun asi sigues viendo arriba tu unidad y leccion activa.
+            ) : null}
+
+            {selectedUnit ? (
+              <View style={styles.pathPanel}>
+                <View style={styles.pathPanelHeader}>
+                  <View style={styles.pathPanelCopy}>
+                    <Text style={styles.panelTitle}>camino de la unidad</Text>
+                    <Text style={styles.pathPanelMeta}>
+                      {`Unidad ${selectedUnit.unitNumber} · ${selectedUnit.lessonCount} lecciones`}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.pathShell}>
+                  <View style={styles.pathRail} />
+
+                  {selectedUnit.lessons.map((lesson, index) => {
+                    const offset = pathOffsets[index % pathOffsets.length];
+
+                    return (
+                      <View key={lesson.id} style={styles.lessonRow}>
+                        <NeonLessonNode
+                          glyph={lesson.progressPercent >= 100 ? 'OK' : lesson.lessonNumber.toString()}
+                          label={lesson.title}
+                          meta={buildLessonMeta(lesson)}
+                          isCurrent={lesson.id === selectedLesson?.id && !lesson.isLocked}
+                          isCompleted={lesson.progressPercent >= 100}
+                          isLocked={lesson.isLocked}
+                          showStartTag={lesson.id === selectedLesson?.id && !lesson.isLocked}
+                          onPress={() => openLessonDetail(lesson)}
+                          style={{ transform: [{ translateX: offset }] }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+                <Text style={styles.pathHint}>
+                  Toca una leccion del camino para ver su enfoque y abrirla sin salir de esta ruta.
                 </Text>
               </View>
-            )}
+            ) : null}
           </View>
-        ) : null}
 
-        {selectedUnit ? (
-          <View style={styles.panel}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.panelTitle}>camino de la unidad</Text>
-              <Text style={styles.panelMeta}>{`${selectedUnit.lessonCount} lecciones`}</Text>
+          {!isWideLayout && sidebarVisible ? (
+            <View style={styles.sidebarDockOverlay}>
+              <Pressable style={styles.sidebarBackdrop} onPress={() => setSidebarVisible(false)} />
+              <View style={styles.sidebarOverlaySheet}>{renderSidebar()}</View>
             </View>
-
-            <View style={styles.pathShell}>
-              <View style={styles.pathRail} />
-
-              {selectedUnit.lessons.map((lesson, index) => {
-                const offset = PATH_OFFSETS[index % PATH_OFFSETS.length];
-
-                return (
-                  <View key={lesson.id} style={styles.lessonRow}>
-                    <NeonLessonNode
-                      glyph={lesson.progressPercent >= 100 ? 'OK' : lesson.lessonNumber.toString()}
-                      label={lesson.title}
-                      meta={buildLessonMeta(lesson)}
-                      isCurrent={lesson.id === selectedLesson?.id && !lesson.isLocked}
-                      isCompleted={lesson.progressPercent >= 100}
-                      isLocked={lesson.isLocked}
-                      showStartTag={lesson.id === selectedLesson?.id && !lesson.isLocked}
-                      onPress={() => openLessonDetail(lesson)}
-                      style={{ transform: [{ translateX: offset }] }}
-                    />
-                  </View>
-                );
-              })}
-            </View>
-            <Text style={styles.pathHint}>
-              Toca una leccion del camino para ver su enfoque y abrir una vista dedicada solo para esa clase.
-            </Text>
-          </View>
-        ) : null}
+          ) : null}
+        </View>
       </ScrollView>
 
       <Modal
@@ -579,70 +616,204 @@ const styles = StyleSheet.create({
     padding: 18,
     paddingTop: 24,
     paddingBottom: 110,
+  },
+  workspace: {
+    position: 'relative',
     gap: 18,
   },
-  heroCard: {
-    backgroundColor: '#0F1D32',
-    borderRadius: 26,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 20,
-    gap: 8,
+  workspaceWide: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
-  heroLabel: {
+  mainColumn: {
+    gap: 18,
+    zIndex: 1,
+    flex: 1,
+  },
+  pathHeroCard: {
+    backgroundColor: '#0F1D32',
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 20,
+    gap: 16,
+  },
+  pathHeroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  pathHeroToggle: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  pathHeroToggleActive: {
+    backgroundColor: '#13304F',
+  },
+  pathHeroToggleText: {
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  pathHeroLabel: {
     color: DuocodePalette.code,
     fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  heroTitle: {
+  pathHeroTitle: {
     color: DuocodePalette.text,
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  heroText: {
-    color: DuocodePalette.muted,
+  pathHeroText: {
+    color: '#D2E1F7',
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
   },
-  focusCard: {
-    backgroundColor: '#10243A',
+  pathHeroStats: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  pathHeroStatCard: {
+    flex: 1,
+    minWidth: 120,
+    backgroundColor: '#132B45',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 4,
+  },
+  pathHeroStatLabel: {
+    color: '#A9C5E8',
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  pathHeroStatValue: {
+    color: DuocodePalette.text,
+    fontSize: 17,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  pathPanel: {
+    backgroundColor: DuocodePalette.surface,
     borderRadius: 28,
     borderWidth: 1,
-    borderColor: DuocodePalette.borderStrong,
-    padding: 18,
-    gap: 16,
+    borderColor: DuocodePalette.border,
+    padding: 20,
+    gap: 18,
   },
-  focusHeader: {
+  pathPanelHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 16,
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
   },
-  focusActions: {
-    gap: 10,
-    alignItems: 'flex-end',
-  },
-  focusCopy: {
+  pathPanelCopy: {
     flex: 1,
-    gap: 6,
+    gap: 4,
   },
-  focusEyebrow: {
+  pathPanelMeta: {
     color: DuocodePalette.terminalBlue,
     fontSize: 12,
     fontFamily: Fonts.mono,
   },
-  focusTitle: {
-    color: DuocodePalette.text,
-    fontSize: 21,
+  sidebarDockInline: {
+    width: 336,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+  },
+  sidebarDockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+    justifyContent: 'flex-start',
+  },
+  sidebarBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(3, 7, 18, 0.48)',
+  },
+  sidebarOverlaySheet: {
+    width: '86%',
+    maxWidth: 360,
+    paddingTop: 4,
+  },
+  sidebarPanel: {
+    backgroundColor: DuocodePalette.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 18,
+    gap: 18,
+    shadowColor: '#020617',
+    shadowOpacity: 0.24,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+  },
+  sidebarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  sidebarHeaderCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  sidebarLabel: {
+    color: DuocodePalette.code,
+    fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  focusMeta: {
-    color: '#C9D8F0',
+  sidebarTitle: {
+    color: DuocodePalette.text,
+    fontSize: 20,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  sidebarToggleButton: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  sidebarToggleButtonText: {
+    color: DuocodePalette.muted,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  sidebarSection: {
+    gap: 12,
+  },
+  sidebarLevelList: {
+    gap: 10,
+  },
+  sidebarLevelChip: {
+    minWidth: 0,
+    width: '100%',
+  },
+  sidebarObjective: {
+    color: '#C8D8EE',
     fontSize: 13,
     lineHeight: 19,
+  },
+  sidebarUnitCard: {
+    borderRadius: 20,
   },
   focusButton: {
     backgroundColor: DuocodePalette.accentSoft,
@@ -669,32 +840,6 @@ const styles = StyleSheet.create({
   focusStartButtonText: {
     color: DuocodePalette.code,
     fontSize: 12,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
-  },
-  focusInfoRow: {
-    flexDirection: 'row',
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-  focusInfoCard: {
-    flex: 1,
-    minWidth: 110,
-    backgroundColor: '#132B45',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: DuocodePalette.border,
-    padding: 14,
-    gap: 4,
-  },
-  focusInfoLabel: {
-    color: '#A9C5E8',
-    fontSize: 11,
-    fontFamily: Fonts.mono,
-  },
-  focusInfoValue: {
-    color: DuocodePalette.text,
-    fontSize: 17,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
