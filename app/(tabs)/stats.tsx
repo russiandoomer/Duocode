@@ -15,6 +15,20 @@ function LoadingState() {
   );
 }
 
+function formatJoinedDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'fecha no disponible';
+  }
+
+  return new Intl.DateTimeFormat('es-BO', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
 export default function StatsScreen() {
   const { dashboard, loading } = useLearnerDashboard();
 
@@ -25,17 +39,61 @@ export default function StatsScreen() {
   const { stats, topics, user } = dashboard;
   const activeSession = stats.recentSessions[0];
   const maxXp = Math.max(...stats.weeklyActivity.map((item) => item.xp), 1);
+  const completedTopics = topics.filter((topic) => topic.progressPercent >= 100).length;
+  const inProgressTopics = topics.filter(
+    (topic) => topic.progressPercent > 0 && topic.progressPercent < 100
+  ).length;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>stats.json</Text>
+          <Text style={styles.title}>profile.dev</Text>
           <Text style={styles.subtitle}>{`${user.track} · ${user.focus}`}</Text>
         </View>
 
         <View style={styles.levelPill}>
           <Text style={styles.levelPillText}>{`LVL ${stats.level}`}</Text>
+        </View>
+      </View>
+
+      <View style={styles.profileCard}>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarShell}>
+            <Text style={styles.avatarText}>{user.name.slice(0, 2).toUpperCase()}</Text>
+          </View>
+
+          <View style={styles.profileCopy}>
+            <Text style={styles.profileName}>{user.name}</Text>
+            <Text style={styles.profileEmail}>{user.email}</Text>
+            <View style={styles.profileBadges}>
+              <Text style={styles.profileBadge}>{user.role === 'admin' ? 'admin' : 'student'}</Text>
+              <Text style={styles.profileBadge}>{`${user.dailyGoalMinutes} min diarios`}</Text>
+              <Text style={styles.profileBadge}>{`alta ${formatJoinedDate(user.createdAt)}`}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.profileGrid}>
+          <View style={styles.profileInfoCard}>
+            <Text style={styles.profileInfoLabel}>track</Text>
+            <Text style={styles.profileInfoValue}>{user.track}</Text>
+          </View>
+
+          <View style={styles.profileInfoCard}>
+            <Text style={styles.profileInfoLabel}>focus</Text>
+            <Text style={styles.profileInfoValue}>{user.focus}</Text>
+          </View>
+
+          <View style={styles.profileInfoCard}>
+            <Text style={styles.profileInfoLabel}>temas cerrados</Text>
+            <Text style={styles.profileInfoValue}>{`${completedTopics}`}</Text>
+          </View>
+
+          <View style={styles.profileInfoCard}>
+            <Text style={styles.profileInfoLabel}>temas en curso</Text>
+            <Text style={styles.profileInfoValue}>{`${inProgressTopics}`}</Text>
+          </View>
         </View>
       </View>
 
@@ -233,6 +291,95 @@ const styles = StyleSheet.create({
     color: DuocodePalette.code,
     fontSize: 15,
     fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  profileCard: {
+    backgroundColor: DuocodePalette.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 18,
+    gap: 18,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+  },
+  avatarShell: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: DuocodePalette.accent,
+    fontSize: 20,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  profileCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  profileName: {
+    color: DuocodePalette.text,
+    fontSize: 22,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  profileEmail: {
+    color: '#C8D7EE',
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: Fonts.mono,
+  },
+  profileBadges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  profileBadge: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 999,
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    overflow: 'hidden',
+  },
+  profileGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  profileInfoCard: {
+    flex: 1,
+    minWidth: 140,
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    padding: 14,
+    gap: 4,
+  },
+  profileInfoLabel: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  profileInfoValue: {
+    color: DuocodePalette.text,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '800',
     fontFamily: Fonts.mono,
   },
   metricsRow: {

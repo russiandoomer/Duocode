@@ -18,11 +18,13 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'book.fill': 'school',
   'person.fill': 'person',
+  'person.crop.circle.fill': 'account-circle',
   magnifyingglass: 'search',
   'terminal.fill': 'terminal',
   'square.and.pencil': 'edit-note',
   'gamecontroller.fill': 'videogame-asset',
   'chart.bar.fill': 'bar-chart',
+  'repeat.circle.fill': 'autorenew',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as IconMapping;

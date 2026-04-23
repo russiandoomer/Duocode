@@ -55,14 +55,14 @@ export default function TabLayout() {
         name="game"
         options={{
           title: 'Practica',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="gamecontroller.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="repeat.circle.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
           title: 'Mi Progreso',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.bar.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.crop.circle.fill" color={color} />,
         }}
       />
     </Tabs>
