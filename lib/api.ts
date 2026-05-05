@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 function isLocalHostname(hostname: string) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
 }
@@ -9,16 +11,16 @@ export function getApiBaseUrl() {
     return configuredUrl.replace(/\/$/, '');
   }
 
-  if (typeof window !== 'undefined' && !isLocalHostname(window.location.hostname)) {
-    return '';
-  }
-
   return 'http://localhost:3001';
 }
 
 function getConnectionHelpMessage() {
+  if (Platform.OS === 'android' || Platform.OS === 'ios') {
+    return 'No hay una API configurada para esta app. En el celular se usa el modo local del dispositivo.';
+  }
+
   if (typeof window !== 'undefined' && !isLocalHostname(window.location.hostname)) {
-    return 'La app no tiene configurada la API de produccion. Define `EXPO_PUBLIC_API_URL` en Vercel apuntando a Railway.';
+    return 'No hay una API configurada para esta version web.';
   }
 
   return 'No se pudo conectar con la API. Verifica que `npm run local:api` este ejecutandose en localhost:3001.';

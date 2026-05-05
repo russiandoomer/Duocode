@@ -5,11 +5,26 @@ const { getAllUsers, getUserById, sanitizeUser } = require('./auth-repository');
 const { hasMysqlConfig, queryRows } = require('./mysql');
 
 const WEEKDAY_LABELS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
-const PRACTICE_XP_RATIO = 0.35;
+const PRACTICE_XP_RATIO = 0.5;
 let mysqlLearningAvailable;
 
 function buildPracticeXpReward(xpReward) {
   return Math.max(5, Math.round(Number(xpReward || 0) * PRACTICE_XP_RATIO));
+}
+
+function clampScore(score) {
+  return Math.max(0, Math.min(100, Number(score || 0)));
+}
+
+function buildLessonXpReward(xpReward, score) {
+  return Math.max(0, Math.round(Number(xpReward || 0) * (clampScore(score) / 100)));
+}
+
+function buildLessonXpDelta(xpReward, previousBestScore, nextScore) {
+  return Math.max(
+    0,
+    buildLessonXpReward(xpReward, nextScore) - buildLessonXpReward(xpReward, previousBestScore)
+  );
 }
 
 function readAttemptModeEnvelope(submittedCode) {
@@ -399,7 +414,12 @@ function buildTopicProgress(topics, progressRows) {
     });
 
     const completedCount = exercises.filter((exercise) => exercise.completed).length;
-    const progressPercent = exercises.length === 0 ? 0 : Math.round((completedCount / exercises.length) * 100);
+    const progressPercent =
+      exercises.length === 0
+        ? 0
+        : Math.round(
+            exercises.reduce((total, exercise) => total + clampScore(exercise.bestScore), 0) / exercises.length
+          );
 
     return {
       id: topic.id,
@@ -454,25 +474,24 @@ function buildLearnerStats(userId, topics, progressRows, attempts) {
   const chronologicalAttempts = attempts
     .slice()
     .sort((left, right) => new Date(left.createdAt) - new Date(right.createdAt));
-  const completedRewardExercises = new Set();
+  const lessonBestScoreByExercise = new Map();
   let totalXp = 0;
   let totalMinutes = 0;
 
   for (const attempt of chronologicalAttempts) {
     const exercise = exerciseById.get(attempt.exerciseId);
     const attemptMode = readAttemptModeEnvelope(attempt.submittedCode);
-    const alreadyCompleted = completedRewardExercises.has(attempt.exerciseId);
     let reward = 0;
 
-    if (attempt.passed && exercise) {
-      reward =
-        attemptMode === 'practice'
-          ? buildPracticeXpReward(exercise.xpReward)
-          : alreadyCompleted
-            ? 0
-            : Number(exercise.xpReward || 0);
-
-      completedRewardExercises.add(attempt.exerciseId);
+    if (exercise) {
+      if (attemptMode === 'practice') {
+        reward = attempt.passed ? buildPracticeXpReward(exercise.xpReward) : 0;
+      } else {
+        const previousBestScore = lessonBestScoreByExercise.get(attempt.exerciseId) || 0;
+        const nextScore = Math.max(previousBestScore, clampScore(attempt.score));
+        reward = buildLessonXpDelta(exercise.xpReward, previousBestScore, nextScore);
+        lessonBestScoreByExercise.set(attempt.exerciseId, nextScore);
+      }
     }
 
     rewardByAttemptId.set(attempt.id, {
@@ -680,13 +699,13 @@ async function evaluateExerciseForUser(userId, exerciseId, submission) {
   );
   const currentProgressRows = await loadUserProgress(userId);
   const currentProgress = currentProgressRows.find((item) => item.exerciseId === definition.exercise.id);
-  const xpEarned = evaluation.passed
-    ? attemptMode === 'practice'
-      ? buildPracticeXpReward(definition.exercise.xpReward)
-      : currentProgress?.isCompleted
-        ? 0
-        : Number(definition.exercise.xpReward || 0)
-    : 0;
+  const previousBestScore = Number(currentProgress?.bestScore || 0);
+  const xpEarned =
+    attemptMode === 'practice'
+      ? evaluation.passed
+        ? buildPracticeXpReward(definition.exercise.xpReward)
+        : 0
+      : buildLessonXpDelta(definition.exercise.xpReward, previousBestScore, evaluation.score);
   const storedSubmission = withAttemptModeEnvelope(submittedCode, attemptMode);
 
   await saveAttemptAndProgress(userId, definition.exercise, storedSubmission, evaluation);

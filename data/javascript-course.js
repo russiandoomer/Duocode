@@ -3,6 +3,13 @@ const LANGUAGE_ID = 'javascript';
 const LANGUAGE_LABEL = 'JavaScript';
 const COURSE_ACCENT = '#38BDF8';
 const DEMO_NOW = new Date('2026-04-20T18:30:00.000Z');
+let EXERCISE_OVERRIDES = {};
+
+try {
+  EXERCISE_OVERRIDES = require('./exercise-overrides.json');
+} catch (_error) {
+  EXERCISE_OVERRIDES = {};
+}
 
 function l(title, token, statement, exampleCode, predictionCode, predictionAnswer, debuggingCode, debuggingAnswer, debuggingHint) {
   return { title, token, statement, exampleCode, predictionCode, predictionAnswer, debuggingCode, debuggingAnswer, debuggingHint };
@@ -33,7 +40,7 @@ const COURSE_BLUEPRINT = [
         ['Solo sirve para imprimir mensajes.', 'Convierte cualquier valor en un array automaticamente.'],
         capstone('Construir ficha basica', 'Implementa buildProfileLabel(name, age) para devolver exactamente "name (age)".', 'buildProfileLabel', 'function buildProfileLabel(name, age) {\n  // devuelve el texto final\n}\n', 'function buildProfileLabel(name, age) {\n  return `${name} (${age})`;\n}\n', [{ label: 'Caso Ana', args: ['Ana', 23], expected: 'Ana (23)' }, { label: 'Caso Luis', args: ['Luis', 31], expected: 'Luis (31)' }], 'El reto final usa strings y valores dinamicos para construir una salida exacta.'),
         [
-          l('Que es una variable', 'variable', 'Una variable reserva un espacio para guardar un valor y reutilizarlo despues.', 'let score = 0;\nconsole.log(score);', 'let score = 0;\nconsole.log(score);', '0', 'score = 1;\nconsole.log(score);', 'let', 'Debes declarar la variable antes de usarla con let o const.'),
+          l('Que es una variable', 'variable', 'Es un contenedor o espacio en memoria con un nombre asignado, disenado para almacenar datos que pueden cambiar o ser modificados durante la ejecucion del programa.', 'let score = 0;\nconsole.log(score);', 'let score = 0;\nconsole.log(score);', '0', 'score = 1;\nconsole.log(score);', 'let', 'Debes declarar la variable antes de usarla con let o const.'),
           l('Declaracion con let y const', 'const', 'const se usa cuando la referencia no se va a reasignar y let cuando si cambia.', 'const appName = "Duocode";\nlet attempts = 1;', 'const appName = "Duocode";\nconsole.log(appName);', 'Duocode', 'const total = 10;\ntotal = 12;', 'const', 'const no permite reasignar la referencia despues de declararla.'),
           l('Tipos number string boolean', 'boolean', 'JavaScript tiene tipos primitivos como number, string y boolean para representar datos.', 'const active = true;\nconst age = 18;\nconst name = "Ana";', 'const active = true;\nconsole.log(active);', 'true', 'const active = "true";\nif (active === true) { console.log("ok"); }', 'boolean', 'La comparacion estricta falla porque "true" es string y no boolean.'),
           l('Operaciones basicas', 'number', 'Las operaciones aritmeticas permiten sumar, restar, multiplicar y dividir valores numericos.', 'const total = 5 + 3;\nconsole.log(total);', 'const total = 8 - 3;\nconsole.log(total);', '5', 'const total = "8" + 2;', 'Number', 'Si necesitas operar como numero conviene convertir el valor antes.'),
@@ -288,9 +295,9 @@ function buildLearningPrompt(lessonTitle, exerciseKind) {
     case 'multiple-choice':
       return `Lee la idea principal de ${lessonTitle} y selecciona la opcion que mejor la describe.`;
     case 'completion':
-      return `Mira el fragmento de ${lessonTitle} y escribe solo la palabra, operador o expresion que falta.`;
+      return `¿Que palabra clave describe correctamente ${lessonTitle}?`;
     case 'prediction':
-      return `Observa el fragmento de ${lessonTitle} y responde exactamente que salida produce al ejecutarse.`;
+      return `¿Cual es el resultado de este codigo de ${lessonTitle}?`;
     case 'debugging':
       return `Encuentra el error del fragmento de ${lessonTitle} y escribe la correccion principal para arreglarlo.`;
     default:
@@ -308,15 +315,15 @@ function buildLearningInstructions(exerciseKind) {
       ];
     case 'completion':
       return [
-        'Observa el ejemplo o fragmento base.',
-        'Identifica solo la pieza que falta.',
-        'Escribe unicamente esa palabra, operador o expresion corta.',
+        'Lee la definicion del concepto con calma.',
+        'Piensa que palabra clave describe mejor esa idea.',
+        'Escribe solo esa palabra o expresion corta.',
       ];
     case 'prediction':
       return [
-        'Sigue el flujo del codigo paso a paso.',
-        'Piensa que valor llega realmente al resultado o al console.log.',
-        'Escribe la salida exacta, sin explicacion extra.',
+        'Mira el codigo linea por linea.',
+        'Piensa que valor aparece al final en consola.',
+        'Escribe solo la salida final en el espacio print: ___.',
       ];
     case 'debugging':
       return [
@@ -333,12 +340,72 @@ function buildLearningInstructions(exerciseKind) {
   }
 }
 
+function buildExerciseOverrideKey(topicTitle, itemNumber) {
+  return `${String(topicTitle || '').trim()}::${Number(itemNumber)}`;
+}
+
+function applyExerciseOverride(topicTitle, exercise) {
+  const correction = EXERCISE_OVERRIDES[buildExerciseOverrideKey(topicTitle, exercise.sortOrder)];
+
+  if (!correction) {
+    return exercise;
+  }
+
+  const nextExercise = {
+    ...exercise,
+    testCases: Array.isArray(exercise.testCases)
+      ? exercise.testCases.map((testCase) => ({ ...testCase }))
+      : [],
+    choiceOptions: Array.isArray(exercise.choiceOptions)
+      ? exercise.choiceOptions.map((option) => ({ ...option }))
+      : [],
+  };
+
+  if (correction.prompt) {
+    nextExercise.prompt = correction.prompt;
+  }
+
+  if (correction.explanation) {
+    nextExercise.explanation = correction.explanation;
+  }
+
+  if (correction.codeSnippet) {
+    nextExercise.codeSnippet = correction.codeSnippet;
+  }
+
+  if (correction.choiceDetail && nextExercise.choiceOptions.length) {
+    nextExercise.choiceOptions[0] = {
+      ...nextExercise.choiceOptions[0],
+      detail: correction.choiceDetail,
+    };
+  }
+
+  if (correction.expectedText && nextExercise.testCases.length) {
+    nextExercise.testCases[0] = {
+      ...nextExercise.testCases[0],
+      expected: correction.expectedText,
+    };
+  }
+
+  if (Array.isArray(correction.acceptedAnswers) && correction.acceptedAnswers.length) {
+    nextExercise.acceptedAnswers = correction.acceptedAnswers.slice();
+  }
+
+  if (correction.solutionCode) {
+    nextExercise.solutionCode = correction.solutionCode;
+  } else if (correction.expectedText && nextExercise.mode === 'text') {
+    nextExercise.solutionCode = correction.expectedText;
+  }
+
+  return nextExercise;
+}
+
 function buildInputPlaceholder(exerciseKind) {
   switch (exerciseKind) {
     case 'completion':
-      return 'Escribe solo la pieza faltante';
+      return 'Escribe la palabra clave';
     case 'prediction':
-      return 'Escribe la salida exacta';
+      return 'print: ___';
     case 'debugging':
       return 'Escribe la correccion principal';
     default:
@@ -392,7 +459,7 @@ function createTextExercise(topicId, lessonSpec, exerciseKind, sortOrder) {
       kind: 'completion',
       lessonTypeLabel: 'Completar',
       nodeGlyph: '_',
-      codeSnippet: lessonSpec.exampleCode,
+      codeSnippet: lessonSpec.statement,
       inputPlaceholder: buildInputPlaceholder('completion'),
     };
   }
@@ -465,21 +532,22 @@ function buildTopicsFromBlueprint() {
     level.units.forEach((currentUnit, unitIndex) => {
       currentUnit.lessons.forEach((lessonSpec, lessonIndex) => {
         const topicId = `js-${level.id}-u${unitIndex + 1}-l${lessonIndex + 1}`;
+        const topicTitle = `Leccion ${lessonIndex + 1} · ${lessonSpec.title}`;
         const exercises = [
           createChoiceExercise(topicId, lessonSpec, currentUnit, 1),
           createTextExercise(topicId, lessonSpec, 'completion', 2),
           createTextExercise(topicId, lessonSpec, 'prediction', 3),
           createTextExercise(topicId, lessonSpec, 'debugging', 4),
-        ];
+        ].map((exercise) => applyExerciseOverride(topicTitle, exercise));
 
         if (lessonIndex === currentUnit.lessons.length - 1) {
-          exercises.push(createCodeExercise(topicId, currentUnit.capstone, 5));
+          exercises.push(applyExerciseOverride(topicTitle, createCodeExercise(topicId, currentUnit.capstone, 5)));
         }
 
         topics.push({
           id: topicId,
           roadmapId: ROADMAP_ID,
-          title: `Leccion ${lessonIndex + 1} · ${lessonSpec.title}`,
+          title: topicTitle,
           description: lessonSpec.statement,
           estimatedMinutes: 14 + exercises.length * 3,
           status: 'Disponible',

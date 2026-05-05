@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { CodeCelebrationOverlay } from '@/components/duocode/code-celebration-overlay';
@@ -28,7 +28,7 @@ function getSafePracticeXp(exercise: LearnerExercise) {
     return reward;
   }
 
-  return Math.max(5, Math.round(Number(exercise.xpReward || 0) * 0.35));
+  return Math.max(5, Math.round(Number(exercise.xpReward || 0) * 0.5));
 }
 
 function rewardLabel(exercise: LearnerExercise) {
@@ -54,9 +54,9 @@ function buildPracticeTitle(exercise: LearnerExercise) {
     case 'multiple-choice':
       return 'Repasa y elige la opcion correcta';
     case 'completion':
-      return 'Repasa completando lo que falta';
+      return 'Repasa escribiendo el concepto correcto';
     case 'prediction':
-      return 'Repasa prediciendo la salida';
+      return 'Repasa escribiendo el resultado del codigo';
     case 'debugging':
       return 'Repasa corrigiendo el error';
     default:
@@ -64,14 +64,18 @@ function buildPracticeTitle(exercise: LearnerExercise) {
   }
 }
 
+function buildPracticeSubtitle(exercise: LearnerExercise) {
+  return getExerciseShortTitle(exercise);
+}
+
 function buildPracticePromptLabel(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'multiple-choice':
       return 'pregunta que debes responder';
     case 'completion':
-      return 'pieza que debes completar';
+      return 'pregunta';
     case 'prediction':
-      return 'salida que debes escribir';
+      return 'pregunta';
     case 'debugging':
       return 'error que debes corregir';
     default:
@@ -93,9 +97,9 @@ function buildPracticeQuestion(exercise: LearnerExercise) {
     case 'multiple-choice':
       return `¿Que opcion describe correctamente ${shortTitle.toLowerCase()}?`;
     case 'completion':
-      return `¿Que palabra, operador o expresion falta en el fragmento de ${shortTitle.toLowerCase()}?`;
+      return '¿Que palabra clave describe correctamente esta idea?';
     case 'prediction':
-      return `¿Que salida exacta produce este fragmento de ${shortTitle.toLowerCase()}?`;
+      return '¿Cual es el resultado de este codigo?';
     case 'debugging':
       return `¿Que esta mal en este fragmento de ${shortTitle.toLowerCase()} y como se corrige?`;
     default:
@@ -106,11 +110,11 @@ function buildPracticeQuestion(exercise: LearnerExercise) {
 function buildPracticeQuestionHint(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'multiple-choice':
-      return 'Toca una sola opcion, no escribes nada y despues pulsa REVISAR.';
+      return '';
     case 'completion':
-      return 'No copies todo el codigo. Escribe solo la pieza que falta.';
+      return 'Responde con una sola palabra o expresion corta.';
     case 'prediction':
-      return 'Tu respuesta debe ser exactamente la salida final, sin texto extra.';
+      return 'Escribe solo lo que imprime el codigo al final.';
     case 'debugging':
       return 'Tu respuesta debe decir cual es la correccion principal del error.';
     default:
@@ -123,9 +127,9 @@ function buildPracticeGuidance(exercise: LearnerExercise) {
     case 'multiple-choice':
       return 'Este repaso vuelve a comprobar si recuerdas la idea central. Solo selecciona una opcion y confirma tu respuesta.';
     case 'completion':
-      return 'Vas a rehacer la misma idea clave. Escribe solo la pieza faltante y evita volver a copiar todo el fragmento.';
+      return 'Lee la definicion del concepto y escribe la palabra clave que mejor la describe. No expliques, solo responde con la palabra o expresion corta.';
     case 'prediction':
-      return 'Lee el codigo otra vez y escribe exactamente la salida final. La idea es comprobar si ya puedes seguir la logica sin ayuda.';
+      return 'Lee el codigo otra vez y escribe exactamente lo que aparece en consola al final. Si imprime varias lineas, respeta el orden.';
     case 'debugging':
       return 'Aqui vuelves a detectar el error principal. Corrige la palabra, simbolo o parte incorrecta del fragmento.';
     default:
@@ -138,9 +142,9 @@ function buildPracticeAnswerRule(exercise: LearnerExercise) {
     case 'multiple-choice':
       return 'Responde seleccionando una sola opcion.';
     case 'completion':
-      return 'Responde solo con la pieza faltante.';
+      return 'Responde solo con la palabra clave o expresion corta correcta.';
     case 'prediction':
-      return 'Responde exactamente con la salida.';
+      return 'Responde exactamente con la salida del codigo.';
     case 'debugging':
       return 'Responde con la correccion principal.';
     default:
@@ -153,9 +157,9 @@ function buildPracticeSteps(exercise: LearnerExercise) {
     case 'multiple-choice':
       return ['Recuerda la idea base.', 'Compara opciones.', 'Confirma una sola respuesta.'];
     case 'completion':
-      return ['Observa el fragmento.', 'Detecta la pieza faltante.', 'Escribe solo esa pieza y revisa.'];
+      return ['Lee la definicion.', 'Identifica el concepto principal.', 'Escribe solo la palabra correcta y revisa.'];
     case 'prediction':
-      return ['Sigue el flujo paso a paso.', 'Identifica la salida final.', 'Escribe solo el resultado exacto.'];
+      return ['Lee el codigo.', 'Sigue el valor paso a paso.', 'Escribe la salida final en print: ___.'];
     case 'debugging':
       return ['Encuentra el error.', 'Piensa cual es la correccion minima.', 'Escribe solo esa correccion.'];
     default:
@@ -166,14 +170,110 @@ function buildPracticeSteps(exercise: LearnerExercise) {
 function buildSnippetLabel(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'prediction':
-      return 'fragmento a analizar';
+      return 'codigo a ejecutar';
     case 'debugging':
       return 'fragmento con error';
     case 'completion':
-      return 'fragmento base';
+      return 'definicion del concepto';
     default:
       return 'fragmento de apoyo';
   }
+}
+
+function findNextSequentialExercise(topic: LearnerTopic | null, currentExerciseId: string) {
+  if (!topic) {
+    return null;
+  }
+
+  const currentIndex = topic.exercises.findIndex((exercise) => exercise.id === currentExerciseId);
+
+  if (currentIndex === -1) {
+    return topic.exercises[0] || null;
+  }
+
+  return topic.exercises[currentIndex + 1] || null;
+}
+
+function getChoiceFeedbackState(
+  optionId: string,
+  selectedOptionId: string | null,
+  evaluation: ExerciseEvaluationResponse | null
+) {
+  if (!evaluation) {
+    return optionId === selectedOptionId ? 'selected' : 'idle';
+  }
+
+  if (optionId === evaluation.expectedSelectionId) {
+    return 'correct';
+  }
+
+  if (optionId === (evaluation.submittedSelectionId || selectedOptionId)) {
+    return evaluation.passed ? 'correct' : 'wrong';
+  }
+
+  return 'idle';
+}
+
+function getChoiceFeedbackLabel(choiceState: ReturnType<typeof getChoiceFeedbackState>) {
+  switch (choiceState) {
+    case 'correct':
+      return 'ok';
+    case 'wrong':
+      return 'bad';
+    case 'selected':
+      return 'elegida';
+    default:
+      return null;
+  }
+}
+
+function buildChoiceAnswerText(option: ReturnType<typeof getChoiceOption> | null) {
+  if (!option) {
+    return 'No disponible';
+  }
+
+  return option.detail ? `${option.label} - ${option.detail}` : option.label;
+}
+
+function buildResultAnswerValue(
+  exercise: LearnerExercise | null,
+  evaluation: ExerciseEvaluationResponse | null,
+  correctChoiceOption: ReturnType<typeof getChoiceOption> | null
+) {
+  if (!exercise || !evaluation) {
+    return null;
+  }
+
+  if (exercise.mode === 'choice') {
+    return buildChoiceAnswerText(correctChoiceOption);
+  }
+
+  if (exercise.mode === 'text') {
+    return evaluation.expectedText || evaluation.correctSolution || 'No disponible';
+  }
+
+  return evaluation.correctSolution || 'No disponible';
+}
+
+type ResultOverlayState = {
+  headline: string;
+  title: string;
+  score: number;
+  xpReward: number;
+  variant: 'pass' | 'fail';
+  answerValue: string | null;
+  explanation: string;
+  actionLabel: string;
+  nextExerciseId: string | null;
+};
+
+function isPracticeEligible(exercise: LearnerExercise) {
+  return Boolean(
+    exercise.completed ||
+      exercise.lastSubmittedCode ||
+      exercise.lastSubmittedText ||
+      exercise.lastSelectedOptionId
+  );
 }
 
 export default function PracticeScreen() {
@@ -187,7 +287,8 @@ export default function PracticeScreen() {
   const [answerText, setAnswerText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
-  const [celebrationVisible, setCelebrationVisible] = useState(false);
+  const [resultOverlay, setResultOverlay] = useState<ResultOverlayState | null>(null);
+  const [queuedNextExerciseId, setQueuedNextExerciseId] = useState<string | null>(null);
   const [showGuidance, setShowGuidance] = useState(false);
   const [showContext, setShowContext] = useState(false);
 
@@ -203,14 +304,27 @@ export default function PracticeScreen() {
 
     return {
       ...topic,
-      exercises: topic.exercises.filter((exercise) => exercise.completed),
+      exercises: topic.exercises.filter((exercise) => isPracticeEligible(exercise)),
     };
   }, [dashboard?.topics, requestedTopicId]);
 
   useEffect(() => {
-    const initialExercise = findInitialExercise(selectedTopic, requestedExerciseId);
-    setSelectedExerciseId(initialExercise?.id || null);
-  }, [requestedExerciseId, selectedTopic]);
+    setSelectedExerciseId((current) => {
+      if (!selectedTopic) {
+        return null;
+      }
+
+      if (resultOverlay && current) {
+        return current;
+      }
+
+      if (current && selectedTopic.exercises.some((exercise) => exercise.id === current)) {
+        return current;
+      }
+
+      return findInitialExercise(selectedTopic, requestedExerciseId)?.id || null;
+    });
+  }, [requestedExerciseId, resultOverlay, selectedTopic]);
 
   const selectedExercise =
     selectedTopic?.exercises.find((exercise) => exercise.id === selectedExerciseId) ||
@@ -223,6 +337,7 @@ export default function PracticeScreen() {
       setAnswerText('');
       setSelectedOptionId(null);
       setEvaluation(null);
+      setResultOverlay(null);
       setShowGuidance(false);
       return;
     }
@@ -234,17 +349,12 @@ export default function PracticeScreen() {
         selectedExercise.lastSelectedOptionId || extractChoiceSelection(selectedExercise.lastSubmittedCode)
       );
       setEvaluation(null);
+      setResultOverlay(null);
       setHydratedExerciseId(selectedExercise.id);
       setShowGuidance(false);
     }
   }, [hydratedExerciseId, selectedExercise]);
 
-  const selectedChoiceOption =
-    selectedExercise?.mode === 'choice' ? getChoiceOption(selectedExercise, selectedOptionId) : null;
-  const correctChoiceOption =
-    selectedExercise?.mode === 'choice' && evaluation
-      ? getChoiceOption(selectedExercise, evaluation.expectedSelectionId || null)
-      : null;
   const totalPracticeXp = useMemo(
     () => selectedTopic?.exercises.reduce((total, exercise) => total + getSafePracticeXp(exercise), 0) || 0,
     [selectedTopic]
@@ -255,10 +365,47 @@ export default function PracticeScreen() {
   }
 
   function handleBackToPracticeHub() {
+    setResultOverlay(null);
     router.replace({
       pathname: '/(tabs)/game',
       params: selectedTopic ? { topicId: selectedTopic.id } : undefined,
     });
+  }
+
+  function handleNextExercise() {
+    const nextExerciseId = resultOverlay?.nextExerciseId || queuedNextExerciseId;
+
+    if (!nextExerciseId) {
+      setResultOverlay(null);
+      handleBackToPracticeHub();
+      return;
+    }
+
+    setResultOverlay(null);
+    setSelectedExerciseId(nextExerciseId);
+    setQueuedNextExerciseId(null);
+    setEvaluation(null);
+  }
+
+  function clearReviewFeedback() {
+    setEvaluation(null);
+    setResultOverlay(null);
+    setQueuedNextExerciseId(null);
+  }
+
+  function handleSelectOption(optionId: string) {
+    setSelectedOptionId(optionId);
+    clearReviewFeedback();
+  }
+
+  function handleAnswerTextChange(nextValue: string) {
+    setAnswerText(nextValue);
+    clearReviewFeedback();
+  }
+
+  function handleEditorCodeChange(nextValue: string) {
+    setEditorCode(nextValue);
+    clearReviewFeedback();
   }
 
   async function handleEvaluate() {
@@ -267,6 +414,7 @@ export default function PracticeScreen() {
     }
 
     setSubmitting(true);
+    setQueuedNextExerciseId(null);
 
     try {
       const response = await evaluateExercise(
@@ -279,9 +427,32 @@ export default function PracticeScreen() {
       );
 
       setEvaluation(response);
-      if (response.passed) {
-        setCelebrationVisible(true);
-      }
+      const nextTopicFromDashboard = response.dashboard.topics.find((topic) => topic.id === response.topicId);
+      const nextTopic = nextTopicFromDashboard
+        ? {
+            ...nextTopicFromDashboard,
+            exercises: nextTopicFromDashboard.exercises.filter((exercise) => isPracticeEligible(exercise)),
+          }
+        : selectedTopic;
+      const nextSequentialExercise = findNextSequentialExercise(nextTopic, selectedExercise.id);
+      const nextExerciseId = nextSequentialExercise?.id || null;
+      const nextCorrectChoiceOption =
+        selectedExercise.mode === 'choice'
+          ? getChoiceOption(selectedExercise, response.expectedSelectionId || null)
+          : null;
+
+      setQueuedNextExerciseId(nextExerciseId);
+      setResultOverlay({
+        headline: response.passed ? 'RESPUESTA CORRECTA' : 'RESPONDISTE MAL',
+        title: selectedExercise.title || 'Resultado del repaso',
+        score: response.score,
+        xpReward: response.xpEarned,
+        variant: response.passed ? 'pass' : 'fail',
+        answerValue: buildResultAnswerValue(selectedExercise, response, nextCorrectChoiceOption),
+        explanation: response.explanation || '',
+        actionLabel: nextExerciseId ? 'SIGUIENTE PREGUNTA' : 'VOLVER A PRACTICA',
+        nextExerciseId,
+      });
     } catch (error) {
       Alert.alert('duocode', error instanceof Error ? error.message : 'No se pudo evaluar el repaso');
     } finally {
@@ -295,6 +466,8 @@ export default function PracticeScreen() {
     }
 
     setEvaluation(null);
+    setResultOverlay(null);
+    setQueuedNextExerciseId(null);
     if (selectedExercise.mode === 'choice') {
       setSelectedOptionId(null);
     } else if (selectedExercise.mode === 'text') {
@@ -337,7 +510,7 @@ export default function PracticeScreen() {
           <Text style={styles.heroEyebrow}>REPASO DE LA MISMA LECCION</Text>
           <Text style={styles.heroTitle}>{selectedTopic.title}</Text>
           <Text style={styles.heroText}>
-            Rehaces un tema que ya aprobaste para fijarlo mejor con solo el 35% del XP original.
+            Aqui refuerzas retos que ya aprobaste o que ya intentaste antes, siempre con el 50% del XP original.
           </Text>
 
           <View style={styles.heroBadges}>
@@ -350,7 +523,7 @@ export default function PracticeScreen() {
               <Text style={styles.heroBadgeLabel}>recompensa total</Text>
             </View>
             <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeValue}>35%</Text>
+              <Text style={styles.heroBadgeValue}>50%</Text>
               <Text style={styles.heroBadgeLabel}>del XP original</Text>
             </View>
           </View>
@@ -375,7 +548,7 @@ export default function PracticeScreen() {
               <View style={styles.contextItem}>
                 <Text style={styles.contextLabel}>por que existe practica</Text>
                 <Text style={styles.contextValue}>
-                  Practica sirve para volver a hacer la misma leccion cuando ya la aprobaste. Te ayuda a recordar mejor sin mezclarlo con el avance principal.
+                    Practica sirve para reforzar la misma leccion despues de haberla resuelto o intentado. Te ayuda a recordar mejor sin mezclarlo con el avance principal.
                 </Text>
               </View>
             </View>
@@ -405,11 +578,13 @@ export default function PracticeScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>reto de repaso actual</Text>
               <Text style={styles.challengeTitle}>{buildPracticeTitle(selectedExercise)}</Text>
-              <Text style={styles.challengeSubtitle}>{getExerciseShortTitle(selectedExercise)}</Text>
+              <Text style={styles.challengeSubtitle}>{buildPracticeSubtitle(selectedExercise)}</Text>
               <View style={styles.promptShell}>
                 <Text style={styles.promptLabel}>{buildPracticePromptLabel(selectedExercise)}</Text>
                 <Text style={styles.promptText}>{buildPracticeQuestion(selectedExercise)}</Text>
-                <Text style={styles.promptHint}>{buildPracticeQuestionHint(selectedExercise)}</Text>
+                {buildPracticeQuestionHint(selectedExercise) ? (
+                  <Text style={styles.promptHint}>{buildPracticeQuestionHint(selectedExercise)}</Text>
+                ) : null}
               </View>
               <View style={styles.pills}>
                 <Text style={styles.pill}>{selectedExercise.lessonTypeLabel}</Text>
@@ -419,69 +594,93 @@ export default function PracticeScreen() {
             </View>
 
             <View style={styles.card}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.cardTitle}>que debes hacer</Text>
-                <View style={styles.actionRow}>
-                  <Pressable style={styles.secondaryButton} onPress={handleReset}>
-                    <Text style={styles.secondaryButtonText}>RESET</Text>
-                  </Pressable>
-                  <Pressable style={styles.primaryButton} onPress={handleEvaluate} disabled={submitting}>
-                    <Text style={styles.primaryButtonText}>{submitting ? 'REVISANDO...' : 'REVISAR'}</Text>
-                  </Pressable>
-                </View>
-              </View>
+              <Modal
+                transparent
+                animationType="fade"
+                visible={showGuidance}
+                onRequestClose={() => setShowGuidance(false)}>
+                <View style={styles.guideModalOverlay}>
+                  <Pressable style={styles.guideModalBackdrop} onPress={() => setShowGuidance(false)} />
 
-              <Pressable
-                style={[styles.guideToggle, showGuidance && styles.guideToggleActive]}
-                onPress={() => setShowGuidance((current) => !current)}>
-                <Text style={styles.guideToggleText}>{showGuidance ? 'HIDE GUIA' : 'SHOW GUIA'}</Text>
-                <Text style={styles.guideToggleHint}>
-                  {showGuidance
-                    ? 'Oculta los pasos extra y deja visible solo el reto.'
-                    : 'Abre una ayuda corta si quieres ver como responder este reto.'}
-                </Text>
-              </Pressable>
-
-              {showGuidance ? (
-                <View style={styles.guidanceCard}>
-                  <Text style={styles.guidanceLead}>{buildPracticeGuidance(selectedExercise)}</Text>
-                  <View style={styles.answerRuleBox}>
-                    <Text style={styles.answerRuleLabel}>como debes responder</Text>
-                    <Text style={styles.answerRuleText}>{buildPracticeAnswerRule(selectedExercise)}</Text>
-                  </View>
-                  <View style={styles.guidanceSteps}>
-                    {buildPracticeSteps(selectedExercise).map((step, index) => (
-                      <View key={`${selectedExercise.id}-practice-step-${index + 1}`} style={styles.guidanceStep}>
-                        <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
-                        <Text style={styles.guidanceStepText}>{step}</Text>
+                  <View style={styles.guideModalCard}>
+                    <View style={styles.guideModalHeader}>
+                      <View style={styles.guideModalTitleGroup}>
+                        <Text style={styles.guideModalEyebrow}>ayuda rapida</Text>
+                        <Text style={styles.guideModalTitle}>Como resolver este reto</Text>
                       </View>
-                    ))}
+
+                      <Pressable style={styles.guideCloseButton} onPress={() => setShowGuidance(false)}>
+                        <Text style={styles.guideCloseButtonText}>CERRAR</Text>
+                      </Pressable>
+                    </View>
+
+                    <ScrollView
+                      style={styles.guideModalScroll}
+                      contentContainerStyle={styles.guideModalContent}
+                      showsVerticalScrollIndicator={false}>
+                      <Text style={styles.guidanceLead}>{buildPracticeGuidance(selectedExercise)}</Text>
+                      <View style={styles.answerRuleBox}>
+                        <Text style={styles.answerRuleLabel}>como debes responder</Text>
+                        <Text style={styles.answerRuleText}>{buildPracticeAnswerRule(selectedExercise)}</Text>
+                      </View>
+                      <View style={styles.guidanceSteps}>
+                        {buildPracticeSteps(selectedExercise).map((step, index) => (
+                          <View key={`${selectedExercise.id}-practice-step-${index + 1}`} style={styles.guidanceStep}>
+                            <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
+                            <Text style={styles.guidanceStepText}>{step}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </ScrollView>
                   </View>
                 </View>
-              ) : null}
+              </Modal>
 
               {selectedExercise.mode === 'choice' ? (
                 <View style={styles.optionList}>
-                  <View style={styles.choiceInfoCard}>
-                    <Text style={styles.choiceInfoEyebrow}>elige 1 opcion</Text>
-                    <Text style={styles.choiceInfoText}>
-                      Toca la tarjeta que mejor responde la pregunta. Cuando ya la tengas elegida, pulsa `REVISAR`.
-                    </Text>
-                  </View>
                   {selectedExercise.choiceOptions.map((option) => {
-                    const isActive = option.id === selectedOptionId;
+                    const optionState = getChoiceFeedbackState(option.id, selectedOptionId, evaluation);
+                    const statusLabel = getChoiceFeedbackLabel(optionState);
                     const optionBadge = option.id.toUpperCase();
                     const optionHeading = option.label?.trim() || `Opcion ${optionBadge}`;
                     const optionBody = option.detail?.trim() || optionHeading;
                     return (
                       <Pressable
                         key={option.id}
-                        style={[styles.optionCard, isActive && styles.optionCardSelected]}
-                        onPress={() => setSelectedOptionId(option.id)}>
+                        style={[
+                          styles.optionCard,
+                          optionState === 'selected' && styles.optionCardSelected,
+                          optionState === 'correct' && styles.optionCardCorrect,
+                          optionState === 'wrong' && styles.optionCardWrong,
+                        ]}
+                        onPress={() => handleSelectOption(option.id)}>
                         <View style={styles.optionHeader}>
-                          <Text style={styles.optionBadge}>{optionBadge}</Text>
-                          <Text style={styles.optionTitle}>{optionHeading}</Text>
-                          {isActive ? <Text style={styles.optionStatus}>elegida</Text> : null}
+                          <Text
+                            style={[
+                              styles.optionBadge,
+                              optionState === 'correct' && styles.optionBadgeCorrect,
+                              optionState === 'wrong' && styles.optionBadgeWrong,
+                            ]}>
+                            {optionBadge}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.optionTitle,
+                              optionState === 'correct' && styles.optionTitleCorrect,
+                              optionState === 'wrong' && styles.optionTitleWrong,
+                            ]}>
+                            {optionHeading}
+                          </Text>
+                          {statusLabel ? (
+                            <Text
+                              style={[
+                                styles.optionStatus,
+                                optionState === 'correct' && styles.optionStatusCorrect,
+                                optionState === 'wrong' && styles.optionStatusWrong,
+                              ]}>
+                              {statusLabel}
+                            </Text>
+                          ) : null}
                         </View>
                         <Text style={styles.optionDetail}>{optionBody}</Text>
                       </Pressable>
@@ -491,18 +690,30 @@ export default function PracticeScreen() {
               ) : selectedExercise.mode === 'text' ? (
                 <>
                   {selectedExercise.codeSnippet ? (
-                    <View style={styles.snippetBox}>
-                      <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
-                      {selectedExercise.codeSnippet.split('\n').map((line, index) => (
-                        <Text key={`${selectedExercise.id}-practice-snippet-${index + 1}`} style={styles.snippetLine}>
-                          {line || ' '}
-                        </Text>
-                      ))}
+                    selectedExercise.kind === 'completion' ? (
+                      <View style={styles.conceptBox}>
+                        <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
+                        <Text style={styles.conceptText}>{selectedExercise.codeSnippet}</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.snippetBox}>
+                        <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
+                        {selectedExercise.codeSnippet.split('\n').map((line, index) => (
+                          <Text key={`${selectedExercise.id}-practice-snippet-${index + 1}`} style={styles.snippetLine}>
+                            {line || ' '}
+                          </Text>
+                        ))}
+                      </View>
+                    )
+                  ) : null}
+                  {selectedExercise.kind === 'prediction' ? (
+                    <View style={styles.outputHintBox}>
+                      <Text style={styles.outputHintText}>print: ___</Text>
                     </View>
                   ) : null}
                   <TextInput
                     value={answerText}
-                    onChangeText={setAnswerText}
+                    onChangeText={handleAnswerTextChange}
                     multiline
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -510,7 +721,11 @@ export default function PracticeScreen() {
                     textAlignVertical="top"
                     placeholder={selectedExercise.inputPlaceholder || 'Escribe tu respuesta'}
                     placeholderTextColor={DuocodePalette.muted}
-                    style={styles.answerInput}
+                    style={[
+                      styles.answerInput,
+                      evaluation?.passed && styles.answerInputPass,
+                      evaluation && !evaluation.passed && styles.answerInputFail,
+                    ]}
                   />
                 </>
               ) : (
@@ -527,84 +742,59 @@ export default function PracticeScreen() {
                   ) : null}
                   <TextInput
                     value={editorCode}
-                    onChangeText={setEditorCode}
+                    onChangeText={handleEditorCodeChange}
                     multiline
                     autoCapitalize="none"
                     autoCorrect={false}
                     spellCheck={false}
                     textAlignVertical="top"
-                    style={styles.codeInput}
+                    style={[
+                      styles.codeInput,
+                      evaluation?.passed && styles.answerInputPass,
+                      evaluation && !evaluation.passed && styles.answerInputFail,
+                    ]}
                   />
                 </>
               )}
+
+              <View style={styles.footerActionRow}>
+                <Pressable
+                  style={[styles.guideActionButton, styles.footerActionButton]}
+                  onPress={() => setShowGuidance(true)}>
+                  <Text style={styles.guideActionButtonText}>VER AYUDA RAPIDA</Text>
+                </Pressable>
+                {selectedExercise.mode === 'code' ? (
+                  <Pressable style={[styles.secondaryButton, styles.footerActionButton]} onPress={handleReset}>
+                    <Text style={styles.secondaryButtonText}>RESET</Text>
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  style={[styles.primaryButton, styles.footerActionButton]}
+                  onPress={handleEvaluate}
+                  disabled={submitting}>
+                  <Text style={styles.primaryButtonText}>{submitting ? 'REVISANDO...' : 'REVISAR'}</Text>
+                </Pressable>
+              </View>
             </View>
 
-            {evaluation ? (
-              <View style={styles.card}>
-                <View style={styles.rowBetween}>
-                  <View style={styles.resultCopy}>
-                    <Text style={styles.cardTitle}>{evaluation.passed ? 'repaso correcto' : 'necesita ajuste'}</Text>
-                    <Text style={styles.bodyText}>
-                      {evaluation.passed
-                        ? 'Este repaso no abre contenido nuevo: solo refuerza la memoria del tema y suma XP reducido.'
-                        : 'Compara tu respuesta con lo esperado y vuelve a intentarlo.'}
-                    </Text>
-                  </View>
-                  <View style={[styles.scoreBadge, evaluation.passed ? styles.scoreBadgePass : styles.scoreBadgeFail]}>
-                    <Text style={styles.scoreBadgeText}>{`${evaluation.score}%`}</Text>
-                    <Text style={styles.scoreBadgeMeta}>{`+${evaluation.xpEarned} XP`}</Text>
-                  </View>
-                </View>
-
-                {selectedExercise.mode === 'choice' ? (
-                  <View style={styles.feedbackBox}>
-                    <Text style={styles.feedbackLabel}>tu respuesta</Text>
-                    <Text style={styles.feedbackText}>{selectedChoiceOption?.label || 'Sin seleccion'}</Text>
-                    <Text style={styles.feedbackLabel}>correcta</Text>
-                    <Text style={styles.feedbackText}>{correctChoiceOption?.label || 'No disponible'}</Text>
-                  </View>
-                ) : null}
-
-                {selectedExercise.mode === 'text' ? (
-                  <View style={styles.feedbackBox}>
-                    <Text style={styles.feedbackLabel}>tu respuesta</Text>
-                    <Text style={styles.feedbackText}>{evaluation.submittedText || 'Sin respuesta'}</Text>
-                    <Text style={styles.feedbackLabel}>correcta</Text>
-                    <Text style={styles.feedbackText}>{evaluation.expectedText || 'No disponible'}</Text>
-                  </View>
-                ) : null}
-
-                {evaluation.tests.slice(0, 3).map((test) => (
-                  <View key={test.label} style={styles.testCard}>
-                    <Text style={styles.testTitle}>{`${test.label} · ${test.pass ? 'PASS' : 'FAIL'}`}</Text>
-                    <Text style={styles.testLine}>{`esperado: ${test.expectedPreview}`}</Text>
-                    <Text style={styles.testLine}>{`recibido: ${test.receivedPreview}`}</Text>
-                  </View>
-                ))}
-
-                {!evaluation.passed && selectedExercise.mode === 'code' ? (
-                  <View style={styles.feedbackBox}>
-                    <Text style={styles.feedbackLabel}>solucion correcta</Text>
-                    <Text style={styles.snippetLine}>{evaluation.correctSolution}</Text>
-                  </View>
-                ) : null}
-
-                <View style={styles.feedbackBox}>
-                  <Text style={styles.feedbackLabel}>explicacion</Text>
-                  <Text style={styles.bodyText}>{evaluation.explanation}</Text>
-                </View>
-              </View>
-            ) : null}
           </>
         ) : null}
       </ScrollView>
 
       <CodeCelebrationOverlay
-        visible={celebrationVisible && Boolean(evaluation?.passed && selectedExercise)}
-        title={selectedExercise?.title || 'Repaso completado'}
-        score={evaluation?.score || 0}
-        xpReward={evaluation?.xpEarned || 0}
-        onDismiss={() => setCelebrationVisible(false)}
+        visible={Boolean(resultOverlay)}
+        headline={resultOverlay?.headline}
+        title={resultOverlay?.title || 'Resultado del repaso'}
+        score={resultOverlay?.score || 0}
+        xpReward={resultOverlay?.xpReward || 0}
+        variant={resultOverlay?.variant || 'pass'}
+        answerLabel="respuesta correcta"
+        answerValue={resultOverlay?.answerValue || null}
+        explanation={resultOverlay?.explanation || ''}
+        actionLabel={resultOverlay?.actionLabel || null}
+        onAction={handleNextExercise}
+        disableBackdropDismiss
+        onDismiss={() => setResultOverlay(null)}
       />
     </SafeAreaView>
   );
@@ -865,12 +1055,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
   },
   guideToggle: {
-    backgroundColor: '#0F1A2D',
+    alignSelf: 'flex-start',
+    backgroundColor: DuocodePalette.accentSoft,
     borderWidth: 1,
-    borderColor: DuocodePalette.border,
+    borderColor: DuocodePalette.accent,
     borderRadius: 18,
-    padding: 14,
-    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   guideToggleActive: {
     borderColor: DuocodePalette.accent,
@@ -882,17 +1073,90 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  guideToggleHint: {
-    color: '#C9D9F0',
-    fontSize: 12,
-    lineHeight: 18,
+  guideActionButton: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  guidanceCard: {
+  guideActionButtonText: {
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  footerActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+    alignItems: 'stretch',
+  },
+  footerActionButton: {
+    flex: 1,
+  },
+  guideModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  guideModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(3, 7, 18, 0.78)',
+  },
+  guideModalCard: {
+    width: '100%',
+    maxWidth: 640,
+    maxHeight: '78%',
+    alignSelf: 'center',
     backgroundColor: '#101F33',
     borderWidth: 1,
     borderColor: DuocodePalette.borderStrong,
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 24,
+    padding: 18,
+    gap: 14,
+  },
+  guideModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  guideModalTitleGroup: {
+    flex: 1,
+    gap: 4,
+  },
+  guideModalEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  guideModalTitle: {
+    color: DuocodePalette.text,
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  guideCloseButton: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  guideCloseButtonText: {
+    color: DuocodePalette.muted,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  guideModalScroll: {
+    flexGrow: 0,
+  },
+  guideModalContent: {
     gap: 12,
   },
   guidanceLead: {
@@ -950,25 +1214,6 @@ const styles = StyleSheet.create({
   optionList: {
     gap: 12,
   },
-  choiceInfoCard: {
-    backgroundColor: '#0F1A2D',
-    borderWidth: 1,
-    borderColor: DuocodePalette.borderStrong,
-    borderRadius: 18,
-    padding: 14,
-    gap: 6,
-  },
-  choiceInfoEyebrow: {
-    color: DuocodePalette.code,
-    fontSize: 11,
-    fontFamily: Fonts.mono,
-  },
-  choiceInfoText: {
-    color: '#D7E6FB',
-    fontSize: 13,
-    lineHeight: 20,
-    fontWeight: '700',
-  },
   optionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1001,12 +1246,26 @@ const styles = StyleSheet.create({
     borderColor: DuocodePalette.accent,
     backgroundColor: DuocodePalette.accentSoft,
   },
+  optionCardCorrect: {
+    borderColor: DuocodePalette.terminalGreen,
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+  },
+  optionCardWrong: {
+    borderColor: DuocodePalette.red,
+    backgroundColor: DuocodePalette.redSoft,
+  },
   optionTitle: {
     flex: 1,
     color: '#CFE0F8',
     fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
+  },
+  optionTitleCorrect: {
+    color: DuocodePalette.code,
+  },
+  optionTitleWrong: {
+    color: '#FFB4C2',
   },
   optionStatus: {
     backgroundColor: DuocodePalette.accentSoft,
@@ -1020,6 +1279,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     overflow: 'hidden',
+  },
+  optionStatusCorrect: {
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+    borderColor: DuocodePalette.terminalGreen,
+    color: DuocodePalette.code,
+  },
+  optionStatusWrong: {
+    backgroundColor: DuocodePalette.redSoft,
+    borderColor: DuocodePalette.red,
+    color: '#FFB4C2',
+  },
+  optionBadgeCorrect: {
+    backgroundColor: DuocodePalette.codeSoft,
+    borderColor: DuocodePalette.terminalGreen,
+    color: DuocodePalette.code,
+  },
+  optionBadgeWrong: {
+    backgroundColor: DuocodePalette.redSoft,
+    borderColor: DuocodePalette.red,
+    color: '#FFB4C2',
   },
   optionDetail: {
     color: DuocodePalette.text,
@@ -1035,16 +1314,44 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 4,
   },
+  conceptBox: {
+    backgroundColor: '#12233A',
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    padding: 14,
+    gap: 8,
+  },
   snippetLabel: {
     color: DuocodePalette.terminalBlue,
     fontSize: 11,
     fontFamily: Fonts.mono,
     marginBottom: 4,
   },
+  conceptText: {
+    color: DuocodePalette.text,
+    fontSize: 15,
+    lineHeight: 23,
+    fontWeight: '700',
+  },
   snippetLine: {
     color: DuocodePalette.code,
     fontSize: 15,
     lineHeight: 23,
+    fontFamily: Fonts.mono,
+  },
+  outputHintBox: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  outputHintText: {
+    color: DuocodePalette.code,
+    fontSize: 14,
+    fontWeight: '900',
     fontFamily: Fonts.mono,
   },
   answerInput: {
@@ -1058,6 +1365,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     fontFamily: Fonts.mono,
+  },
+  answerInputPass: {
+    borderColor: DuocodePalette.terminalGreen,
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+  },
+  answerInputFail: {
+    borderColor: DuocodePalette.red,
+    backgroundColor: DuocodePalette.redSoft,
   },
   codeInput: {
     minHeight: 280,

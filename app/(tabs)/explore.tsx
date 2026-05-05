@@ -1,6 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { NeonLessonNode } from '@/components/duocode/neon-lesson-node';
 import { DuocodePalette } from '@/constants/duocode-theme';
@@ -72,6 +83,7 @@ export default function ExploreScreen() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [completedUnitsExpanded, setCompletedUnitsExpanded] = useState(false);
   const [modalLessonId, setModalLessonId] = useState<string | null>(null);
+  const modalCtaPulse = useRef(new Animated.Value(0)).current;
 
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
   const courseLevels = useMemo(() => (dashboard ? groupCourseTopics(dashboard.topics) : []), [dashboard]);
@@ -79,6 +91,20 @@ export default function ExploreScreen() {
     () => courseLevels.flatMap((level) => level.units.flatMap((unit) => unit.lessons)),
     [courseLevels]
   );
+  const availableLanguages = useMemo(() => {
+    const languageMap = new Map<string, { id: string; label: string }>();
+
+    dashboard?.topics.forEach((topic) => {
+      if (!languageMap.has(topic.languageId)) {
+        languageMap.set(topic.languageId, {
+          id: topic.languageId,
+          label: topic.languageLabel,
+        });
+      }
+    });
+
+    return Array.from(languageMap.values());
+  }, [dashboard?.topics]);
 
   useEffect(() => {
     if (!courseLevels.length) {
@@ -203,6 +229,9 @@ export default function ExploreScreen() {
     null;
   const modalExercise = getFirstPendingExercise(lessonForModal);
   const autoCurrentExercise = getFirstPendingExercise(autoCurrentLesson);
+  const currentLanguage = selectedLesson?.languageLabel || selectedUnit?.lessons[0]?.languageLabel || availableLanguages[0]?.label || 'JavaScript';
+  const availableLanguageSummary =
+    availableLanguages.length > 0 ? availableLanguages.map((language) => language.label).join(' · ') : currentLanguage;
   const isWideLayout = viewportWidth >= 1180;
   const pathOffsets = useMemo(() => {
     if (viewportWidth >= 1480) {
@@ -247,6 +276,79 @@ export default function ExploreScreen() {
         .sort((left, right) => left.unitNumber - right.unitNumber) || [],
     [selectedLevel]
   );
+  const modalCtaScale = modalCtaPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1],
+  });
+  const modalCtaLift = modalCtaPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0],
+  });
+  const modalCtaSweep = modalCtaPulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-220, 220],
+  });
+  const swipeResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponderCapture: (_event, gestureState) => {
+          const horizontalIntent =
+            Math.abs(gestureState.dx) > 18 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.2;
+
+          if (!horizontalIntent) {
+            return false;
+          }
+
+          if (sidebarVisible) {
+            return Math.abs(gestureState.dx) > 18;
+          }
+
+          return gestureState.x0 <= 48 && gestureState.dx > 18;
+        },
+        onPanResponderRelease: (_event, gestureState) => {
+          if (!sidebarVisible && gestureState.x0 <= 72 && gestureState.dx >= 60) {
+            setSidebarVisible(true);
+            return;
+          }
+
+          if (sidebarVisible && Math.abs(gestureState.dx) >= 60) {
+            setSidebarVisible(false);
+          }
+        },
+      }),
+    [sidebarVisible]
+  );
+
+  useEffect(() => {
+    if (!modalLessonId) {
+      modalCtaPulse.stopAnimation();
+      modalCtaPulse.setValue(0);
+      return;
+    }
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(modalCtaPulse, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(modalCtaPulse, {
+          toValue: 0,
+          duration: 900,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    loop.start();
+
+    return () => {
+      loop.stop();
+    };
+  }, [modalCtaPulse, modalLessonId]);
 
   if (loading || !dashboard) {
     return <LoadingState />;
@@ -415,23 +517,53 @@ export default function ExploreScreen() {
   }
 
   return (
-    <>
+    <View style={styles.screen} {...swipeResponder.panHandlers}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
         <View style={[styles.workspace, isWideLayout && sidebarVisible && styles.workspaceWide]}>
           {isWideLayout && sidebarVisible ? <View style={styles.sidebarDockInline}>{renderSidebar()}</View> : null}
 
+          {!sidebarVisible ? (
+            <Pressable
+              style={[styles.sidebarRevealHandle, isWideLayout && styles.sidebarRevealHandleWide]}
+              onPress={() => setSidebarVisible(true)}>
+              <Text style={styles.sidebarRevealArrows}>{'>>>'}</Text>
+              <Text style={styles.sidebarRevealText}>DESLIZA</Text>
+              <Text style={styles.sidebarRevealHint}>abre panel</Text>
+            </Pressable>
+          ) : null}
+
           <View style={styles.mainColumn}>
+            <View style={styles.languageCard}>
+                <View style={styles.languageHeader}>
+                  <View style={styles.languageHeaderCopy}>
+                    <Text style={styles.languageEyebrow}>lenguajes disponibles aqui</Text>
+                    <Text style={styles.languageTitle}>{availableLanguageSummary}</Text>
+                  </View>
+                  <View style={styles.languageBadge}>
+                    <Text style={styles.languageBadgeText}>HABILITADO</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.languageText}>
+                  Aqui solo se muestran lenguajes que ya existen de verdad dentro de esta app. Lo que ves arriba es
+                  exactamente lo que hoy se puede estudiar en este espacio, sin prometer opciones que todavia no
+                  estan listas.
+                </Text>
+
+                <View style={styles.languageSelector}>
+                  {availableLanguages.map((language) => (
+                    <View key={language.id} style={[styles.languageChip, styles.languageChipActive]}>
+                      <Text style={[styles.languageChipTitle, styles.languageChipTitleActive]}>{language.label}</Text>
+                      <Text style={styles.languageChipMeta}>disponible ahora</Text>
+                    </View>
+                  ))}
+                </View>
+
+            </View>
+
             {selectedLevel ? (
               <View style={styles.pathHeroCard}>
                 <View style={styles.pathHeroTopRow}>
-                  <Pressable
-                    style={[styles.pathHeroToggle, sidebarVisible && styles.pathHeroToggleActive]}
-                    onPress={() => setSidebarVisible((value) => !value)}>
-                    <Text style={styles.pathHeroToggleText}>
-                      {sidebarVisible ? 'OCULTAR PANEL' : 'VER PANEL'}
-                    </Text>
-                  </Pressable>
-
                   <Text style={styles.pathHeroLabel}>{selectedLevel.name}</Text>
                 </View>
 
@@ -441,6 +573,10 @@ export default function ExploreScreen() {
                     ? `Leccion actual: L${autoCurrentLesson.lessonNumber} · ${autoCurrentLesson.title}`
                     : 'Elige una leccion del camino para ver su detalle y empezar.'}
                 </Text>
+                <Text style={styles.pathHeroLanguage}>{`Lenguaje que estas aprendiendo: ${currentLanguage}`}</Text>
+                {!sidebarVisible ? (
+                  <Text style={styles.pathHeroSideHint}>Desliza o toca la pestaña izquierda para abrir el panel.</Text>
+                ) : null}
 
                 <View style={styles.pathHeroStats}>
                   <View style={styles.pathHeroStatCard}>
@@ -487,17 +623,20 @@ export default function ExploreScreen() {
 
                   {selectedUnit.lessons.map((lesson, index) => {
                     const offset = pathOffsets[index % pathOffsets.length];
+                    const isLessonCompleted = lesson.progressPercent >= 100;
+                    const isLessonCurrent =
+                      lesson.id === selectedLesson?.id && !lesson.isLocked && !isLessonCompleted;
 
                     return (
                       <View key={lesson.id} style={styles.lessonRow}>
                         <NeonLessonNode
-                          glyph={lesson.progressPercent >= 100 ? 'OK' : lesson.lessonNumber.toString()}
+                          glyph={isLessonCompleted ? 'HECHO' : lesson.lessonNumber.toString()}
                           label={lesson.title}
                           meta={buildLessonMeta(lesson)}
-                          isCurrent={lesson.id === selectedLesson?.id && !lesson.isLocked}
-                          isCompleted={lesson.progressPercent >= 100}
+                          isCurrent={isLessonCurrent}
+                          isCompleted={isLessonCompleted}
                           isLocked={lesson.isLocked}
-                          showStartTag={lesson.id === selectedLesson?.id && !lesson.isLocked}
+                          showStartTag={isLessonCurrent}
                           onPress={() => openLessonDetail(lesson)}
                           style={{ transform: [{ translateX: offset }] }}
                         />
@@ -531,7 +670,10 @@ export default function ExploreScreen() {
 
           <View style={styles.modalCard}>
             {lessonForModal ? (
-              <>
+              <ScrollView
+                style={styles.modalScroll}
+                contentContainerStyle={styles.modalScrollContent}
+                showsVerticalScrollIndicator={false}>
                 <View style={styles.modalHeader}>
                   <View style={styles.modalHeaderCopy}>
                     <Text style={styles.modalEyebrow}>{`UNIDAD ${lessonForModal.unitNumber} · LECCION ${lessonForModal.lessonNumber}`}</Text>
@@ -589,21 +731,44 @@ export default function ExploreScreen() {
                   </View>
                 ) : null}
 
-                <Pressable style={styles.primaryButton} onPress={() => openLesson(lessonForModal)}>
-                  <Text style={styles.primaryButtonText}>ABRIR LECCION</Text>
-                </Pressable>
+                <Animated.View
+                  style={[
+                    styles.modalPrimaryButtonWrap,
+                    {
+                      transform: [{ scale: modalCtaScale }, { translateY: modalCtaLift }],
+                    },
+                  ]}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.primaryButton,
+                      styles.modalPrimaryButton,
+                      pressed && styles.modalPrimaryButtonPressed,
+                    ]}
+                    onPress={() => openLesson(lessonForModal)}>
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.modalPrimaryButtonSweep,
+                        {
+                          transform: [{ translateX: modalCtaSweep }, { rotate: '18deg' }],
+                        },
+                      ]}
+                    />
+                    <Text style={styles.primaryButtonText}>COMENZAR LECCION</Text>
+                  </Pressable>
+                </Animated.View>
 
                 {modalExercise ? (
                   <Text style={styles.modalStartHint}>
                     {`Primer reto: ${modalExercise.lessonTypeLabel.toLowerCase()} · ${modalExercise.title}`}
                   </Text>
                 ) : null}
-              </>
+              </ScrollView>
             ) : null}
           </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
 }
 
@@ -630,6 +795,90 @@ const styles = StyleSheet.create({
     zIndex: 1,
     flex: 1,
   },
+  languageCard: {
+    backgroundColor: '#0F1D32',
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    padding: 20,
+    gap: 14,
+  },
+  languageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  languageHeaderCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  languageEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  languageTitle: {
+    color: DuocodePalette.text,
+    fontSize: 24,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  languageBadge: {
+    backgroundColor: '#163325',
+    borderWidth: 1,
+    borderColor: DuocodePalette.green,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  languageBadgeText: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  languageText: {
+    color: '#D2E1F7',
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  languageChip: {
+    minWidth: 120,
+    backgroundColor: '#132335',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 4,
+    opacity: 0.8,
+  },
+  languageChipActive: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderColor: DuocodePalette.accent,
+    opacity: 1,
+  },
+  languageChipTitle: {
+    color: '#C9D8EE',
+    fontSize: 13,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  languageChipTitleActive: {
+    color: DuocodePalette.accent,
+  },
+  languageChipMeta: {
+    color: '#9CB6D8',
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
   pathHeroCard: {
     backgroundColor: '#0F1D32',
     borderRadius: 28,
@@ -640,32 +889,21 @@ const styles = StyleSheet.create({
   },
   pathHeroTopRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     gap: 12,
     flexWrap: 'wrap',
-  },
-  pathHeroToggle: {
-    backgroundColor: DuocodePalette.accentSoft,
-    borderWidth: 1,
-    borderColor: DuocodePalette.accent,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  pathHeroToggleActive: {
-    backgroundColor: '#13304F',
-  },
-  pathHeroToggleText: {
-    color: DuocodePalette.accent,
-    fontSize: 12,
-    fontWeight: '900',
-    fontFamily: Fonts.mono,
   },
   pathHeroLabel: {
     color: DuocodePalette.code,
     fontSize: 12,
     fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  pathHeroSideHint: {
+    color: '#A9C5E8',
+    fontSize: 12,
+    lineHeight: 18,
     fontFamily: Fonts.mono,
   },
   pathHeroTitle: {
@@ -678,6 +916,12 @@ const styles = StyleSheet.create({
     color: '#D2E1F7',
     fontSize: 14,
     lineHeight: 21,
+  },
+  pathHeroLanguage: {
+    color: DuocodePalette.terminalBlue,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
   },
   pathHeroStats: {
     flexDirection: 'row',
@@ -733,6 +977,46 @@ const styles = StyleSheet.create({
     width: 336,
     flexShrink: 0,
     alignSelf: 'flex-start',
+  },
+  sidebarRevealHandle: {
+    position: 'absolute',
+    left: -2,
+    top: 118,
+    zIndex: 4,
+    backgroundColor: '#112743',
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderTopRightRadius: 18,
+    borderBottomRightRadius: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+    gap: 2,
+    shadowColor: '#020617',
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  sidebarRevealHandleWide: {
+    top: 132,
+  },
+  sidebarRevealArrows: {
+    color: DuocodePalette.accent,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  sidebarRevealText: {
+    color: DuocodePalette.text,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  sidebarRevealHint: {
+    color: '#A9C5E8',
+    fontSize: 10,
+    fontFamily: Fonts.mono,
   },
   sidebarDockOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1094,12 +1378,20 @@ const styles = StyleSheet.create({
   modalCard: {
     width: '100%',
     maxWidth: 560,
+    maxHeight: '82%',
     backgroundColor: DuocodePalette.surface,
     borderRadius: 28,
     borderWidth: 1,
     borderColor: DuocodePalette.borderStrong,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+  modalScroll: {
+    flexGrow: 0,
+  },
+  modalScrollContent: {
     gap: 16,
+    paddingBottom: 6,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1208,5 +1500,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.mono,
     textAlign: 'center',
+  },
+  modalPrimaryButtonWrap: {
+    position: 'relative',
+    marginTop: 2,
+  },
+  modalPrimaryButton: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  modalPrimaryButtonPressed: {
+    transform: [{ scale: 0.985 }],
+  },
+  modalPrimaryButtonSweep: {
+    position: 'absolute',
+    top: -10,
+    bottom: -10,
+    width: 58,
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
 });

@@ -1,12 +1,12 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { apiRequest } from '@/lib/api';
+import {
+  bootstrapLocalAuth,
+  loginLocalAccount,
+  logoutLocalAccount,
+  registerLocalAccount,
+} from '@/lib/local-learning';
 import type { AuthUser } from '@/types/duocode';
-
-type AuthPayload = {
-  token: string;
-  user: AuthUser;
-};
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -14,33 +14,10 @@ type AuthContextValue = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, confirmPassword?: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-const STORAGE_KEY = 'duocode-auth-token';
-
-function readStoredToken() {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return null;
-  }
-
-  return window.localStorage.getItem(STORAGE_KEY);
-}
-
-function writeStoredToken(token: string | null) {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return;
-  }
-
-  if (token) {
-    window.localStorage.setItem(STORAGE_KEY, token);
-    return;
-  }
-
-  window.localStorage.removeItem(STORAGE_KEY);
-}
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -48,56 +25,34 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = readStoredToken();
+    bootstrapLocalAuth()
+      .then((session) => {
+        if (!session) {
+          return;
+        }
 
-    if (!storedToken) {
-      setLoading(false);
-      return;
-    }
-
-    setToken(storedToken);
-
-    apiRequest<{ user: AuthUser }>('/api/auth/me', {}, storedToken)
-      .then((response) => {
-        setUser(response.user);
-      })
-      .catch(() => {
-        writeStoredToken(null);
-        setToken(null);
-        setUser(null);
+        setToken(session.token);
+        setUser(session.user);
       })
       .finally(() => {
         setLoading(false);
       });
   }, []);
 
-  async function consumeAuth(action: Promise<AuthPayload>) {
-    const response = await action;
-    writeStoredToken(response.token);
-    setToken(response.token);
-    setUser(response.user);
-  }
-
   async function login(email: string, password: string) {
-    await consumeAuth(
-      apiRequest<AuthPayload>('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      })
-    );
+    const session = await loginLocalAccount(email, password);
+    setToken(session.token);
+    setUser(session.user);
   }
 
-  async function register(name: string, email: string, password: string, confirmPassword?: string) {
-    await consumeAuth(
-      apiRequest<AuthPayload>('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ name, email, password, confirmPassword }),
-      })
-    );
+  async function register(name: string, email: string, password: string, _confirmPassword?: string) {
+    const session = await registerLocalAccount(name, email, password);
+    setToken(session.token);
+    setUser(session.user);
   }
 
-  function logout() {
-    writeStoredToken(null);
+  async function logout() {
+    await logoutLocalAccount();
     setToken(null);
     setUser(null);
   }

@@ -7,7 +7,7 @@ import type {
 
 type LessonState = 'completed' | 'in-progress' | 'available' | 'locked';
 
-const PRACTICE_XP_RATIO = 0.35;
+const PRACTICE_XP_RATIO = 0.5;
 
 export type DecoratedLesson = LearnerTopic & {
   isLocked: boolean;

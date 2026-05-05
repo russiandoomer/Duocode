@@ -24,7 +24,6 @@ function AuthRedirector() {
     const inAdmin = topSegment === 'admin';
     const inLesson = topSegment === 'lesson';
     const inPractice = topSegment === 'practice';
-
     if (!user && !inLogin) {
       router.replace('/login');
       return;

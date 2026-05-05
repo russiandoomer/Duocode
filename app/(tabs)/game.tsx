@@ -31,6 +31,20 @@ function LoadingState() {
   );
 }
 
+function isPracticeEligible(exercise: {
+  completed: boolean;
+  lastSubmittedCode: string;
+  lastSubmittedText?: string | null;
+  lastSelectedOptionId?: string | null;
+}) {
+  return Boolean(
+    exercise.completed ||
+      exercise.lastSubmittedCode ||
+      exercise.lastSubmittedText ||
+      exercise.lastSelectedOptionId
+  );
+}
+
 export default function PracticeHubScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ topicId?: string | string[] }>();
@@ -46,7 +60,7 @@ export default function PracticeHubScreen() {
       (dashboard?.topics || [])
         .map((topic) => ({
           ...topic,
-          exercises: topic.exercises.filter((exercise) => exercise.completed),
+          exercises: topic.exercises.filter((exercise) => isPracticeEligible(exercise)),
         }))
         .filter((topic) => topic.exercises.length > 0),
     [dashboard?.topics]
@@ -152,7 +166,7 @@ export default function PracticeHubScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Zona de practica</Text>
             <Text style={styles.bodyText}>
-              Primero completa una leccion en `Clases`. Luego aqui la vuelves a hacer como repaso con solo el 35% del XP original.
+              Primero intenta o completa una leccion en `Clases`. Luego aqui puedes reforzar sus retos con solo el 50% del XP original.
             </Text>
             <Pressable style={styles.primaryButton} onPress={() => router.push('/(tabs)/explore')}>
               <Text style={styles.primaryButtonText}>IR A CLASES</Text>
@@ -176,7 +190,7 @@ export default function PracticeHubScreen() {
           </View>
 
           <Text style={styles.heroText}>
-            Practica no es una clase nueva. Es la misma leccion que ya aprobaste, rehecha para fijar memoria y mantener agilidad. Por eso el XP baja al 35%.
+            Practica no es una clase nueva. Aqui refuerzas retos que ya aprobaste o que ya intentaste antes, para fijar memoria y mantener agilidad. Por eso el XP baja al 50%.
           </Text>
 
           <View style={styles.heroBadges}>
@@ -185,7 +199,7 @@ export default function PracticeHubScreen() {
               <Text style={styles.heroBadgeLabel}>temas listos</Text>
             </View>
             <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeValue}>35%</Text>
+              <Text style={styles.heroBadgeValue}>50%</Text>
               <Text style={styles.heroBadgeLabel}>del XP original</Text>
             </View>
           </View>
@@ -317,7 +331,7 @@ export default function PracticeHubScreen() {
                   </View>
 
                   <View style={styles.modalBadge}>
-                    <Text style={styles.modalBadgeValue}>35%</Text>
+                    <Text style={styles.modalBadgeValue}>50%</Text>
                     <Text style={styles.modalBadgeLabel}>del XP original</Text>
                   </View>
                 </View>

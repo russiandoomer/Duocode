@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 
-import { apiRequest } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
+import { getLocalAdminDashboard } from '@/lib/local-learning';
 import type { AdminDashboard } from '@/types/duocode';
 
 export function useAdminDashboard() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token || user?.role !== 'admin') {
+    if (!user || user.role !== 'admin') {
       setDashboard(null);
       setLoading(false);
       return;
@@ -18,14 +18,14 @@ export function useAdminDashboard() {
 
     setLoading(true);
 
-    apiRequest<AdminDashboard>('/api/admin/dashboard', {}, token)
+    getLocalAdminDashboard(user.id)
       .then((response) => {
         setDashboard(response);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [token, user?.role]);
+  }, [user?.id, user?.role]);
 
   return {
     dashboard,

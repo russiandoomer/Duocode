@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     backgroundColor: DuocodePalette.accentGlow,
   },
   haloCompleted: {
-    backgroundColor: 'rgba(52, 211, 153, 0.22)',
+    backgroundColor: 'rgba(244, 63, 94, 0.24)',
   },
   haloIdle: {
     backgroundColor: 'rgba(125, 211, 252, 0.14)',
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   nodeBaseCompleted: {
-    backgroundColor: '#12382A',
+    backgroundColor: '#34121A',
   },
   nodeBaseCurrent: {
     backgroundColor: '#13314D',
@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   nodeInnerCompleted: {
-    backgroundColor: DuocodePalette.terminalGreenSoft,
-    borderColor: DuocodePalette.terminalGreen,
+    backgroundColor: DuocodePalette.redSoft,
+    borderColor: DuocodePalette.red,
   },
   nodeInnerCurrent: {
     backgroundColor: DuocodePalette.terminalBlueSoft,
@@ -320,7 +320,8 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
   },
   glyphCompleted: {
-    color: DuocodePalette.terminalGreen,
+    color: DuocodePalette.red,
+    fontSize: 12,
   },
   glyphCurrent: {
     color: DuocodePalette.code,

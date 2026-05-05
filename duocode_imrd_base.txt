@@ -1,0 +1,518 @@
+BASE TECNICA PARA INFORME IMRD - PROYECTO DUOCODE
+
+Uso sugerido:
+Este texto sirve como insumo para redactar un informe academico completo en formato IMRD.
+La redaccion final puede adaptarse a APA, agregar capturas y mejorar estilo academico.
+En la version final del informe no es necesario mencionar asistencia automatizada ni procesos internos de edicion.
+
+Titulo sugerido:
+Desarrollo de una aplicacion movil educativa para el aprendizaje inicial de JavaScript con funcionamiento local en Android
+
+1. INTRODUCCION
+
+El proyecto Duocode es una aplicacion educativa desarrollada con Expo y React Native orientada al aprendizaje inicial de JavaScript.
+La meta principal fue construir una app movil sencilla, clara y funcional para estudiantes que necesitan practicar conceptos basicos de programacion desde el telefono, aun cuando no exista conexion estable a internet o un backend operativo.
+
+El problema inicial del proyecto fue la dependencia parcial de servicios externos para autenticacion y contenido, lo que hacia fragil la experiencia en otros dispositivos y complicaba la futura generacion de un APK estable.
+Por esa razon, el enfoque del desarrollo cambio hacia un modelo local en el que el inicio de sesion, el progreso, la evaluacion de ejercicios y el almacenamiento de datos funcionaran directamente en el dispositivo.
+
+El objetivo general fue consolidar una aplicacion de aprendizaje de JavaScript con las siguientes caracteristicas:
+- acceso local para el estudiante
+- progreso persistente en el telefono
+- evaluacion de lecciones y practicas dentro de la propia app
+- interfaz enfocada en clases, repaso y avance
+- preparacion del proyecto para generar un APK Android
+
+2. METODOS
+
+2.1. Entorno de desarrollo
+
+Se trabajo sobre un proyecto Expo Router ubicado en:
+C:\xampp\htdocs\duoapp\MyApp0
+
+Herramientas principales empleadas:
+- Node.js. Usado para ejecutar dependencias, scripts y comandos de construccion.
+  Donde: package.json, scripts locales y ejecucion de Expo.
+  Por que: Expo, TypeScript y el ecosistema React Native requieren Node para compilar y ejecutar.
+
+- Expo SDK 54.
+  Donde: package.json, app.json.
+  Por que: permite compilar una app multiplataforma con flujo agil para web, Android y desarrollo local.
+
+- React 19 y React Native 0.81.5.
+  Donde: package.json y todas las pantallas/componentes de app y components.
+  Por que: se uso para construir la interfaz movil con componentes reutilizables y estado reactivo.
+
+- Expo Router.
+  Donde: app/_layout.tsx, app/(tabs)/_layout.tsx y estructura app/.
+  Por que: organiza la navegacion por archivos y simplifica pantallas como login, lesson, practice y tabs.
+
+- TypeScript.
+  Donde: hooks/, lib/, components/, app/.
+  Por que: mejora seguridad de tipos y reduce errores al manejar contenido educativo, ejercicios y progreso.
+
+- AsyncStorage.
+  Donde: lib/persistent-storage.ts
+  Por que: permite guardar sesion, usuarios locales y progreso directamente en el dispositivo.
+
+- EAS Build.
+  Donde: eas.json y script "apk:build" en package.json.
+  Por que: es la via recomendada por Expo para compilar APK Android desde un proyecto Expo moderno.
+
+2.2. Arquitectura funcional
+
+La aplicacion se organizo en varias capas:
+
+A. Capa de navegacion
+- app/_layout.tsx
+  Funcion: define la pila principal de rutas y redirecciona segun autenticacion y rol.
+  Uso: login, admin, lesson, practice y tabs.
+  Motivo: centralizar flujo de acceso.
+
+- app/(tabs)/_layout.tsx
+  Funcion: organiza las pestañas principales.
+  Uso: inicio, clases, practica y estadisticas.
+  Motivo: separar areas de la experiencia del estudiante.
+
+B. Capa de autenticacion local
+- hooks/use-auth.tsx
+  Funcion: maneja usuario actual, token local, login, registro y cierre de sesion.
+  Motivo: reemplazar dependencia de backend remoto para acceso de alumno.
+
+- lib/local-learning.ts
+  Funcion: implementa almacenamiento de usuarios locales, sesion, progreso, intentos, evaluacion y transformacion del contenido del curso.
+  Motivo: concentrar toda la logica academica en el dispositivo.
+
+- lib/persistent-storage.ts
+  Funcion: lectura y escritura persistente de datos JSON en AsyncStorage.
+  Motivo: conservar progreso entre aperturas de la aplicacion.
+
+C. Capa de contenido educativo
+- data/javascript-course.js
+  Funcion: define la ruta de aprendizaje de JavaScript, unidades, lecciones, ejemplos, preguntas y retos.
+  Motivo: mantener el contenido del curso en el proyecto para funcionamiento local.
+
+- data/exercise-overrides.json
+  Funcion: almacenar ajustes editoriales de preguntas, respuestas, snippets y explicaciones.
+  Motivo: permitir correcciones masivas del contenido sin reescribir toda la estructura base del curso.
+
+- data/duocode-content.json
+  Funcion: contenido general de perfil y elementos auxiliares.
+  Motivo: sostener datos base de la experiencia del estudiante.
+
+D. Capa de experiencia del alumno
+- hooks/use-learner-dashboard.tsx
+  Funcion: carga el dashboard del estudiante y evalua ejercicios de forma local.
+  Motivo: sincronizar pantallas con progreso real sin backend externo.
+
+- app/(tabs)/explore.tsx
+  Funcion: pantalla Clases.
+  Uso: muestra lenguaje disponible, camino de unidad, unidades, lecciones y detalle modal.
+  Motivo: concentrar la navegacion academica principal.
+
+- app/lesson.tsx
+  Funcion: flujo de leccion.
+  Uso: muestra pregunta actual, ruta de avance, ayuda rapida, evaluacion y transicion al siguiente reto.
+  Motivo: resolver ejercicios de clase uno por uno sin distracciones.
+
+- app/practice.tsx
+  Funcion: flujo de practica o repaso.
+  Uso: repite logica de resolucion con XP reducido.
+  Motivo: reforzar contenidos ya vistos.
+
+- components/duocode/code-celebration-overlay.tsx
+  Funcion: mini ventana de resultado al responder.
+  Uso: muestra acierto o error, XP y explicacion.
+  Motivo: dar retroalimentacion inmediata con mejor impacto visual.
+
+2.3. Cambios clave realizados
+
+1. Migracion del flujo del alumno a modo local
+- Se reemplazo la dependencia del backend para el flujo principal del estudiante.
+- Login, registro, progreso e intentos se guardan en el dispositivo.
+- Esto se implemento sobre todo en hooks/use-auth.tsx, hooks/use-learner-dashboard.tsx, lib/local-learning.ts y lib/persistent-storage.ts.
+
+2. Correccion y curacion del contenido academico
+- Se ajustaron preguntas, respuestas, snippets, explicaciones y respuestas alternativas validas.
+- Estas correcciones quedaron centralizadas en data/exercise-overrides.json y se aplican desde data/javascript-course.js.
+
+3. Mejora del flujo visual de evaluacion
+- Se creo una ventana de resultado con estados visuales distintos para acierto y error.
+- Verde con confeti si la respuesta es correcta.
+- Rojo con fondo estilo codigo si la respuesta es incorrecta.
+- Se elimino texto tecnico decorativo que podia confundir al estudiante.
+
+4. Limpieza de vistas internas de revision
+- Se elimino la pantalla app/content-review.tsx.
+- Se elimino el boton "REVISAR PREGUNTAS" desde app/(tabs)/explore.tsx.
+- Se retiraron rutas asociadas en app/_layout.tsx.
+- Motivo: dejar una app final mas limpia y menos orientada a inspeccion interna.
+
+5. Preparacion para APK
+- app.json ya contiene package Android: com.duocode.app
+- app.json ya contiene versionCode: 1
+- eas.json mantiene el perfil apk con distribution internal y buildType apk
+- package.json agrega el script:
+  npm run apk:build
+- Se removio la variable EXPO_PUBLIC_API_URL del perfil apk porque el flujo del alumno ya es local.
+
+2.4. Comandos y validaciones usados
+
+Comandos importantes usados durante el proceso:
+- npm run local:web
+  Proposito: probar la app en web local.
+
+- npm run local:api
+  Proposito: levantar API local cuando se necesitaba revisar compatibilidad previa.
+
+- npx tsc --noEmit
+  Proposito: validar que no existan errores de TypeScript.
+
+- npm run apk:build
+  Proposito: iniciar el build de APK con EAS.
+
+Resultado actual del comando APK:
+- El comando si arranca.
+- El entorno descargo o intento usar eas-cli.
+- El build se detuvo porque Expo exige una cuenta autenticada:
+  "An Expo user account is required to proceed. Either log in with eas login or set the EXPO_TOKEN environment variable"
+
+Interpretacion:
+El proyecto ya esta preparado para APK, pero para generar el archivo final .apk todavia hace falta autenticar una cuenta Expo en el entorno donde se ejecute el build.
+
+2.5. Fragmentos de codigo como evidencia de implementacion
+
+Los siguientes fragmentos pueden citarse en el informe como evidencia tecnica de las funciones implementadas.
+Se recomienda usarlos como apoyo dentro de figuras, anexos o secciones de desarrollo.
+
+Fragmento 1. Autenticacion local del estudiante
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\hooks\use-auth.tsx
+Uso:
+Maneja sesion local, login, registro y cierre de sesion.
+Por que es importante:
+Demuestra que el acceso ya no depende de un backend remoto para el flujo principal del alumno.
+
+```ts
+useEffect(() => {
+  bootstrapLocalAuth()
+    .then((session) => {
+      if (!session) {
+        return;
+      }
+
+      setToken(session.token);
+      setUser(session.user);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+}, []);
+
+async function login(email: string, password: string) {
+  const session = await loginLocalAccount(email, password);
+  setToken(session.token);
+  setUser(session.user);
+}
+```
+
+Fragmento 2. Estado local inicial del sistema
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\lib\local-learning.ts
+Uso:
+Crea el estado base del sistema en el dispositivo.
+Por que es importante:
+Prueba que la app guarda usuarios, progreso, intentos y sesion en almacenamiento local.
+
+```ts
+function createDefaultState(): LocalAppState {
+  return {
+    version: 1,
+    users: [createSeedUser('admin', 'admin12345'), createSeedUser('student', 'demo12345')],
+    progress: [],
+    attempts: [],
+    session: null,
+  };
+}
+```
+
+Fragmento 3. Persistencia con AsyncStorage y localStorage
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\lib\persistent-storage.ts
+Uso:
+Guarda y recupera datos persistentes.
+Por que es importante:
+Permite conservar el avance tanto en web como en telefono.
+
+```ts
+export async function getStoredJson<T>(key: string): Promise<T | null> {
+  const rawValue = await getStoredString(key);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawValue) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function setStoredJson(key: string, value: unknown) {
+  await setStoredString(key, JSON.stringify(value));
+}
+```
+
+Fragmento 4. Carga y evaluacion del dashboard del alumno
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\hooks\use-learner-dashboard.tsx
+Uso:
+Carga el progreso del alumno y evalua ejercicios localmente.
+Por que es importante:
+Es la pieza que conecta la interfaz con la logica academica del dispositivo.
+
+```ts
+async function refreshDashboard() {
+  if (!user || user.role !== 'student') {
+    setDashboard(null);
+    setLoading(false);
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await getLocalLearnerDashboard(user.id);
+    setDashboard(response);
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function evaluateExercise(exerciseId: string, payload: ExerciseSubmissionPayload) {
+  if (!user) {
+    throw new Error('No autenticado');
+  }
+
+  const response = await evaluateLocalExerciseForUser(user.id, exerciseId, payload);
+  setDashboard(response.dashboard);
+  return response;
+}
+```
+
+Fragmento 5. Ventana de retroalimentacion visual
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\components\duocode\code-celebration-overlay.tsx
+Uso:
+Muestra una mini ventana al responder, con verde y confeti si acierta, o rojo si falla.
+Por que es importante:
+Demuestra el trabajo de retroalimentacion inmediata y refuerzo visual del aprendizaje.
+
+```ts
+const VARIANT_COPY = {
+  pass: {
+    headline: 'GOOD JOB',
+    haloColor: 'rgba(52, 211, 153, 0.16)',
+    scanColor: 'rgba(52, 211, 153, 0.12)',
+    panelBackground: 'rgba(5, 22, 16, 0.96)',
+    patternColor: 'rgba(74, 222, 128, 0.16)',
+  },
+  fail: {
+    headline: 'TRY AGAIN',
+    haloColor: 'rgba(244, 63, 94, 0.16)',
+    scanColor: 'rgba(244, 63, 94, 0.12)',
+    panelBackground: 'rgba(33, 10, 18, 0.96)',
+    patternColor: 'rgba(251, 113, 133, 0.16)',
+  },
+} as const;
+
+{variant === 'pass' && answerValue ? (
+  <View style={styles.responseCard}>
+    <Text style={styles.responseValue}>{answerValue}</Text>
+  </View>
+) : null}
+```
+
+Fragmento 6. Configuracion Android del proyecto
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\app.json
+Uso:
+Declara package Android, versionCode e iconos adaptativos.
+Por que es importante:
+Muestra que la app fue preparada para empaquetado en Android.
+
+```json
+"android": {
+  "package": "com.duocode.app",
+  "versionCode": 1,
+  "adaptiveIcon": {
+    "backgroundColor": "#07111F",
+    "foregroundImage": "./assets/images/android-icon-foreground.png",
+    "backgroundImage": "./assets/images/android-icon-background.png",
+    "monochromeImage": "./assets/images/android-icon-monochrome.png"
+  },
+  "edgeToEdgeEnabled": true,
+  "predictiveBackGestureEnabled": false
+}
+```
+
+Fragmento 7. Perfil de construccion APK
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\eas.json
+Uso:
+Define el perfil de build Android para obtener un archivo APK.
+Por que es importante:
+Demuestra que el proyecto no solo funciona en desarrollo, sino que fue preparado para distribucion instalable.
+
+```json
+{
+  "build": {
+    "apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
+```
+
+Fragmento 8. Comando de construccion del APK
+Archivo:
+C:\xampp\htdocs\duoapp\MyApp0\package.json
+Uso:
+Permite lanzar el build Android desde npm.
+Por que es importante:
+Facilita repetir el proceso de empaquetado con un comando claro.
+
+```json
+"scripts": {
+  "apk:build": "npx eas-cli build -p android --profile apk"
+}
+```
+
+3. RESULTADOS
+
+Los resultados tecnicos obtenidos fueron los siguientes:
+
+- Se consolido una version funcional del flujo de estudiante sin depender de una API remota.
+- El progreso del alumno queda almacenado localmente en el dispositivo.
+- La app puede abrirse, autenticar al usuario local, cargar clases, evaluar respuestas y conservar el avance.
+- Las pantallas de Clases, Lecciones y Practica fueron ajustadas para reducir confusion y reforzar claridad visual.
+- Se eliminaron herramientas internas de revision que no pertenecen a la experiencia final del alumno.
+- El proyecto quedo configurado para construir APK mediante EAS.
+
+Resultados visibles dentro de la app:
+- Login local con creacion automatica de cuenta si el correo no existe en ese telefono.
+- Ruta de aprendizaje por unidades y lecciones.
+- Lecciones con ejercicios de opcion multiple, completar, prediccion y debugging.
+- Practica como repaso de contenidos.
+- Retroalimentacion inmediata con ventana modal visual.
+- Avance persistente entre sesiones.
+
+4. DISCUSION
+
+4.1. Fortalezas
+
+- Independencia del backend para el flujo central del alumno.
+- Mejor estabilidad para uso futuro en telefono.
+- Estructura de curso clara y editable.
+- Persistencia local que facilita demostraciones, tareas y uso escolar.
+- Preparacion real para convertir el proyecto en APK.
+
+4.2. Limitaciones actuales
+
+- Para generar el APK final todavia se necesita una cuenta Expo autenticada o un EXPO_TOKEN.
+- El modo local no sincroniza progreso entre varios dispositivos.
+- Las funciones administrativas en linea no son el centro del flujo actual y pueden requerir revision futura si se quieren usar de nuevo.
+
+4.3. Proyeccion
+
+Como trabajo futuro se puede:
+- construir el APK final con una cuenta Expo
+- personalizar icono, splash y nombre comercial final
+- agregar mas lenguajes ademas de JavaScript
+- incorporar exportacion o respaldo local del progreso
+- implementar sincronizacion remota opcional sin romper el modo offline
+
+5. RECOMENDACIONES PARA EL INFORME FINAL
+
+Si otra IA va a redactar el informe completo, conviene pedirle:
+- redaccion academica en tercera persona
+- formato IMRD formal
+- estilo APA 7 en referencias y tablas
+- inclusion de figuras con pie de imagen
+- no mencionar procesos internos de asistencia automatizada
+
+6. CAPTURAS SUGERIDAS PARA EL INFORME
+
+Captura 1:
+Pantalla de login local.
+Objetivo: mostrar el acceso de usuario en el dispositivo.
+
+Captura 2:
+Pantalla Clases con el camino de la unidad.
+Objetivo: evidenciar la organizacion del contenido educativo.
+
+Captura 3:
+Detalle de una leccion antes de comenzar.
+Objetivo: mostrar estructura del curso y llamada a la accion.
+
+Captura 4:
+Pantalla de una pregunta en lesson.tsx.
+Objetivo: mostrar la interaccion del alumno con el reto.
+
+Captura 5:
+Ventana de respuesta correcta en verde con confeti.
+Objetivo: mostrar retroalimentacion positiva.
+
+Captura 6:
+Ventana de respuesta incorrecta en rojo.
+Objetivo: mostrar retroalimentacion correctiva.
+
+Captura 7:
+Pantalla de practica.
+Objetivo: mostrar el refuerzo del aprendizaje.
+
+Captura 8:
+Pantalla de estadisticas o progreso.
+Objetivo: evidenciar persistencia y seguimiento del avance.
+
+7. ARCHIVOS CLAVE PARA CITAR EN EL INFORME TECNICO
+
+Nucleo del acceso y progreso:
+- C:\xampp\htdocs\duoapp\MyApp0\hooks\use-auth.tsx
+- C:\xampp\htdocs\duoapp\MyApp0\hooks\use-learner-dashboard.tsx
+- C:\xampp\htdocs\duoapp\MyApp0\lib\local-learning.ts
+- C:\xampp\htdocs\duoapp\MyApp0\lib\persistent-storage.ts
+
+Nucleo del contenido:
+- C:\xampp\htdocs\duoapp\MyApp0\data\javascript-course.js
+- C:\xampp\htdocs\duoapp\MyApp0\data\exercise-overrides.json
+- C:\xampp\htdocs\duoapp\MyApp0\data\duocode-content.json
+
+Pantallas principales:
+- C:\xampp\htdocs\duoapp\MyApp0\app\(tabs)\explore.tsx
+- C:\xampp\htdocs\duoapp\MyApp0\app\lesson.tsx
+- C:\xampp\htdocs\duoapp\MyApp0\app\practice.tsx
+- C:\xampp\htdocs\duoapp\MyApp0\components\duocode\code-celebration-overlay.tsx
+
+Configuracion de compilacion:
+- C:\xampp\htdocs\duoapp\MyApp0\app.json
+- C:\xampp\htdocs\duoapp\MyApp0\eas.json
+- C:\xampp\htdocs\duoapp\MyApp0\package.json
+
+8. ESTADO FINAL DEL APK
+
+Estado actual:
+Preparado, pero no generado todavia en este entorno.
+
+Razon:
+El build ya llega al punto en el que Expo solicita autenticacion de cuenta.
+
+Siguiente paso exacto:
+1. Ejecutar eas login o definir EXPO_TOKEN
+2. Ejecutar npm run apk:build
+3. Esperar la compilacion remota
+4. Descargar el archivo APK generado por EAS

@@ -17,10 +17,12 @@
     "web:build": "expo export --platform web",
     "api:start": "node ./server/index.js",
     "lint": "expo lint",
-    "deploy:check": "npm run lint && npx tsc --noEmit && npm run web:build"
+    "deploy:check": "npm run lint && npx tsc --noEmit && npm run web:build",
+    "apk:build": "npx eas-cli build -p android --profile apk"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",

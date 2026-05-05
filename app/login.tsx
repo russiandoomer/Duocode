@@ -20,10 +20,10 @@ import { useAuth } from '@/hooks/use-auth';
 type AuthMode = 'login' | 'register';
 
 const ACCESS_LINES = [
-  '$ auth.bootstrap()',
-  '> secure token handshake ready',
-  '> account isolation enabled',
-  '> role guard: admin | student',
+  '$ device.profile.init()',
+  '> local account storage ready',
+  '> progress sync: this phone only',
+  '> access mode: student | admin',
 ];
 
 function normalizeEmail(email: string) {
@@ -210,7 +210,7 @@ export default function LoginScreen() {
                 <Text style={styles.heroLabel}>duocode.secure_access()</Text>
                 <Text style={styles.heroTitle}>AUTH CONSOLE</Text>
                 <Text style={styles.heroSubtitle}>
-                  Registro y login con token seguro, aislamiento de roles, proteccion ante intentos repetidos y experiencia visual estilo IDE.
+                  Este acceso es local al telefono. Aqui se crea o recupera tu perfil del dispositivo y se guarda tu avance sin depender de internet.
                 </Text>
               </View>
             </View>
@@ -325,8 +325,8 @@ export default function LoginScreen() {
             <Text style={styles.rulesTitle}>{mode === 'login' ? 'session.rules' : 'register.rules'}</Text>
             <Text style={styles.rulesLine}>
               {mode === 'login'
-                ? '> Usa tu email y password. El sistema bloquea temporalmente intentos repetidos.'
-                : '> Nombre minimo 3 caracteres, email valido y password con letras + numeros.'}
+                ? '> Si el email aun no existe en este telefono, se crea una cuenta local automaticamente con ese acceso.'
+                : '> Nombre minimo 3 caracteres, email valido y una clave para guardar tu perfil local.'}
             </Text>
           </View>
 
@@ -335,15 +335,16 @@ export default function LoginScreen() {
               {submitting
                 ? 'PROCESSING...'
                 : mode === 'login'
-                  ? 'ACCESS SYSTEM'
-                  : 'CREATE ACCOUNT'}
+                  ? 'ENTRAR AL DISPOSITIVO'
+                  : 'CREAR PERFIL LOCAL'}
             </Text>
           </Pressable>
 
           <View style={styles.demoBox}>
-            <Text style={styles.demoTitle}>Credenciales demo</Text>
-            <Text style={styles.demoLine}>Alumno: `student@duocode.dev` / `demo12345`</Text>
-            <Text style={styles.demoLine}>Admin: `admin@duocode.dev` / `admin12345`</Text>
+            <Text style={styles.demoTitle}>Perfiles rapidos</Text>
+            <Text style={styles.demoLine}>Alumno local: `student@duocode.dev` / `demo12345`</Text>
+            <Text style={styles.demoLine}>Admin local: `admin@duocode.dev` / `admin12345`</Text>
+            <Text style={styles.demoLine}>Tu progreso queda guardado solo en este telefono.</Text>
           </View>
         </View>
       </ScrollView>

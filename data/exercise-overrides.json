@@ -1,0 +1,3197 @@
+{
+  "Leccion 1 · Que es una variable::1": {
+    "topicTitle": "Leccion 1 · Que es una variable",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Que es una variable\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Que es una variable\": Es un contenedor o espacio en memoria con un nombre asignado, disenado para almacenar datos que pueden cambiar o ser modificados durante la ejecucion del programa. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Es un contenedor o espacio en memoria con un nombre asignado, disenado para almacenar datos que pueden cambiar o ser modificados durante la ejecucion del programa."
+  },
+  "Leccion 1 · Que es una variable::2": {
+    "topicTitle": "Leccion 1 · Que es una variable",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Que es una variable\".",
+    "explanation": "Una variable es un nombre que apunta a un espacio donde se guarda un dato. En JavaScript se declara con let o const y luego se puede usar ese nombre para leer o trabajar con el valor.",
+    "expectedText": "variable",
+    "solutionCode": "variable"
+  },
+  "Leccion 1 · Que es una variable::3": {
+    "topicTitle": "Leccion 1 · Que es una variable",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 0.",
+    "codeSnippet": "let score = 0;\nconsole.log(score);",
+    "expectedText": "0",
+    "solutionCode": "0"
+  },
+  "Leccion 1 · Que es una variable::4": {
+    "topicTitle": "Leccion 1 · Que es una variable",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Se usa let cuando vas a declarar una variable cuyo valor puede cambiar más adelante. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "score = 1;\nconsole.log(score);",
+    "expectedText": "let",
+    "acceptedAnswers": [
+      "let",
+      "let score = 1;\nconsole.log(score);"
+    ],
+    "solutionCode": "let\no tambien:\nlet score = 1;\nconsole.log(score);\n\nTambién válido como corrección completa:\nlet score = 1;\nconsole.log(score);"
+  },
+  "Leccion 2 · Declaracion con let y const::1": {
+    "topicTitle": "Leccion 2 · Declaracion con let y const",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Declaracion con let y const\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Declaracion con let y const\": const se usa cuando la referencia no se va a reasignar y let cuando si cambia. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "const se usa cuando la referencia no se va a reasignar y let cuando si cambia."
+  },
+  "Leccion 2 · Declaracion con let y const::2": {
+    "topicTitle": "Leccion 2 · Declaracion con let y const",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Declaracion con let y const\".",
+    "explanation": "const declara una referencia que no debe reasignarse después de inicializarse.",
+    "expectedText": "const",
+    "solutionCode": "const"
+  },
+  "Leccion 2 · Declaracion con let y const::3": {
+    "topicTitle": "Leccion 2 · Declaracion con let y const",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Duocode.",
+    "codeSnippet": "const appName = \"Duocode\";\nconsole.log(appName);",
+    "expectedText": "Duocode",
+    "solutionCode": "Duocode"
+  },
+  "Leccion 2 · Declaracion con let y const::4": {
+    "topicTitle": "Leccion 2 · Declaracion con let y const",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "El error es intentar reasignar una variable declarada con const. Si el valor debe cambiar, se usa let; si no debe cambiar, se conserva const y se elimina la reasignación.",
+    "codeSnippet": "const total = 10;\ntotal = 12;",
+    "expectedText": "let",
+    "acceptedAnswers": [
+      "let",
+      "let total = 10;\ntotal = 12;"
+    ],
+    "solutionCode": "let\n\no tambien:\nlet total = 10;\ntotal = 12;"
+  },
+  "Leccion 3 · Tipos number string boolean::1": {
+    "topicTitle": "Leccion 3 · Tipos number string boolean",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Tipos number string boolean\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Tipos number string boolean\": JavaScript tiene tipos primitivos como number, string y boolean para representar datos. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "JavaScript tiene tipos primitivos como number, string y boolean para representar datos."
+  },
+  "Leccion 3 · Tipos number string boolean::2": {
+    "topicTitle": "Leccion 3 · Tipos number string boolean",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Tipos number string boolean\".",
+    "explanation": "Un boolean representa valores lógicos: true o false. Si escribes \"true\" entre comillas, deja de ser boolean y pasa a ser string.",
+    "expectedText": "boolean",
+    "solutionCode": "boolean"
+  },
+  "Leccion 3 · Tipos number string boolean::3": {
+    "topicTitle": "Leccion 3 · Tipos number string boolean",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: true.",
+    "codeSnippet": "const active = true;\nconsole.log(active);",
+    "expectedText": "true",
+    "solutionCode": "true"
+  },
+  "Leccion 3 · Tipos number string boolean::4": {
+    "topicTitle": "Leccion 3 · Tipos number string boolean",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Un boolean representa valores lógicos: true o false. Si escribes \"true\" entre comillas, deja de ser boolean y pasa a ser string. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const active = \"true\";\nif (active === true) { console.log(\"ok\"); }",
+    "expectedText": "boolean",
+    "acceptedAnswers": [
+      "boolean",
+      "const active = true;\nif (active === true) { console.log(\"ok\"); }"
+    ],
+    "solutionCode": "boolean\n\nTambién válido como corrección completa:\nconst active = true;\nif (active === true) { console.log(\"ok\"); }"
+  },
+  "Leccion 4 · Operaciones basicas::1": {
+    "topicTitle": "Leccion 4 · Operaciones basicas",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Operaciones basicas\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Operaciones basicas\": Las operaciones aritmeticas permiten sumar, restar, multiplicar y dividir valores numericos. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Las operaciones aritmeticas permiten sumar, restar, multiplicar y dividir valores numericos."
+  },
+  "Leccion 4 · Operaciones basicas::2": {
+    "topicTitle": "Leccion 4 · Operaciones basicas",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Operaciones basicas\".",
+    "explanation": "La respuesta correcta es \"number\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Operaciones basicas\".",
+    "expectedText": "number",
+    "solutionCode": "number"
+  },
+  "Leccion 4 · Operaciones basicas::3": {
+    "topicTitle": "Leccion 4 · Operaciones basicas",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 5.",
+    "codeSnippet": "const total = 8 - 3;\nconsole.log(total);",
+    "expectedText": "5",
+    "solutionCode": "5"
+  },
+  "Leccion 4 · Operaciones basicas::4": {
+    "topicTitle": "Leccion 4 · Operaciones basicas",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Number convierte un valor a tipo number. Es útil cuando recibes datos como texto y necesitas operar matemáticamente. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const total = \"8\" + 2;",
+    "expectedText": "Number",
+    "acceptedAnswers": [
+      "Number",
+      "const total = Number(\"8\") + 2;"
+    ],
+    "solutionCode": "Number\n\nTambién válido como corrección completa:\nconst total = Number(\"8\") + 2;"
+  },
+  "Leccion 5 · Conversion de tipos::1": {
+    "topicTitle": "Leccion 5 · Conversion de tipos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Conversion de tipos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Conversion de tipos\": Puedes convertir strings a number con Number y valores a string con String. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes convertir strings a number con Number y valores a string con String."
+  },
+  "Leccion 5 · Conversion de tipos::2": {
+    "topicTitle": "Leccion 5 · Conversion de tipos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Conversion de tipos\".",
+    "explanation": "Number convierte un valor a tipo number. Es útil cuando recibes datos como texto y necesitas operar matemáticamente.",
+    "expectedText": "Number",
+    "solutionCode": "Number"
+  },
+  "Leccion 5 · Conversion de tipos::3": {
+    "topicTitle": "Leccion 5 · Conversion de tipos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 25.",
+    "codeSnippet": "const age = Number(\"24\");\nconsole.log(age + 1);",
+    "expectedText": "25",
+    "solutionCode": "25"
+  },
+  "Leccion 5 · Conversion de tipos::4": {
+    "topicTitle": "Leccion 5 · Conversion de tipos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "NaN significa Not a Number y aparece cuando una conversión numérica falla. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const age = Number(\"veinte\");\nconsole.log(age);",
+    "expectedText": "NaN",
+    "acceptedAnswers": [
+      "NaN",
+      "const age = Number(\"20\");\nconsole.log(age);\n\n// Si el dato viene del usuario, valida con:\n// if (Number.isNaN(age)) { console.log(\"Edad invalida\"); }"
+    ],
+    "solutionCode": "NaN\n\nTambién válido como corrección completa:\nconst age = Number(\"20\");\nconsole.log(age);\n\n// Si el dato viene del usuario, valida con:\n// if (Number.isNaN(age)) { console.log(\"Edad invalida\"); }"
+  },
+  "Leccion 5 · Conversion de tipos::5": {
+    "topicTitle": "Leccion 5 · Conversion de tipos",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente buildProfileLabel(name, age) para devolver exactamente \"name (age)\".",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Conversion de tipos\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function buildProfileLabel(name, age) {\n  return `${name} (${age})`;\n}"
+  },
+  "Leccion 1 · console.log::1": {
+    "topicTitle": "Leccion 1 · console.log",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"console.log\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"console.log\": console.log muestra informacion en la consola para inspeccionar el programa. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "console.log muestra informacion en la consola para inspeccionar el programa."
+  },
+  "Leccion 1 · console.log::2": {
+    "topicTitle": "Leccion 1 · console.log",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"console.log\".",
+    "explanation": "console.log es la función estándar para mostrar valores en la consola sin modificar el programa.",
+    "expectedText": "console.log",
+    "solutionCode": "console.log"
+  },
+  "Leccion 1 · console.log::3": {
+    "topicTitle": "Leccion 1 · console.log",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Hola Duocode.",
+    "codeSnippet": "console.log(\"Hola Duocode\");",
+    "expectedText": "Hola Duocode",
+    "solutionCode": "Hola Duocode"
+  },
+  "Leccion 1 · console.log::4": {
+    "topicTitle": "Leccion 1 · console.log",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "console.log es la función estándar para mostrar valores en la consola sin modificar el programa. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "console.log = \"hola\";\nconsole.log(\"test\");",
+    "expectedText": "console.log",
+    "acceptedAnswers": [
+      "console.log",
+      "console.log(\"test\");"
+    ],
+    "solutionCode": "console.log\n\nTambién válido como corrección completa:\nconsole.log(\"test\");"
+  },
+  "Leccion 2 · Mostrar texto y variables::1": {
+    "topicTitle": "Leccion 2 · Mostrar texto y variables",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Mostrar texto y variables\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Mostrar texto y variables\": Puedes enviar texto y variables juntas a console.log para inspeccionar valores. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes enviar texto y variables juntas a console.log para inspeccionar valores."
+  },
+  "Leccion 2 · Mostrar texto y variables::2": {
+    "topicTitle": "Leccion 2 · Mostrar texto y variables",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Mostrar texto y variables\".",
+    "explanation": "console.log es la función estándar para mostrar valores en la consola sin modificar el programa.",
+    "expectedText": "console.log",
+    "solutionCode": "console.log"
+  },
+  "Leccion 2 · Mostrar texto y variables::3": {
+    "topicTitle": "Leccion 2 · Mostrar texto y variables",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Hola Ana.",
+    "codeSnippet": "const name = \"Ana\";\nconsole.log(\"Hola\", name);",
+    "expectedText": "Hola Ana",
+    "solutionCode": "Hola Ana"
+  },
+  "Leccion 2 · Mostrar texto y variables::4": {
+    "topicTitle": "Leccion 2 · Mostrar texto y variables",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "La coma separa argumentos dentro de console.log. Sin ella, JavaScript no puede interpretar correctamente la instrucción. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const name = \"Ana\";\nconsole.log(\"Hola\" name);",
+    "expectedText": ",",
+    "acceptedAnswers": [
+      ",",
+      "const name = \"Ana\";\nconsole.log(\"Hola\", name);"
+    ],
+    "solutionCode": ",\n\nTambién válido como corrección completa:\nconst name = \"Ana\";\nconsole.log(\"Hola\", name);"
+  },
+  "Leccion 3 · Concatenacion::1": {
+    "topicTitle": "Leccion 3 · Concatenacion",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Concatenacion\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Concatenacion\": La concatenacion une strings usando el operador +. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "La concatenacion une strings usando el operador +."
+  },
+  "Leccion 3 · Concatenacion::2": {
+    "topicTitle": "Leccion 3 · Concatenacion",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Concatenacion\".",
+    "explanation": "El operador + permite sumar números o concatenar strings según el tipo de los valores.",
+    "expectedText": "+",
+    "solutionCode": "+"
+  },
+  "Leccion 3 · Concatenacion::3": {
+    "topicTitle": "Leccion 3 · Concatenacion",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Hola Ana.",
+    "codeSnippet": "const name = \"Ana\";\nconsole.log(\"Hola \" + name);",
+    "expectedText": "Hola Ana",
+    "solutionCode": "Hola Ana"
+  },
+  "Leccion 3 · Concatenacion::4": {
+    "topicTitle": "Leccion 3 · Concatenacion",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "El operador + permite sumar números o concatenar strings según el tipo de los valores. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const msg = \"Hola \" name;",
+    "expectedText": "+",
+    "acceptedAnswers": [
+      "+",
+      "const msg = \"Hola \" + name;"
+    ],
+    "solutionCode": "+\n\nTambién válido como corrección completa:\nconst msg = \"Hola \" + name;"
+  },
+  "Leccion 4 · Template strings::1": {
+    "topicTitle": "Leccion 4 · Template strings",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Template strings\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Template strings\": Los template strings permiten interpolar valores con ${} dentro de backticks. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los template strings permiten interpolar valores con ${} dentro de backticks."
+  },
+  "Leccion 4 · Template strings::2": {
+    "topicTitle": "Leccion 4 · Template strings",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Template strings\".",
+    "explanation": "La respuesta correcta es \"template string\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Template strings\".",
+    "expectedText": "template string",
+    "solutionCode": "template string"
+  },
+  "Leccion 4 · Template strings::3": {
+    "topicTitle": "Leccion 4 · Template strings",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Hola Ana.",
+    "codeSnippet": "const name = \"Ana\";\nconsole.log(`Hola ${name}`);",
+    "expectedText": "Hola Ana",
+    "solutionCode": "Hola Ana"
+  },
+  "Leccion 4 · Template strings::4": {
+    "topicTitle": "Leccion 4 · Template strings",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los backticks permiten usar ${} para insertar variables dentro de un template string. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const name = \"Ana\";\nconsole.log(\"Hola ${name}\");",
+    "expectedText": "backticks",
+    "acceptedAnswers": [
+      "backticks",
+      "const name = \"Ana\";\nconsole.log(`Hola ${name}`);"
+    ],
+    "solutionCode": "backticks\n\nTambién válido como corrección completa:\nconst name = \"Ana\";\nconsole.log(`Hola ${name}`);"
+  },
+  "Leccion 5 · Entrada simulada con prompt::1": {
+    "topicTitle": "Leccion 5 · Entrada simulada con prompt",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Entrada simulada con prompt\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Entrada simulada con prompt\": prompt permite capturar texto del usuario en entornos donde esta disponible. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "prompt permite capturar texto del usuario en entornos donde esta disponible."
+  },
+  "Leccion 5 · Entrada simulada con prompt::2": {
+    "topicTitle": "Leccion 5 · Entrada simulada con prompt",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Entrada simulada con prompt\".",
+    "explanation": "La respuesta correcta es \"prompt\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Entrada simulada con prompt\".",
+    "expectedText": "prompt",
+    "solutionCode": "prompt"
+  },
+  "Leccion 5 · Entrada simulada con prompt::3": {
+    "topicTitle": "Leccion 5 · Entrada simulada con prompt",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: La Paz.",
+    "codeSnippet": "const city = \"La Paz\";\nconsole.log(city);",
+    "expectedText": "La Paz",
+    "solutionCode": "La Paz"
+  },
+  "Leccion 5 · Entrada simulada con prompt::4": {
+    "topicTitle": "Leccion 5 · Entrada simulada con prompt",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Las comillas convierten el texto en un string válido para JavaScript. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const name = prompt(Tu nombre);",
+    "expectedText": "comillas",
+    "acceptedAnswers": [
+      "comillas",
+      "const name = prompt(\"Tu nombre\");"
+    ],
+    "solutionCode": "comillas\n\nTambién válido como corrección completa:\nconst name = prompt(\"Tu nombre\");"
+  },
+  "Leccion 5 · Entrada simulada con prompt::5": {
+    "topicTitle": "Leccion 5 · Entrada simulada con prompt",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente buildConsoleBanner(name, stack) para devolver \"Aprendiendo stack con name\".",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Entrada simulada con prompt\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function buildConsoleBanner(name, stack) {\n  return `Aprendiendo ${stack} con ${name}`;\n}"
+  },
+  "Leccion 1 · Operadores aritmeticos::1": {
+    "topicTitle": "Leccion 1 · Operadores aritmeticos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Operadores aritmeticos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Operadores aritmeticos\": Los operadores aritmeticos trabajan con numeros para obtener un nuevo resultado. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los operadores aritmeticos trabajan con numeros para obtener un nuevo resultado."
+  },
+  "Leccion 1 · Operadores aritmeticos::2": {
+    "topicTitle": "Leccion 1 · Operadores aritmeticos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Operadores aritmeticos\".",
+    "explanation": "El operador + permite sumar números o concatenar strings según el tipo de los valores.",
+    "expectedText": "+",
+    "solutionCode": "+"
+  },
+  "Leccion 1 · Operadores aritmeticos::3": {
+    "topicTitle": "Leccion 1 · Operadores aritmeticos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 12.",
+    "codeSnippet": "const total = 3 * 4;\nconsole.log(total);",
+    "expectedText": "12",
+    "solutionCode": "12"
+  },
+  "Leccion 1 · Operadores aritmeticos::4": {
+    "topicTitle": "Leccion 1 · Operadores aritmeticos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "En JavaScript la división se escribe con una sola barra /. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const total = 10 // 2;",
+    "expectedText": "/",
+    "acceptedAnswers": [
+      "/",
+      "const total = 10 / 2;"
+    ],
+    "solutionCode": "/\n\nTambién válido como corrección completa:\nconst total = 10 / 2;"
+  },
+  "Leccion 2 · Comparacion == y ===::1": {
+    "topicTitle": "Leccion 2 · Comparacion == y ===",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Comparacion == y ===\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Comparacion == y ===\": === compara valor y tipo; == intenta convertir antes de comparar. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "=== compara valor y tipo; == intenta convertir antes de comparar."
+  },
+  "Leccion 2 · Comparacion == y ===::2": {
+    "topicTitle": "Leccion 2 · Comparacion == y ===",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Comparacion == y ===\".",
+    "explanation": "=== compara valor y tipo, por eso es más seguro que == en la mayoría de validaciones.",
+    "expectedText": "===",
+    "solutionCode": "==="
+  },
+  "Leccion 2 · Comparacion == y ===::3": {
+    "topicTitle": "Leccion 2 · Comparacion == y ===",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: false.",
+    "codeSnippet": "console.log(5 === \"5\");",
+    "expectedText": "false",
+    "solutionCode": "false"
+  },
+  "Leccion 2 · Comparacion == y ===::4": {
+    "topicTitle": "Leccion 2 · Comparacion == y ===",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "=== compara valor y tipo, por eso es más seguro que == en la mayoría de validaciones. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (5 = 5) { console.log(\"ok\"); }",
+    "expectedText": "===",
+    "acceptedAnswers": [
+      "===",
+      "if (5 === 5) { console.log(\"ok\"); }"
+    ],
+    "solutionCode": "===\n\nTambién válido como corrección completa:\nif (5 === 5) { console.log(\"ok\"); }"
+  },
+  "Leccion 3 · Logicos && y ||::1": {
+    "topicTitle": "Leccion 3 · Logicos && y ||",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Logicos && y ||\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Logicos && y ||\": Los operadores logicos combinan condiciones para producir true o false. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los operadores logicos combinan condiciones para producir true o false."
+  },
+  "Leccion 3 · Logicos && y ||::2": {
+    "topicTitle": "Leccion 3 · Logicos && y ||",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Logicos && y ||\".",
+    "explanation": "&& representa AND lógico: ambas condiciones deben ser verdaderas.",
+    "expectedText": "&&",
+    "solutionCode": "&&"
+  },
+  "Leccion 3 · Logicos && y ||::3": {
+    "topicTitle": "Leccion 3 · Logicos && y ||",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: false.",
+    "codeSnippet": "console.log(true && false);",
+    "expectedText": "false",
+    "solutionCode": "false"
+  },
+  "Leccion 3 · Logicos && y ||::4": {
+    "topicTitle": "Leccion 3 · Logicos && y ||",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "&& representa AND lógico: ambas condiciones deben ser verdaderas. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (active and admin) { console.log(\"ok\"); }",
+    "expectedText": "&&",
+    "acceptedAnswers": [
+      "&&",
+      "if (active && admin) { console.log(\"ok\"); }"
+    ],
+    "solutionCode": "&&\n\nTambién válido como corrección completa:\nif (active && admin) { console.log(\"ok\"); }"
+  },
+  "Leccion 4 · Precedencia::1": {
+    "topicTitle": "Leccion 4 · Precedencia",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Precedencia\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Precedencia\": La precedencia indica que operaciones se resuelven primero y los parentesis ayudan a aclararlo. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "La precedencia indica que operaciones se resuelven primero y los parentesis ayudan a aclararlo."
+  },
+  "Leccion 4 · Precedencia::2": {
+    "topicTitle": "Leccion 4 · Precedencia",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Precedencia\".",
+    "explanation": "Los paréntesis delimitan condiciones o cabeceras de estructuras como for, while e if.",
+    "expectedText": "()",
+    "solutionCode": "()"
+  },
+  "Leccion 4 · Precedencia::3": {
+    "topicTitle": "Leccion 4 · Precedencia",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 14.",
+    "codeSnippet": "console.log(2 + 3 * 4);",
+    "expectedText": "14",
+    "solutionCode": "14"
+  },
+  "Leccion 4 · Precedencia::4": {
+    "topicTitle": "Leccion 4 · Precedencia",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Un operador necesita valores a ambos lados. Si falta un valor, la expresión queda incompleta. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const total = 2 + 3 *;",
+    "expectedText": "operando",
+    "acceptedAnswers": [
+      "operando",
+      "const total = 2 + 3 * 4;"
+    ],
+    "solutionCode": "operando\n\nTambién válido como corrección completa:\nconst total = 2 + 3 * 4;"
+  },
+  "Leccion 5 · Expresiones complejas::1": {
+    "topicTitle": "Leccion 5 · Expresiones complejas",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Expresiones complejas\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Expresiones complejas\": Una expresion compleja combina operadores para producir un unico resultado. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Una expresion compleja combina operadores para producir un unico resultado."
+  },
+  "Leccion 5 · Expresiones complejas::2": {
+    "topicTitle": "Leccion 5 · Expresiones complejas",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Expresiones complejas\".",
+    "explanation": "La respuesta correcta es \"expresion\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Expresiones complejas\".",
+    "expectedText": "expresion",
+    "solutionCode": "expresion"
+  },
+  "Leccion 5 · Expresiones complejas::3": {
+    "topicTitle": "Leccion 5 · Expresiones complejas",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: true.",
+    "codeSnippet": "const access = (8 > 5 && true) || false;\nconsole.log(access);",
+    "expectedText": "true",
+    "solutionCode": "true"
+  },
+  "Leccion 5 · Expresiones complejas::4": {
+    "topicTitle": "Leccion 5 · Expresiones complejas",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Después de un operador lógico debe venir otra condición válida. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const access = (8 > 5 &&) true;",
+    "expectedText": "condicion",
+    "acceptedAnswers": [
+      "condicion",
+      "const access = (8 > 5 && true);"
+    ],
+    "solutionCode": "condicion\n\nTambién válido como corrección completa:\nconst access = (8 > 5 && true);"
+  },
+  "Leccion 5 · Expresiones complejas::5": {
+    "topicTitle": "Leccion 5 · Expresiones complejas",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente compareScores(current, target) y devuelve \"above\", \"equal\" o \"below\".",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Expresiones complejas\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function compareScores(current, target) {\n  if (current > target) return \"above\";\n  if (current === target) return \"equal\";\n  return \"below\";\n}"
+  },
+  "Leccion 1 · if::1": {
+    "topicTitle": "Leccion 1 · if",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"if\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"if\": if ejecuta un bloque solo cuando la condicion es verdadera. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "if ejecuta un bloque solo cuando la condicion es verdadera."
+  },
+  "Leccion 1 · if::2": {
+    "topicTitle": "Leccion 1 · if",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"if\".",
+    "explanation": "if introduce una condición y ejecuta el bloque solo si esa condición es verdadera.",
+    "expectedText": "if",
+    "solutionCode": "if"
+  },
+  "Leccion 1 · if::3": {
+    "topicTitle": "Leccion 1 · if",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: alto.",
+    "codeSnippet": "const score = 15;\nif (score > 10) { console.log(\"alto\"); }",
+    "expectedText": "alto",
+    "solutionCode": "alto"
+  },
+  "Leccion 1 · if::4": {
+    "topicTitle": "Leccion 1 · if",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "if introduce una condición y ejecuta el bloque solo si esa condición es verdadera. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "(score > 10) { console.log(\"alto\"); }",
+    "expectedText": "if",
+    "acceptedAnswers": [
+      "if",
+      "if (score > 10) { console.log(\"alto\"); }"
+    ],
+    "solutionCode": "if\n\nTambién válido como corrección completa:\nif (score > 10) { console.log(\"alto\"); }"
+  },
+  "Leccion 2 · if else::1": {
+    "topicTitle": "Leccion 2 · if else",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"if else\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"if else\": else define que hacer cuando la condicion del if es falsa. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "else define que hacer cuando la condicion del if es falsa."
+  },
+  "Leccion 2 · if else::2": {
+    "topicTitle": "Leccion 2 · if else",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"if else\".",
+    "explanation": "else representa el camino alternativo cuando la condición del if es falsa.",
+    "expectedText": "else",
+    "solutionCode": "else"
+  },
+  "Leccion 2 · if else::3": {
+    "topicTitle": "Leccion 2 · if else",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: no.",
+    "codeSnippet": "const active = false;\nif (active) { console.log(\"ok\"); } else { console.log(\"no\"); }",
+    "expectedText": "no",
+    "solutionCode": "no"
+  },
+  "Leccion 2 · if else::4": {
+    "topicTitle": "Leccion 2 · if else",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "else representa el camino alternativo cuando la condición del if es falsa. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (active) { console.log(\"ok\"); } console.log(\"no\");",
+    "expectedText": "else",
+    "acceptedAnswers": [
+      "else",
+      "if (active) { console.log(\"ok\"); } else { console.log(\"no\"); }"
+    ],
+    "solutionCode": "else\n\nTambién válido como corrección completa:\nif (active) { console.log(\"ok\"); } else { console.log(\"no\"); }"
+  },
+  "Leccion 3 · else if::1": {
+    "topicTitle": "Leccion 3 · else if",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"else if\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"else if\": else if permite revisar una segunda condicion cuando la primera falla. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "else if permite revisar una segunda condicion cuando la primera falla."
+  },
+  "Leccion 3 · else if::2": {
+    "topicTitle": "Leccion 3 · else if",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"else if\".",
+    "explanation": "else if permite evaluar otra condición dentro de la misma cadena de decisión.",
+    "expectedText": "else if",
+    "solutionCode": "else if"
+  },
+  "Leccion 3 · else if::3": {
+    "topicTitle": "Leccion 3 · else if",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: B.",
+    "codeSnippet": "const score = 75;\nif (score > 90) { console.log(\"A\"); } else if (score > 70) { console.log(\"B\"); }",
+    "expectedText": "B",
+    "solutionCode": "B"
+  },
+  "Leccion 3 · else if::4": {
+    "topicTitle": "Leccion 3 · else if",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "else if permite evaluar otra condición dentro de la misma cadena de decisión. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (score > 90) { console.log(\"A\"); } if (score > 70) { console.log(\"B\"); }",
+    "expectedText": "else if",
+    "acceptedAnswers": [
+      "else if",
+      "if (score > 90) { console.log(\"A\"); } else if (score > 70) { console.log(\"B\"); }"
+    ],
+    "solutionCode": "else if\n\nTambién válido como corrección completa:\nif (score > 90) { console.log(\"A\"); } else if (score > 70) { console.log(\"B\"); }"
+  },
+  "Leccion 4 · switch::1": {
+    "topicTitle": "Leccion 4 · switch",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"switch\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"switch\": switch compara un valor contra varios casos posibles. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "switch compara un valor contra varios casos posibles."
+  },
+  "Leccion 4 · switch::2": {
+    "topicTitle": "Leccion 4 · switch",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"switch\".",
+    "explanation": "switch agrupa varios case para comparar un mismo valor contra distintas posibilidades.",
+    "expectedText": "switch",
+    "solutionCode": "switch"
+  },
+  "Leccion 4 · switch::3": {
+    "topicTitle": "Leccion 4 · switch",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: full.",
+    "codeSnippet": "const role = \"admin\";\nswitch (role) { case \"admin\": console.log(\"full\"); break; default: console.log(\"basic\"); }",
+    "expectedText": "full",
+    "solutionCode": "full"
+  },
+  "Leccion 4 · switch::4": {
+    "topicTitle": "Leccion 4 · switch",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "switch agrupa varios case para comparar un mismo valor contra distintas posibilidades. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "case \"admin\": console.log(\"full\");",
+    "expectedText": "switch",
+    "acceptedAnswers": [
+      "switch",
+      "switch (role) {\n  case \"admin\":\n    console.log(\"full\");\n    break;\n}"
+    ],
+    "solutionCode": "switch\n\nTambién válido como corrección completa:\nswitch (role) {\n  case \"admin\":\n    console.log(\"full\");\n    break;\n}"
+  },
+  "Leccion 5 · Condiciones combinadas::1": {
+    "topicTitle": "Leccion 5 · Condiciones combinadas",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Condiciones combinadas\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Condiciones combinadas\": Puedes combinar varias condiciones para describir reglas mas realistas. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes combinar varias condiciones para describir reglas mas realistas."
+  },
+  "Leccion 5 · Condiciones combinadas::2": {
+    "topicTitle": "Leccion 5 · Condiciones combinadas",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Condiciones combinadas\".",
+    "explanation": "&& representa AND lógico: ambas condiciones deben ser verdaderas.",
+    "expectedText": "&&",
+    "solutionCode": "&&"
+  },
+  "Leccion 5 · Condiciones combinadas::3": {
+    "topicTitle": "Leccion 5 · Condiciones combinadas",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: seguir.",
+    "codeSnippet": "const active = true;\nconst score = 60;\nif (active && score > 50) { console.log(\"seguir\"); }",
+    "expectedText": "seguir",
+    "solutionCode": "seguir"
+  },
+  "Leccion 5 · Condiciones combinadas::4": {
+    "topicTitle": "Leccion 5 · Condiciones combinadas",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "&& representa AND lógico: ambas condiciones deben ser verdaderas. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (active score > 50) { console.log(\"seguir\"); }",
+    "expectedText": "&&",
+    "acceptedAnswers": [
+      "&&",
+      "if (active && score > 50) { console.log(\"seguir\"); }"
+    ],
+    "solutionCode": "&&\n\nTambién válido como corrección completa:\nif (active && score > 50) { console.log(\"seguir\"); }"
+  },
+  "Leccion 5 · Condiciones combinadas::5": {
+    "topicTitle": "Leccion 5 · Condiciones combinadas",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente accessMessage(role, active) y devuelve \"Acceso permitido\" o \"Acceso denegado\". El acceso se permite solo si role es \"admin\" o active es true.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Condiciones combinadas\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function accessMessage(role, active) {\n  if (role === \"admin\" || active) {\n    return \"Acceso permitido\";\n  }\n\n  return \"Acceso denegado\";\n}"
+  },
+  "Leccion 1 · for::1": {
+    "topicTitle": "Leccion 1 · for",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"for\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"for\": for es ideal cuando conoces el contador y el numero de repeticiones. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "for es ideal cuando conoces el contador y el numero de repeticiones."
+  },
+  "Leccion 1 · for::2": {
+    "topicTitle": "Leccion 1 · for",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"for\".",
+    "explanation": "for permite repetir un bloque usando una cabecera con inicio, condición y actualización.",
+    "expectedText": "for",
+    "solutionCode": "for"
+  },
+  "Leccion 1 · for::3": {
+    "topicTitle": "Leccion 1 · for",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 0\n1.",
+    "codeSnippet": "for (let i = 0; i < 2; i += 1) { console.log(i); }",
+    "expectedText": "0\n1",
+    "solutionCode": "0\n1"
+  },
+  "Leccion 1 · for::4": {
+    "topicTitle": "Leccion 1 · for",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los paréntesis delimitan condiciones o cabeceras de estructuras como for, while e if. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "for let i = 0; i < 3; i += 1 { console.log(i); }",
+    "expectedText": "()",
+    "acceptedAnswers": [
+      "()",
+      "for (let i = 0; i < 3; i += 1) { console.log(i); }"
+    ],
+    "solutionCode": "()\n\nTambién válido como corrección completa:\nfor (let i = 0; i < 3; i += 1) { console.log(i); }"
+  },
+  "Leccion 2 · while::1": {
+    "topicTitle": "Leccion 2 · while",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"while\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"while\": while repite mientras la condicion siga siendo verdadera. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "while repite mientras la condicion siga siendo verdadera."
+  },
+  "Leccion 2 · while::2": {
+    "topicTitle": "Leccion 2 · while",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"while\".",
+    "explanation": "La respuesta correcta es \"while\" porque es el término o símbolo que representa la definición trabajada en la lección de \"while\".",
+    "expectedText": "while",
+    "solutionCode": "while"
+  },
+  "Leccion 2 · while::3": {
+    "topicTitle": "Leccion 2 · while",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 0\n1.",
+    "codeSnippet": "let count = 0;\nwhile (count < 2) { console.log(count); count += 1; }",
+    "expectedText": "0\n1",
+    "solutionCode": "0\n1"
+  },
+  "Leccion 2 · while::4": {
+    "topicTitle": "Leccion 2 · while",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los paréntesis delimitan condiciones o cabeceras de estructuras como for, while e if. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "let count = 0;\nwhile count < 2 { count += 1; }",
+    "expectedText": "()",
+    "acceptedAnswers": [
+      "()",
+      "let count = 0;\nwhile (count < 2) { count += 1; }"
+    ],
+    "solutionCode": "()\n\nTambién válido como corrección completa:\nlet count = 0;\nwhile (count < 2) { count += 1; }"
+  },
+  "Leccion 3 · do while::1": {
+    "topicTitle": "Leccion 3 · do while",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"do while\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"do while\": do while ejecuta el bloque al menos una vez antes de evaluar la condicion. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "do while ejecuta el bloque al menos una vez antes de evaluar la condicion."
+  },
+  "Leccion 3 · do while::2": {
+    "topicTitle": "Leccion 3 · do while",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"do while\".",
+    "explanation": "La respuesta correcta es \"do while\" porque es el término o símbolo que representa la definición trabajada en la lección de \"do while\".",
+    "expectedText": "do while",
+    "solutionCode": "do while"
+  },
+  "Leccion 3 · do while::3": {
+    "topicTitle": "Leccion 3 · do while",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 0.",
+    "codeSnippet": "let count = 0;\ndo { console.log(count); count += 1; } while (count < 1);",
+    "expectedText": "0",
+    "solutionCode": "0"
+  },
+  "Leccion 3 · do while::4": {
+    "topicTitle": "Leccion 3 · do while",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los paréntesis delimitan condiciones o cabeceras de estructuras como for, while e if. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "do { console.log(\"ok\"); } while count < 1;",
+    "expectedText": "()",
+    "acceptedAnswers": [
+      "()",
+      "do { console.log(\"ok\"); } while (count < 1);"
+    ],
+    "solutionCode": "()\n\nTambién válido como corrección completa:\ndo { console.log(\"ok\"); } while (count < 1);"
+  },
+  "Leccion 4 · break y continue::1": {
+    "topicTitle": "Leccion 4 · break y continue",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"break y continue\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"break y continue\": break corta el bucle y continue salta a la siguiente iteracion. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "break corta el bucle y continue salta a la siguiente iteracion."
+  },
+  "Leccion 4 · break y continue::2": {
+    "topicTitle": "Leccion 4 · break y continue",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"break y continue\".",
+    "explanation": "La respuesta correcta es \"break\" porque es el término o símbolo que representa la definición trabajada en la lección de \"break y continue\".",
+    "expectedText": "break",
+    "solutionCode": "break"
+  },
+  "Leccion 4 · break y continue::3": {
+    "topicTitle": "Leccion 4 · break y continue",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 0\n1\n3.",
+    "codeSnippet": "for (let i = 0; i < 4; i += 1) { if (i === 2) continue; console.log(i); }",
+    "expectedText": "0\n1\n3",
+    "solutionCode": "0\n1\n3"
+  },
+  "Leccion 4 · break y continue::4": {
+    "topicTitle": "Leccion 4 · break y continue",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "continue salta la iteración actual y continúa con la siguiente vuelta del bucle. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "for (let i = 0; i < 4; i += 1) { if (i === 2) skip; }",
+    "expectedText": "continue",
+    "acceptedAnswers": [
+      "continue",
+      "for (let i = 0; i < 4; i += 1) { if (i === 2) continue; }"
+    ],
+    "solutionCode": "continue\n\nTambién válido como corrección completa:\nfor (let i = 0; i < 4; i += 1) { if (i === 2) continue; }"
+  },
+  "Leccion 5 · Bucles anidados::1": {
+    "topicTitle": "Leccion 5 · Bucles anidados",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Bucles anidados\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Bucles anidados\": Un bucle anidado es un bucle dentro de otro para recorrer combinaciones. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un bucle anidado es un bucle dentro de otro para recorrer combinaciones."
+  },
+  "Leccion 5 · Bucles anidados::2": {
+    "topicTitle": "Leccion 5 · Bucles anidados",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Bucles anidados\".",
+    "explanation": "La respuesta correcta es \"anidado\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Bucles anidados\".",
+    "expectedText": "anidado",
+    "solutionCode": "anidado"
+  },
+  "Leccion 5 · Bucles anidados::3": {
+    "topicTitle": "Leccion 5 · Bucles anidados",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 0\n1.",
+    "codeSnippet": "for (let row = 0; row < 1; row += 1) { for (let col = 0; col < 2; col += 1) { console.log(col); } }",
+    "expectedText": "0\n1",
+    "solutionCode": "0\n1"
+  },
+  "Leccion 5 · Bucles anidados::4": {
+    "topicTitle": "Leccion 5 · Bucles anidados",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "for permite repetir un bloque usando una cabecera con inicio, condición y actualización. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "for (let row = 0; row < 2; row += 1) { for let col = 0; col < 2; col += 1 { console.log(col); } }",
+    "expectedText": "for",
+    "acceptedAnswers": [
+      "for",
+      "for (let row = 0; row < 2; row += 1) {\n  for (let col = 0; col < 2; col += 1) {\n    console.log(col);\n  }\n}"
+    ],
+    "solutionCode": "for\n\nTambién válido como corrección completa:\nfor (let row = 0; row < 2; row += 1) {\n  for (let col = 0; col < 2; col += 1) {\n    console.log(col);\n  }\n}"
+  },
+  "Leccion 5 · Bucles anidados::5": {
+    "topicTitle": "Leccion 5 · Bucles anidados",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente collectEvenNumbers(limit) y devuelve un array con los numeros pares desde 0 hasta limit inclusive.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Bucles anidados\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function collectEvenNumbers(limit) {\n  const result = [];\n\n  for (let value = 0; value <= limit; value += 1) {\n    if (value % 2 === 0) {\n      result.push(value);\n    }\n  }\n\n  return result;\n}"
+  },
+  "Leccion 1 · Declaracion de funciones::1": {
+    "topicTitle": "Leccion 1 · Declaracion de funciones",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Declaracion de funciones\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Declaracion de funciones\": Una funcion agrupa instrucciones reutilizables bajo un nombre. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Una funcion agrupa instrucciones reutilizables bajo un nombre."
+  },
+  "Leccion 1 · Declaracion de funciones::2": {
+    "topicTitle": "Leccion 1 · Declaracion de funciones",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Declaracion de funciones\".",
+    "explanation": "function permite declarar una función reutilizable con nombre, parámetros y cuerpo.",
+    "expectedText": "function",
+    "solutionCode": "function"
+  },
+  "Leccion 1 · Declaracion de funciones::3": {
+    "topicTitle": "Leccion 1 · Declaracion de funciones",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: hola.",
+    "codeSnippet": "function greet() { return \"hola\"; }\nconsole.log(greet());",
+    "expectedText": "hola",
+    "solutionCode": "hola"
+  },
+  "Leccion 1 · Declaracion de funciones::4": {
+    "topicTitle": "Leccion 1 · Declaracion de funciones",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "function permite declarar una función reutilizable con nombre, parámetros y cuerpo. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "greet() {\n  return \"hola\";\n}",
+    "expectedText": "function",
+    "acceptedAnswers": [
+      "function",
+      "function greet() {\n  return \"hola\";\n}"
+    ],
+    "solutionCode": "function\n\nTambién válido como corrección completa:\nfunction greet() {\n  return \"hola\";\n}"
+  },
+  "Leccion 2 · Parametros::1": {
+    "topicTitle": "Leccion 2 · Parametros",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Parametros\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Parametros\": Los parametros reciben datos de entrada para que la funcion trabaje con ellos. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los parametros reciben datos de entrada para que la funcion trabaje con ellos."
+  },
+  "Leccion 2 · Parametros::2": {
+    "topicTitle": "Leccion 2 · Parametros",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Parametros\".",
+    "explanation": "La respuesta correcta es \"parametro\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Parametros\".",
+    "expectedText": "parametro",
+    "solutionCode": "parametro"
+  },
+  "Leccion 2 · Parametros::3": {
+    "topicTitle": "Leccion 2 · Parametros",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Hola Ana.",
+    "codeSnippet": "function greet(name) { return `Hola ${name}`; }\nconsole.log(greet(\"Ana\"));",
+    "expectedText": "Hola Ana",
+    "solutionCode": "Hola Ana"
+  },
+  "Leccion 2 · Parametros::4": {
+    "topicTitle": "Leccion 2 · Parametros",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "name debe declararse como parámetro si la función lo usa internamente. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function greet() { return `Hola ${name}`; }",
+    "expectedText": "name",
+    "acceptedAnswers": [
+      "name",
+      "function greet(name) { return `Hola ${name}`; }"
+    ],
+    "solutionCode": "name\n\nTambién válido como corrección completa:\nfunction greet(name) { return `Hola ${name}`; }"
+  },
+  "Leccion 3 · Return::1": {
+    "topicTitle": "Leccion 3 · Return",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Return\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Return\": return entrega el resultado final de una funcion al lugar donde se llama. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "return entrega el resultado final de una funcion al lugar donde se llama."
+  },
+  "Leccion 3 · Return::2": {
+    "topicTitle": "Leccion 3 · Return",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Return\".",
+    "explanation": "return entrega un resultado al lugar donde se llamó la función.",
+    "expectedText": "return",
+    "solutionCode": "return"
+  },
+  "Leccion 3 · Return::3": {
+    "topicTitle": "Leccion 3 · Return",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 6.",
+    "codeSnippet": "function double(value) { return value * 2; }\nconsole.log(double(3));",
+    "expectedText": "6",
+    "solutionCode": "6"
+  },
+  "Leccion 3 · Return::4": {
+    "topicTitle": "Leccion 3 · Return",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "return entrega un resultado al lugar donde se llamó la función. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function double(value) { value * 2; }",
+    "expectedText": "return",
+    "acceptedAnswers": [
+      "return",
+      "function double(value) { return value * 2; }"
+    ],
+    "solutionCode": "return\n\nTambién válido como corrección completa:\nfunction double(value) { return value * 2; }"
+  },
+  "Leccion 4 · Funciones flecha::1": {
+    "topicTitle": "Leccion 4 · Funciones flecha",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Funciones flecha\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Funciones flecha\": Las funciones flecha ofrecen una sintaxis mas compacta para funciones pequenas. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Las funciones flecha ofrecen una sintaxis mas compacta para funciones pequenas."
+  },
+  "Leccion 4 · Funciones flecha::2": {
+    "topicTitle": "Leccion 4 · Funciones flecha",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Funciones flecha\".",
+    "explanation": "La respuesta correcta es \"=>\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Funciones flecha\".",
+    "expectedText": "=>",
+    "solutionCode": "=>"
+  },
+  "Leccion 4 · Funciones flecha::3": {
+    "topicTitle": "Leccion 4 · Funciones flecha",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 8.",
+    "codeSnippet": "const double = (value) => value * 2;\nconsole.log(double(4));",
+    "expectedText": "8",
+    "solutionCode": "8"
+  },
+  "Leccion 4 · Funciones flecha::4": {
+    "topicTitle": "Leccion 4 · Funciones flecha",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "El parámetro debe estar correctamente encerrado o escrito antes de la flecha. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const double = value) => value * 2;",
+    "expectedText": "(",
+    "acceptedAnswers": [
+      "(",
+      "const double = (value) => value * 2;"
+    ],
+    "solutionCode": "(\n\nTambién válido como corrección completa:\nconst double = (value) => value * 2;"
+  },
+  "Leccion 5 · Scope::1": {
+    "topicTitle": "Leccion 5 · Scope",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Scope\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Scope\": El scope define donde una variable esta disponible y donde deja de existir. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "El scope define donde una variable esta disponible y donde deja de existir."
+  },
+  "Leccion 5 · Scope::2": {
+    "topicTitle": "Leccion 5 · Scope",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Scope\".",
+    "explanation": "El scope define dónde una variable existe. Una variable creada dentro de una función no vive fuera de ella.",
+    "expectedText": "scope",
+    "solutionCode": "scope"
+  },
+  "Leccion 5 · Scope::3": {
+    "topicTitle": "Leccion 5 · Scope",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 1.",
+    "codeSnippet": "function test() { const inside = 1; return inside; }\nconsole.log(test());",
+    "expectedText": "1",
+    "solutionCode": "1"
+  },
+  "Leccion 5 · Scope::4": {
+    "topicTitle": "Leccion 5 · Scope",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "El scope define dónde una variable existe. Una variable creada dentro de una función no vive fuera de ella. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function test() { const inside = 1; }\nconsole.log(inside);",
+    "expectedText": "scope",
+    "acceptedAnswers": [
+      "scope",
+      "function test() {\n  const inside = 1;\n  return inside;\n}\nconsole.log(test());"
+    ],
+    "solutionCode": "scope\n\nTambién válido como corrección completa:\nfunction test() {\n  const inside = 1;\n  return inside;\n}\nconsole.log(test());"
+  },
+  "Leccion 5 · Scope::5": {
+    "topicTitle": "Leccion 5 · Scope",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente formatCommitMessage(type, message) y devuelve \"type: message\".",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Scope\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function formatCommitMessage(type, message) {\n  return `${type}: ${message}`;\n}"
+  },
+  "Leccion 1 · Crear arrays::1": {
+    "topicTitle": "Leccion 1 · Crear arrays",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Crear arrays\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Crear arrays\": Un array es una lista ordenada de valores entre corchetes. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un array es una lista ordenada de valores entre corchetes."
+  },
+  "Leccion 1 · Crear arrays::2": {
+    "topicTitle": "Leccion 1 · Crear arrays",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Crear arrays\".",
+    "explanation": "Los corchetes crean arrays o permiten acceso dinámico según el contexto.",
+    "expectedText": "[]",
+    "solutionCode": "[]"
+  },
+  "Leccion 1 · Crear arrays::3": {
+    "topicTitle": "Leccion 1 · Crear arrays",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 2.",
+    "codeSnippet": "const tags = [\"js\", \"react\"];\nconsole.log(tags.length);",
+    "expectedText": "2",
+    "solutionCode": "2"
+  },
+  "Leccion 1 · Crear arrays::4": {
+    "topicTitle": "Leccion 1 · Crear arrays",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los corchetes crean arrays o permiten acceso dinámico según el contexto. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const tags = (\"js\", \"react\");",
+    "expectedText": "[]",
+    "acceptedAnswers": [
+      "[]",
+      "const tags = [\"js\", \"react\"];"
+    ],
+    "solutionCode": "[]\n\nTambién válido como corrección completa:\nconst tags = [\"js\", \"react\"];"
+  },
+  "Leccion 2 · Acceso a elementos::1": {
+    "topicTitle": "Leccion 2 · Acceso a elementos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Acceso a elementos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Acceso a elementos\": Accedes a un elemento del array usando su indice empezando en 0. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Accedes a un elemento del array usando su indice empezando en 0."
+  },
+  "Leccion 2 · Acceso a elementos::2": {
+    "topicTitle": "Leccion 2 · Acceso a elementos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Acceso a elementos\".",
+    "explanation": "Los arrays empiezan en índice 0. En un array de dos elementos, los índices válidos son 0 y 1.",
+    "expectedText": "indice",
+    "solutionCode": "indice"
+  },
+  "Leccion 2 · Acceso a elementos::3": {
+    "topicTitle": "Leccion 2 · Acceso a elementos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: react.",
+    "codeSnippet": "const tags = [\"js\", \"react\"];\nconsole.log(tags[1]);",
+    "expectedText": "react",
+    "solutionCode": "react"
+  },
+  "Leccion 2 · Acceso a elementos::4": {
+    "topicTitle": "Leccion 2 · Acceso a elementos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los arrays empiezan en índice 0. En un array de dos elementos, los índices válidos son 0 y 1. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const tags = [\"js\", \"react\"];\nconsole.log(tags[2]);",
+    "expectedText": "indice",
+    "acceptedAnswers": [
+      "indice",
+      "const tags = [\"js\", \"react\"];\nconsole.log(tags[1]);"
+    ],
+    "solutionCode": "indice\n\nTambién válido como corrección completa:\nconst tags = [\"js\", \"react\"];\nconsole.log(tags[1]);"
+  },
+  "Leccion 3 · Metodos push y pop::1": {
+    "topicTitle": "Leccion 3 · Metodos push y pop",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Metodos push y pop\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Metodos push y pop\": push agrega al final y pop quita el ultimo elemento del array. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "push agrega al final y pop quita el ultimo elemento del array."
+  },
+  "Leccion 3 · Metodos push y pop::2": {
+    "topicTitle": "Leccion 3 · Metodos push y pop",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Metodos push y pop\".",
+    "explanation": "push agrega un elemento al final de un array.",
+    "expectedText": "push",
+    "solutionCode": "push"
+  },
+  "Leccion 3 · Metodos push y pop::3": {
+    "topicTitle": "Leccion 3 · Metodos push y pop",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 2.",
+    "codeSnippet": "const queue = [\"a\"];\nqueue.push(\"b\");\nconsole.log(queue.length);",
+    "expectedText": "2",
+    "solutionCode": "2"
+  },
+  "Leccion 3 · Metodos push y pop::4": {
+    "topicTitle": "Leccion 3 · Metodos push y pop",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "push agrega un elemento al final de un array. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const queue = [\"a\"];\nqueue.append(\"b\");",
+    "expectedText": "push",
+    "acceptedAnswers": [
+      "push",
+      "const queue = [\"a\"];\nqueue.push(\"b\");"
+    ],
+    "solutionCode": "push\n\nTambién válido como corrección completa:\nconst queue = [\"a\"];\nqueue.push(\"b\");"
+  },
+  "Leccion 4 · Recorrer arrays::1": {
+    "topicTitle": "Leccion 4 · Recorrer arrays",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Recorrer arrays\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Recorrer arrays\": Puedes recorrer arrays con for clasico o con for...of. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes recorrer arrays con for clasico o con for...of."
+  },
+  "Leccion 4 · Recorrer arrays::2": {
+    "topicTitle": "Leccion 4 · Recorrer arrays",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Recorrer arrays\".",
+    "explanation": "for...of recorre directamente los valores de un iterable como un array.",
+    "expectedText": "for of",
+    "solutionCode": "for of"
+  },
+  "Leccion 4 · Recorrer arrays::3": {
+    "topicTitle": "Leccion 4 · Recorrer arrays",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: js\nreact.",
+    "codeSnippet": "const tags = [\"js\", \"react\"];\nfor (const tag of tags) { console.log(tag); }",
+    "expectedText": "js\nreact",
+    "solutionCode": "js\nreact"
+  },
+  "Leccion 4 · Recorrer arrays::4": {
+    "topicTitle": "Leccion 4 · Recorrer arrays",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "for...of recorre directamente los valores de un iterable como un array. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "for (const tag in tags) { console.log(tag.value); }",
+    "expectedText": "for of",
+    "acceptedAnswers": [
+      "for of",
+      "for (const tag of tags) { console.log(tag); }"
+    ],
+    "solutionCode": "for of\n\nTambién válido como corrección completa:\nfor (const tag of tags) { console.log(tag); }"
+  },
+  "Leccion 5 · map y filter::1": {
+    "topicTitle": "Leccion 5 · map y filter",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"map y filter\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"map y filter\": map transforma cada valor y filter conserva solo los que cumplen una regla. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "map transforma cada valor y filter conserva solo los que cumplen una regla."
+  },
+  "Leccion 5 · map y filter::2": {
+    "topicTitle": "Leccion 5 · map y filter",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"map y filter\".",
+    "explanation": "La respuesta correcta es \"map\" porque es el término o símbolo que representa la definición trabajada en la lección de \"map y filter\".",
+    "expectedText": "map",
+    "solutionCode": "map"
+  },
+  "Leccion 5 · map y filter::3": {
+    "topicTitle": "Leccion 5 · map y filter",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 2.",
+    "codeSnippet": "const values = [1, 2, 3];\nconsole.log(values.filter((value) => value > 1).length);",
+    "expectedText": "2",
+    "solutionCode": "2"
+  },
+  "Leccion 5 · map y filter::4": {
+    "topicTitle": "Leccion 5 · map y filter",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "map es un metodo que llamas sobre el array, no una variable que reasignas. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const values = [1, 2];\nvalues.map = (value) => value * 2;",
+    "expectedText": "map",
+    "acceptedAnswers": [
+      "map",
+      "const values = [1, 2];\nconst doubled = values.map((value) => value * 2);"
+    ],
+    "solutionCode": "map\n\nTambién válido como corrección completa:\nconst values = [1, 2];\nconst doubled = values.map((value) => value * 2);"
+  },
+  "Leccion 5 · map y filter::5": {
+    "topicTitle": "Leccion 5 · map y filter",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente normalizeScores(scores) y devuelve un nuevo array sumando 10 a cada puntaje.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"map y filter\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function normalizeScores(scores) {\n  return scores.map((score) => score + 10);\n}"
+  },
+  "Leccion 1 · Crear objetos::1": {
+    "topicTitle": "Leccion 1 · Crear objetos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Crear objetos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Crear objetos\": Un objeto agrupa propiedades entre llaves para representar una entidad. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un objeto agrupa propiedades entre llaves para representar una entidad."
+  },
+  "Leccion 1 · Crear objetos::2": {
+    "topicTitle": "Leccion 1 · Crear objetos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Crear objetos\".",
+    "explanation": "Las llaves se usan para crear objetos y para destructuring de objetos.",
+    "expectedText": "{}",
+    "solutionCode": "{}"
+  },
+  "Leccion 1 · Crear objetos::3": {
+    "topicTitle": "Leccion 1 · Crear objetos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: student.",
+    "codeSnippet": "const user = { name: \"Ana\", role: \"student\" };\nconsole.log(user.role);",
+    "expectedText": "student",
+    "solutionCode": "student"
+  },
+  "Leccion 1 · Crear objetos::4": {
+    "topicTitle": "Leccion 1 · Crear objetos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Las llaves se usan para crear objetos y para destructuring de objetos. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const user = [ name: \"Ana\" ];",
+    "expectedText": "{}",
+    "acceptedAnswers": [
+      "{}",
+      "const user = { name: \"Ana\" };"
+    ],
+    "solutionCode": "{}\n\nTambién válido como corrección completa:\nconst user = { name: \"Ana\" };"
+  },
+  "Leccion 2 · Propiedades::1": {
+    "topicTitle": "Leccion 2 · Propiedades",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Propiedades\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Propiedades\": Cada propiedad relaciona una clave con un valor dentro del objeto. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Cada propiedad relaciona una clave con un valor dentro del objeto."
+  },
+  "Leccion 2 · Propiedades::2": {
+    "topicTitle": "Leccion 2 · Propiedades",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Propiedades\".",
+    "explanation": "La respuesta correcta es \"propiedad\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Propiedades\".",
+    "expectedText": "propiedad",
+    "solutionCode": "propiedad"
+  },
+  "Leccion 2 · Propiedades::3": {
+    "topicTitle": "Leccion 2 · Propiedades",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Ana.",
+    "codeSnippet": "const user = { name: \"Ana\" };\nconsole.log(user.name);",
+    "expectedText": "Ana",
+    "solutionCode": "Ana"
+  },
+  "Leccion 2 · Propiedades::4": {
+    "topicTitle": "Leccion 2 · Propiedades",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Dentro de un objeto, la clave y el valor se separan con dos puntos. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const user = { name = \"Ana\" };",
+    "expectedText": ":",
+    "acceptedAnswers": [
+      ":",
+      "const user = { name: \"Ana\" };"
+    ],
+    "solutionCode": ":\n\nTambién válido como corrección completa:\nconst user = { name: \"Ana\" };"
+  },
+  "Leccion 3 · Metodos::1": {
+    "topicTitle": "Leccion 3 · Metodos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Metodos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Metodos\": Un metodo es una funcion guardada como propiedad del objeto. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un metodo es una funcion guardada como propiedad del objeto."
+  },
+  "Leccion 3 · Metodos::2": {
+    "topicTitle": "Leccion 3 · Metodos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Metodos\".",
+    "explanation": "Un método es una función dentro de un objeto y debe tener sintaxis válida.",
+    "expectedText": "metodo",
+    "solutionCode": "metodo"
+  },
+  "Leccion 3 · Metodos::3": {
+    "topicTitle": "Leccion 3 · Metodos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: hola.",
+    "codeSnippet": "const user = { greet() { return \"hola\"; } };\nconsole.log(user.greet());",
+    "expectedText": "hola",
+    "solutionCode": "hola"
+  },
+  "Leccion 3 · Metodos::4": {
+    "topicTitle": "Leccion 3 · Metodos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "function permite declarar una función reutilizable con nombre, parámetros y cuerpo. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const user = { greet => \"hola\" };",
+    "expectedText": "function",
+    "acceptedAnswers": [
+      "function",
+      "const user = {\n  greet() {\n    return \"hola\";\n  }\n};"
+    ],
+    "solutionCode": "function\n\nTambién válido como corrección completa:\nconst user = {\n  greet() {\n    return \"hola\";\n  }\n};"
+  },
+  "Leccion 4 · Acceso dinamico::1": {
+    "topicTitle": "Leccion 4 · Acceso dinamico",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Acceso dinamico\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Acceso dinamico\": Puedes acceder a una propiedad dinamica usando corchetes con una variable. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes acceder a una propiedad dinamica usando corchetes con una variable."
+  },
+  "Leccion 4 · Acceso dinamico::2": {
+    "topicTitle": "Leccion 4 · Acceso dinamico",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Acceso dinamico\".",
+    "explanation": "Los corchetes crean arrays o permiten acceso dinámico según el contexto.",
+    "expectedText": "[]",
+    "solutionCode": "[]"
+  },
+  "Leccion 4 · Acceso dinamico::3": {
+    "topicTitle": "Leccion 4 · Acceso dinamico",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: admin.",
+    "codeSnippet": "const key = \"role\";\nconst user = { role: \"admin\" };\nconsole.log(user[key]);",
+    "expectedText": "admin",
+    "solutionCode": "admin"
+  },
+  "Leccion 4 · Acceso dinamico::4": {
+    "topicTitle": "Leccion 4 · Acceso dinamico",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Los corchetes crean arrays o permiten acceso dinámico según el contexto. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const key = \"role\";\nconsole.log(user.key);",
+    "expectedText": "[]",
+    "acceptedAnswers": [
+      "[]",
+      "const key = \"role\";\nconsole.log(user[key]);"
+    ],
+    "solutionCode": "[]\n\nTambién válido como corrección completa:\nconst key = \"role\";\nconsole.log(user[key]);"
+  },
+  "Leccion 5 · Destructuring::1": {
+    "topicTitle": "Leccion 5 · Destructuring",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Destructuring\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Destructuring\": El destructuring extrae propiedades de un objeto a variables mas cortas. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "El destructuring extrae propiedades de un objeto a variables mas cortas."
+  },
+  "Leccion 5 · Destructuring::2": {
+    "topicTitle": "Leccion 5 · Destructuring",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Destructuring\".",
+    "explanation": "La respuesta correcta es \"destructuring\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Destructuring\".",
+    "expectedText": "destructuring",
+    "solutionCode": "destructuring"
+  },
+  "Leccion 5 · Destructuring::3": {
+    "topicTitle": "Leccion 5 · Destructuring",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Ana.",
+    "codeSnippet": "const user = { name: \"Ana\" };\nconst { name } = user;\nconsole.log(name);",
+    "expectedText": "Ana",
+    "solutionCode": "Ana"
+  },
+  "Leccion 5 · Destructuring::4": {
+    "topicTitle": "Leccion 5 · Destructuring",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Las llaves se usan para crear objetos y para destructuring de objetos. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const { user.name } = user;",
+    "expectedText": "{}",
+    "acceptedAnswers": [
+      "{}",
+      "const { name } = user;"
+    ],
+    "solutionCode": "{}\n\nTambién válido como corrección completa:\nconst { name } = user;"
+  },
+  "Leccion 5 · Destructuring::5": {
+    "topicTitle": "Leccion 5 · Destructuring",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente buildUserSummary(user) y devuelve \"name - role\" usando las propiedades del objeto.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Destructuring\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function buildUserSummary(user) {\n  return `${user.name} - ${user.role}`;\n}"
+  },
+  "Leccion 1 · length e includes::1": {
+    "topicTitle": "Leccion 1 · length e includes",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"length e includes\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"length e includes\": length mide caracteres e includes verifica si un texto contiene otro. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "length mide caracteres e includes verifica si un texto contiene otro."
+  },
+  "Leccion 1 · length e includes::2": {
+    "topicTitle": "Leccion 1 · length e includes",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"length e includes\".",
+    "explanation": "length es una propiedad, no una función, por eso se usa sin paréntesis.",
+    "expectedText": "length",
+    "solutionCode": "length"
+  },
+  "Leccion 1 · length e includes::3": {
+    "topicTitle": "Leccion 1 · length e includes",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: true.",
+    "codeSnippet": "const title = \"duocode\";\nconsole.log(title.includes(\"code\"));",
+    "expectedText": "true",
+    "solutionCode": "true"
+  },
+  "Leccion 1 · length e includes::4": {
+    "topicTitle": "Leccion 1 · length e includes",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "length es una propiedad, no una función, por eso se usa sin paréntesis. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const title = \"duocode\";\nconsole.log(title.length());",
+    "expectedText": "length",
+    "acceptedAnswers": [
+      "length",
+      "const title = \"duocode\";\nconsole.log(title.length);"
+    ],
+    "solutionCode": "length\n\nTambién válido como corrección completa:\nconst title = \"duocode\";\nconsole.log(title.length);"
+  },
+  "Leccion 2 · Manipulacion basica::1": {
+    "topicTitle": "Leccion 2 · Manipulacion basica",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Manipulacion basica\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Manipulacion basica\": Metodos como trim limpian espacios al inicio y al final del texto. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Metodos como trim limpian espacios al inicio y al final del texto."
+  },
+  "Leccion 2 · Manipulacion basica::2": {
+    "topicTitle": "Leccion 2 · Manipulacion basica",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Manipulacion basica\".",
+    "explanation": "trim elimina espacios al inicio y al final de un string.",
+    "expectedText": "trim",
+    "solutionCode": "trim"
+  },
+  "Leccion 2 · Manipulacion basica::3": {
+    "topicTitle": "Leccion 2 · Manipulacion basica",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: hola.",
+    "codeSnippet": "const raw = \"  hola  \";\nconsole.log(raw.trim());",
+    "expectedText": "hola",
+    "solutionCode": "hola"
+  },
+  "Leccion 2 · Manipulacion basica::4": {
+    "topicTitle": "Leccion 2 · Manipulacion basica",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "trim elimina espacios al inicio y al final de un string. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const raw = \" hola \";\nconsole.log(raw.clean());",
+    "expectedText": "trim",
+    "acceptedAnswers": [
+      "trim",
+      "const raw = \" hola \";\nconsole.log(raw.trim());"
+    ],
+    "solutionCode": "trim\n\nTambién válido como corrección completa:\nconst raw = \" hola \";\nconsole.log(raw.trim());"
+  },
+  "Leccion 3 · Busqueda::1": {
+    "topicTitle": "Leccion 3 · Busqueda",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Busqueda\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Busqueda\": Puedes buscar la posicion de un fragmento con indexOf o validar presencia con includes. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes buscar la posicion de un fragmento con indexOf o validar presencia con includes."
+  },
+  "Leccion 3 · Busqueda::2": {
+    "topicTitle": "Leccion 3 · Busqueda",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Busqueda\".",
+    "explanation": "indexOf devuelve la posición donde empieza un texto dentro de otro, o -1 si no lo encuentra.",
+    "expectedText": "indexOf",
+    "solutionCode": "indexOf"
+  },
+  "Leccion 3 · Busqueda::3": {
+    "topicTitle": "Leccion 3 · Busqueda",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 4.",
+    "codeSnippet": "const text = \"javascript\";\nconsole.log(text.indexOf(\"script\"));",
+    "expectedText": "4",
+    "solutionCode": "4"
+  },
+  "Leccion 3 · Busqueda::4": {
+    "topicTitle": "Leccion 3 · Busqueda",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "indexOf devuelve la posición donde empieza un texto dentro de otro, o -1 si no lo encuentra. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const text = \"javascript\";\nconsole.log(text.find(\"script\"));",
+    "expectedText": "indexOf",
+    "acceptedAnswers": [
+      "indexOf",
+      "const text = \"javascript\";\nconsole.log(text.indexOf(\"script\"));"
+    ],
+    "solutionCode": "indexOf\n\nTambién válido como corrección completa:\nconst text = \"javascript\";\nconsole.log(text.indexOf(\"script\"));"
+  },
+  "Leccion 4 · Reemplazo::1": {
+    "topicTitle": "Leccion 4 · Reemplazo",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Reemplazo\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Reemplazo\": replace cambia una coincidencia por otro fragmento de texto. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "replace cambia una coincidencia por otro fragmento de texto."
+  },
+  "Leccion 4 · Reemplazo::2": {
+    "topicTitle": "Leccion 4 · Reemplazo",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Reemplazo\".",
+    "explanation": "replace cambia una coincidencia de texto por otra.",
+    "expectedText": "replace",
+    "solutionCode": "replace"
+  },
+  "Leccion 4 · Reemplazo::3": {
+    "topicTitle": "Leccion 4 · Reemplazo",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: hola dev.",
+    "codeSnippet": "const text = \"hola mundo\";\nconsole.log(text.replace(\"mundo\", \"dev\"));",
+    "expectedText": "hola dev",
+    "solutionCode": "hola dev"
+  },
+  "Leccion 4 · Reemplazo::4": {
+    "topicTitle": "Leccion 4 · Reemplazo",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "replace cambia una coincidencia de texto por otra. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const text = \"hola mundo\";\nconsole.log(text.swap(\"mundo\", \"dev\"));",
+    "expectedText": "replace",
+    "acceptedAnswers": [
+      "replace",
+      "const text = \"hola mundo\";\nconsole.log(text.replace(\"mundo\", \"dev\"));"
+    ],
+    "solutionCode": "replace\n\nTambién válido como corrección completa:\nconst text = \"hola mundo\";\nconsole.log(text.replace(\"mundo\", \"dev\"));"
+  },
+  "Leccion 5 · Expresiones comunes::1": {
+    "topicTitle": "Leccion 5 · Expresiones comunes",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Expresiones comunes\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Expresiones comunes\": Combinar trim, toLowerCase y replace cubre muchos casos de normalizacion. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Combinar trim, toLowerCase y replace cubre muchos casos de normalizacion."
+  },
+  "Leccion 5 · Expresiones comunes::2": {
+    "topicTitle": "Leccion 5 · Expresiones comunes",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Expresiones comunes\".",
+    "explanation": "toLowerCase convierte un string a minúsculas.",
+    "expectedText": "toLowerCase",
+    "solutionCode": "toLowerCase"
+  },
+  "Leccion 5 · Expresiones comunes::3": {
+    "topicTitle": "Leccion 5 · Expresiones comunes",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: ana@mail.com.",
+    "codeSnippet": "const email = \" ANA@MAIL.COM \";\nconsole.log(email.trim().toLowerCase());",
+    "expectedText": "ana@mail.com",
+    "solutionCode": "ana@mail.com"
+  },
+  "Leccion 5 · Expresiones comunes::4": {
+    "topicTitle": "Leccion 5 · Expresiones comunes",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "toLowerCase convierte un string a minúsculas. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const email = \" ANA@MAIL.COM \";\nconsole.log(email.lower());",
+    "expectedText": "toLowerCase",
+    "acceptedAnswers": [
+      "toLowerCase",
+      "const email = \" ANA@MAIL.COM \";\nconsole.log(email.toLowerCase());"
+    ],
+    "solutionCode": "toLowerCase\n\nTambién válido como corrección completa:\nconst email = \" ANA@MAIL.COM \";\nconsole.log(email.toLowerCase());"
+  },
+  "Leccion 5 · Expresiones comunes::5": {
+    "topicTitle": "Leccion 5 · Expresiones comunes",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente sanitizeHandle(handle) para devolver el texto trim, en minusculas y reemplazando espacios internos por \"-\".",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Expresiones comunes\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function sanitizeHandle(handle) {\n  return handle.trim().toLowerCase().replace(/\\s+/g, \"-\");\n}"
+  },
+  "Leccion 1 · try catch::1": {
+    "topicTitle": "Leccion 1 · try catch",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"try catch\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"try catch\": try captura codigo riesgoso y catch maneja el error si algo falla. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "try captura codigo riesgoso y catch maneja el error si algo falla."
+  },
+  "Leccion 1 · try catch::2": {
+    "topicTitle": "Leccion 1 · try catch",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"try catch\".",
+    "explanation": "La respuesta correcta es \"try\" porque es el término o símbolo que representa la definición trabajada en la lección de \"try catch\".",
+    "expectedText": "try",
+    "solutionCode": "try"
+  },
+  "Leccion 1 · try catch::3": {
+    "topicTitle": "Leccion 1 · try catch",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: fallo.",
+    "codeSnippet": "try { JSON.parse(\"{\"); } catch (error) { console.log(\"fallo\"); }",
+    "expectedText": "fallo",
+    "solutionCode": "fallo"
+  },
+  "Leccion 1 · try catch::4": {
+    "topicTitle": "Leccion 1 · try catch",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "catch captura un error producido dentro de try. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "try { JSON.parse(\"{\"); } catc (error) { console.log(\"fallo\"); }",
+    "expectedText": "catch",
+    "acceptedAnswers": [
+      "catch",
+      "try { JSON.parse(\"{\"); } catch (error) { console.log(\"fallo\"); }"
+    ],
+    "solutionCode": "catch\n\nTambién válido como corrección completa:\ntry { JSON.parse(\"{\"); } catch (error) { console.log(\"fallo\"); }"
+  },
+  "Leccion 2 · throw::1": {
+    "topicTitle": "Leccion 2 · throw",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"throw\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"throw\": throw crea un error manual cuando una condicion invalida aparece. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "throw crea un error manual cuando una condicion invalida aparece."
+  },
+  "Leccion 2 · throw::2": {
+    "topicTitle": "Leccion 2 · throw",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"throw\".",
+    "explanation": "throw lanza manualmente un error.",
+    "expectedText": "throw",
+    "solutionCode": "throw"
+  },
+  "Leccion 2 · throw::3": {
+    "topicTitle": "Leccion 2 · throw",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: fail.",
+    "codeSnippet": "try { throw new Error(\"fail\"); } catch (error) { console.log(\"fail\"); }",
+    "expectedText": "fail",
+    "solutionCode": "fail"
+  },
+  "Leccion 2 · throw::4": {
+    "topicTitle": "Leccion 2 · throw",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "throw lanza manualmente un error. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (!name) { error(\"name required\"); }",
+    "expectedText": "throw",
+    "acceptedAnswers": [
+      "throw",
+      "if (!name) { throw new Error(\"name required\"); }"
+    ],
+    "solutionCode": "throw\n\nTambién válido como corrección completa:\nif (!name) { throw new Error(\"name required\"); }"
+  },
+  "Leccion 3 · Tipos de error::1": {
+    "topicTitle": "Leccion 3 · Tipos de error",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Tipos de error\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Tipos de error\": JavaScript tiene errores como Error, TypeError o ReferenceError segun el problema. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "JavaScript tiene errores como Error, TypeError o ReferenceError segun el problema."
+  },
+  "Leccion 3 · Tipos de error::2": {
+    "topicTitle": "Leccion 3 · Tipos de error",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Tipos de error\".",
+    "explanation": "La respuesta correcta es \"Error\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Tipos de error\".",
+    "expectedText": "Error",
+    "solutionCode": "Error"
+  },
+  "Leccion 3 · Tipos de error::3": {
+    "topicTitle": "Leccion 3 · Tipos de error",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: TypeError.",
+    "codeSnippet": "try { throw new TypeError(\"Tipo invalido\"); } catch (error) { console.log(error.name); }",
+    "expectedText": "TypeError",
+    "solutionCode": "TypeError"
+  },
+  "Leccion 3 · Tipos de error::4": {
+    "topicTitle": "Leccion 3 · Tipos de error",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "TypeError debe escribirse con mayúsculas correctas porque es una clase nativa de JavaScript. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "throw new typeerror(\"Tipo invalido\");",
+    "expectedText": "TypeError",
+    "acceptedAnswers": [
+      "TypeError",
+      "throw new TypeError(\"Tipo invalido\");"
+    ],
+    "solutionCode": "TypeError\n\nTambién válido como corrección completa:\nthrow new TypeError(\"Tipo invalido\");"
+  },
+  "Leccion 4 · Validaciones::1": {
+    "topicTitle": "Leccion 4 · Validaciones",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Validaciones\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Validaciones\": Validar entradas antes de procesarlas evita errores y datos inconsistentes. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Validar entradas antes de procesarlas evita errores y datos inconsistentes."
+  },
+  "Leccion 4 · Validaciones::2": {
+    "topicTitle": "Leccion 4 · Validaciones",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Validaciones\".",
+    "explanation": "La respuesta correcta es \"validacion\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Validaciones\".",
+    "expectedText": "validacion",
+    "solutionCode": "validacion"
+  },
+  "Leccion 4 · Validaciones::3": {
+    "topicTitle": "Leccion 4 · Validaciones",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: true.",
+    "codeSnippet": "const email = \"  \";\nconsole.log(email.trim() === \"\");",
+    "expectedText": "true",
+    "solutionCode": "true"
+  },
+  "Leccion 4 · Validaciones::4": {
+    "topicTitle": "Leccion 4 · Validaciones",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "=== compara valor y tipo, por eso es más seguro que == en la mayoría de validaciones. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "if (email = \"\") { throw new Error(\"email required\"); }",
+    "expectedText": "===",
+    "acceptedAnswers": [
+      "===",
+      "if (email === \"\") { throw new Error(\"email required\"); }"
+    ],
+    "solutionCode": "===\n\nTambién válido como corrección completa:\nif (email === \"\") { throw new Error(\"email required\"); }"
+  },
+  "Leccion 5 · Buenas practicas de errores::1": {
+    "topicTitle": "Leccion 5 · Buenas practicas de errores",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Buenas practicas de errores\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Buenas practicas de errores\": Un buen manejo de errores da mensajes claros y no oculta el problema real. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un buen manejo de errores da mensajes claros y no oculta el problema real."
+  },
+  "Leccion 5 · Buenas practicas de errores::2": {
+    "topicTitle": "Leccion 5 · Buenas practicas de errores",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Buenas practicas de errores\".",
+    "explanation": "La respuesta correcta es \"mensaje\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Buenas practicas de errores\".",
+    "expectedText": "mensaje",
+    "solutionCode": "mensaje"
+  },
+  "Leccion 5 · Buenas practicas de errores::3": {
+    "topicTitle": "Leccion 5 · Buenas practicas de errores",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Token faltante.",
+    "codeSnippet": "try { throw new Error(\"Token faltante\"); } catch (error) { console.log(error.message); }",
+    "expectedText": "Token faltante",
+    "solutionCode": "Token faltante"
+  },
+  "Leccion 5 · Buenas practicas de errores::4": {
+    "topicTitle": "Leccion 5 · Buenas practicas de errores",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Las comillas convierten el texto en un string válido para JavaScript. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "throw Error(Token faltante);",
+    "expectedText": "comillas",
+    "acceptedAnswers": [
+      "comillas",
+      "throw new Error(\"Token faltante\");"
+    ],
+    "solutionCode": "comillas\n\nTambién válido como corrección completa:\nthrow new Error(\"Token faltante\");"
+  },
+  "Leccion 5 · Buenas practicas de errores::5": {
+    "topicTitle": "Leccion 5 · Buenas practicas de errores",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente safeParseAge(value). Debe convertir value a numero y devolver null si el resultado no es valido.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Buenas practicas de errores\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function safeParseAge(value) {\n  const parsed = Number(value);\n  return Number.isNaN(parsed) ? null : parsed;\n}"
+  },
+  "Leccion 1 · Que es asincronia::1": {
+    "topicTitle": "Leccion 1 · Que es asincronia",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Que es asincronia\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Que es asincronia\": La asincronia permite iniciar una tarea y continuar mientras esperas su resultado. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "La asincronia permite iniciar una tarea y continuar mientras esperas su resultado."
+  },
+  "Leccion 1 · Que es asincronia::2": {
+    "topicTitle": "Leccion 1 · Que es asincronia",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Que es asincronia\".",
+    "explanation": "La respuesta correcta es \"asincronia\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Que es asincronia\".",
+    "expectedText": "asincronia",
+    "solutionCode": "asincronia"
+  },
+  "Leccion 1 · Que es asincronia::3": {
+    "topicTitle": "Leccion 1 · Que es asincronia",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: inicio\nfin.",
+    "codeSnippet": "console.log(\"inicio\");\nconsole.log(\"fin\");",
+    "expectedText": "inicio\nfin",
+    "solutionCode": "inicio\nfin"
+  },
+  "Leccion 1 · Que es asincronia::4": {
+    "topicTitle": "Leccion 1 · Que es asincronia",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "async permite usar await dentro de una función y trabajar con Promises de forma más clara. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const result = await Promise.resolve(\"ok\");",
+    "expectedText": "async",
+    "acceptedAnswers": [
+      "async",
+      "async function run() {\n  const result = await Promise.resolve(\"ok\");\n  return result;\n}"
+    ],
+    "solutionCode": "async\n\nTambién válido como corrección completa:\nasync function run() {\n  const result = await Promise.resolve(\"ok\");\n  return result;\n}"
+  },
+  "Leccion 2 · Callbacks::1": {
+    "topicTitle": "Leccion 2 · Callbacks",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Callbacks\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Callbacks\": Un callback es una funcion que entregas para que se ejecute despues. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un callback es una funcion que entregas para que se ejecute despues."
+  },
+  "Leccion 2 · Callbacks::2": {
+    "topicTitle": "Leccion 2 · Callbacks",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Callbacks\".",
+    "explanation": "reduce necesita recibir una función callback con acumulador y valor actual.",
+    "expectedText": "callback",
+    "solutionCode": "callback"
+  },
+  "Leccion 2 · Callbacks::3": {
+    "topicTitle": "Leccion 2 · Callbacks",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: ok.",
+    "codeSnippet": "const done = () => \"ok\";\nconsole.log(done());",
+    "expectedText": "ok",
+    "solutionCode": "ok"
+  },
+  "Leccion 2 · Callbacks::4": {
+    "topicTitle": "Leccion 2 · Callbacks",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Un callback debe pasarse como función, no como el resultado de ejecutar una función inmediatamente. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "runTask(console.log(\"done\"));",
+    "expectedText": "funcion",
+    "acceptedAnswers": [
+      "funcion",
+      "runTask(() => console.log(\"done\"));"
+    ],
+    "solutionCode": "funcion\n\nTambién válido como corrección completa:\nrunTask(() => console.log(\"done\"));"
+  },
+  "Leccion 3 · Promises::1": {
+    "topicTitle": "Leccion 3 · Promises",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Promises\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Promises\": Una Promise representa un resultado futuro que puede resolverse o fallar. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Una Promise representa un resultado futuro que puede resolverse o fallar."
+  },
+  "Leccion 3 · Promises::2": {
+    "topicTitle": "Leccion 3 · Promises",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Promises\".",
+    "explanation": "Promise.resolve es un método estático; no se instancia con new.",
+    "expectedText": "Promise",
+    "solutionCode": "Promise"
+  },
+  "Leccion 3 · Promises::3": {
+    "topicTitle": "Leccion 3 · Promises",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: ok.",
+    "codeSnippet": "Promise.resolve(\"ok\").then((value) => console.log(value));",
+    "expectedText": "ok",
+    "solutionCode": "ok"
+  },
+  "Leccion 3 · Promises::4": {
+    "topicTitle": "Leccion 3 · Promises",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Promise.resolve es un método estático; no se instancia con new. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const task = new Promise.resolve(\"ok\");",
+    "expectedText": "Promise",
+    "acceptedAnswers": [
+      "Promise",
+      "const task = Promise.resolve(\"ok\");"
+    ],
+    "solutionCode": "Promise\n\nTambién válido como corrección completa:\nconst task = Promise.resolve(\"ok\");"
+  },
+  "Leccion 4 · async await::1": {
+    "topicTitle": "Leccion 4 · async await",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"async await\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"async await\": async y await hacen mas claro el flujo asincrono que antes se escribia con then. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "async y await hacen mas claro el flujo asincrono que antes se escribia con then."
+  },
+  "Leccion 4 · async await::2": {
+    "topicTitle": "Leccion 4 · async await",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"async await\".",
+    "explanation": "La respuesta correcta es \"await\" porque es el término o símbolo que representa la definición trabajada en la lección de \"async await\".",
+    "expectedText": "await",
+    "solutionCode": "await"
+  },
+  "Leccion 4 · async await::3": {
+    "topicTitle": "Leccion 4 · async await",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: ok.",
+    "codeSnippet": "async function load() { const value = await Promise.resolve(\"ok\"); console.log(value); }\nload();",
+    "expectedText": "ok",
+    "solutionCode": "ok"
+  },
+  "Leccion 4 · async await::4": {
+    "topicTitle": "Leccion 4 · async await",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "async permite usar await dentro de una función y trabajar con Promises de forma más clara. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function load() { const value = await Promise.resolve(\"ok\"); }",
+    "expectedText": "async",
+    "acceptedAnswers": [
+      "async",
+      "async function load() { const value = await Promise.resolve(\"ok\"); }"
+    ],
+    "solutionCode": "async\n\nTambién válido como corrección completa:\nasync function load() { const value = await Promise.resolve(\"ok\"); }"
+  },
+  "Leccion 5 · Manejo de errores async::1": {
+    "topicTitle": "Leccion 5 · Manejo de errores async",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Manejo de errores async\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Manejo de errores async\": El flujo asincrono tambien necesita try/catch para atrapar fallos de await. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "El flujo asincrono tambien necesita try/catch para atrapar fallos de await."
+  },
+  "Leccion 5 · Manejo de errores async::2": {
+    "topicTitle": "Leccion 5 · Manejo de errores async",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Manejo de errores async\".",
+    "explanation": "La respuesta correcta es \"try\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Manejo de errores async\".",
+    "expectedText": "try",
+    "solutionCode": "try"
+  },
+  "Leccion 5 · Manejo de errores async::3": {
+    "topicTitle": "Leccion 5 · Manejo de errores async",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: fail.",
+    "codeSnippet": "async function load() { try { await Promise.reject(new Error(\"fail\")); } catch (error) { console.log(\"fail\"); } }\nload();",
+    "expectedText": "fail",
+    "solutionCode": "fail"
+  },
+  "Leccion 5 · Manejo de errores async::4": {
+    "topicTitle": "Leccion 5 · Manejo de errores async",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "catch siempre debe ir unido a un bloque try valido. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "async function load() { await Promise.reject(new Error(\"fail\")); catch (error) { console.log(\"fail\"); } }",
+    "expectedText": "try",
+    "acceptedAnswers": [
+      "try",
+      "async function load() {\n  try {\n    await Promise.reject(new Error(\"fail\"));\n  } catch (error) {\n    console.log(\"fail\");\n  }\n}"
+    ],
+    "solutionCode": "try\n\nTambién válido como corrección completa:\nasync function load() {\n  try {\n    await Promise.reject(new Error(\"fail\"));\n  } catch (error) {\n    console.log(\"fail\");\n  }\n}"
+  },
+  "Leccion 5 · Manejo de errores async::5": {
+    "topicTitle": "Leccion 5 · Manejo de errores async",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente async function fetchStatusLabel(statusPromise) que espere la promesa y devuelva \"status:<valor>\".",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Manejo de errores async\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "async function fetchStatusLabel(statusPromise) {\n  const status = await statusPromise;\n  return `status:${status}`;\n}"
+  },
+  "Leccion 1 · querySelector::1": {
+    "topicTitle": "Leccion 1 · querySelector",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"querySelector\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"querySelector\": querySelector obtiene el primer elemento que coincide con un selector CSS. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "querySelector obtiene el primer elemento que coincide con un selector CSS."
+  },
+  "Leccion 1 · querySelector::2": {
+    "topicTitle": "Leccion 1 · querySelector",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"querySelector\".",
+    "explanation": "querySelector selecciona el primer elemento del DOM que coincide con un selector CSS.",
+    "expectedText": "querySelector",
+    "solutionCode": "querySelector"
+  },
+  "Leccion 1 · querySelector::3": {
+    "topicTitle": "Leccion 1 · querySelector",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: .card.",
+    "codeSnippet": "const selector = \".card\";\nconsole.log(selector);",
+    "expectedText": ".card",
+    "solutionCode": ".card"
+  },
+  "Leccion 1 · querySelector::4": {
+    "topicTitle": "Leccion 1 · querySelector",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "querySelector selecciona el primer elemento del DOM que coincide con un selector CSS. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "document.select(\".save-btn\");",
+    "expectedText": "querySelector",
+    "acceptedAnswers": [
+      "querySelector",
+      "document.querySelector(\".save-btn\");"
+    ],
+    "solutionCode": "querySelector\n\nTambién válido como corrección completa:\ndocument.querySelector(\".save-btn\");"
+  },
+  "Leccion 2 · Modificar contenido::1": {
+    "topicTitle": "Leccion 2 · Modificar contenido",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Modificar contenido\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Modificar contenido\": Puedes cambiar texto visible de un nodo usando textContent o innerHTML con cuidado. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes cambiar texto visible de un nodo usando textContent o innerHTML con cuidado."
+  },
+  "Leccion 2 · Modificar contenido::2": {
+    "topicTitle": "Leccion 2 · Modificar contenido",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Modificar contenido\".",
+    "explanation": "textContent cambia el texto visible de un nodo de forma segura.",
+    "expectedText": "textContent",
+    "solutionCode": "textContent"
+  },
+  "Leccion 2 · Modificar contenido::3": {
+    "topicTitle": "Leccion 2 · Modificar contenido",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Nuevo titulo.",
+    "codeSnippet": "const label = \"Nuevo titulo\";\nconsole.log(label);",
+    "expectedText": "Nuevo titulo",
+    "solutionCode": "Nuevo titulo"
+  },
+  "Leccion 2 · Modificar contenido::4": {
+    "topicTitle": "Leccion 2 · Modificar contenido",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "textContent cambia el texto visible de un nodo de forma segura. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "title.content = \"Nuevo titulo\";",
+    "expectedText": "textContent",
+    "acceptedAnswers": [
+      "textContent",
+      "title.textContent = \"Nuevo titulo\";"
+    ],
+    "solutionCode": "textContent\n\nTambién válido como corrección completa:\ntitle.textContent = \"Nuevo titulo\";"
+  },
+  "Leccion 3 · Eventos::1": {
+    "topicTitle": "Leccion 3 · Eventos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Eventos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Eventos\": Los eventos ejecutan una funcion cuando el usuario interactua con un elemento. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los eventos ejecutan una funcion cuando el usuario interactua con un elemento."
+  },
+  "Leccion 3 · Eventos::2": {
+    "topicTitle": "Leccion 3 · Eventos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Eventos\".",
+    "explanation": "addEventListener registra una función que se ejecutará cuando ocurra el evento.",
+    "expectedText": "addEventListener",
+    "solutionCode": "addEventListener"
+  },
+  "Leccion 3 · Eventos::3": {
+    "topicTitle": "Leccion 3 · Eventos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: click.",
+    "codeSnippet": "const eventName = \"click\";\nconsole.log(eventName);",
+    "expectedText": "click",
+    "solutionCode": "click"
+  },
+  "Leccion 3 · Eventos::4": {
+    "topicTitle": "Leccion 3 · Eventos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "addEventListener registra una función que se ejecutará cuando ocurra el evento. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "button.on(\"click\", () => console.log(\"ok\"));",
+    "expectedText": "addEventListener",
+    "acceptedAnswers": [
+      "addEventListener",
+      "button.addEventListener(\"click\", () => console.log(\"ok\"));"
+    ],
+    "solutionCode": "addEventListener\n\nTambién válido como corrección completa:\nbutton.addEventListener(\"click\", () => console.log(\"ok\"));"
+  },
+  "Leccion 4 · Formularios::1": {
+    "topicTitle": "Leccion 4 · Formularios",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Formularios\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Formularios\": Los formularios disparan submit y puedes evitar su comportamiento por defecto. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los formularios disparan submit y puedes evitar su comportamiento por defecto."
+  },
+  "Leccion 4 · Formularios::2": {
+    "topicTitle": "Leccion 4 · Formularios",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Formularios\".",
+    "explanation": "La respuesta correcta es \"submit\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Formularios\".",
+    "expectedText": "submit",
+    "solutionCode": "submit"
+  },
+  "Leccion 4 · Formularios::3": {
+    "topicTitle": "Leccion 4 · Formularios",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: submit.",
+    "codeSnippet": "const action = \"submit\";\nconsole.log(action);",
+    "expectedText": "submit",
+    "solutionCode": "submit"
+  },
+  "Leccion 4 · Formularios::4": {
+    "topicTitle": "Leccion 4 · Formularios",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "preventDefault pertenece al objeto event recibido por el handler del evento. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "form.addEventListener(\"submit\", () => {\n  preventDefault();\n});",
+    "expectedText": "event",
+    "acceptedAnswers": [
+      "event",
+      "form.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n});"
+    ],
+    "solutionCode": "event\n\nTambién válido como corrección completa:\nform.addEventListener(\"submit\", (event) => {\n  event.preventDefault();\n});"
+  },
+  "Leccion 5 · Manipulacion dinamica::1": {
+    "topicTitle": "Leccion 5 · Manipulacion dinamica",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Manipulacion dinamica\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Manipulacion dinamica\": Puedes crear nodos y agregarlos dinamicamente a la interfaz. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Puedes crear nodos y agregarlos dinamicamente a la interfaz."
+  },
+  "Leccion 5 · Manipulacion dinamica::2": {
+    "topicTitle": "Leccion 5 · Manipulacion dinamica",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Manipulacion dinamica\".",
+    "explanation": "appendChild agrega un nodo hijo dentro de otro nodo.",
+    "expectedText": "appendChild",
+    "solutionCode": "appendChild"
+  },
+  "Leccion 5 · Manipulacion dinamica::3": {
+    "topicTitle": "Leccion 5 · Manipulacion dinamica",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: appendChild.",
+    "codeSnippet": "const method = \"appendChild\";\nconsole.log(method);",
+    "expectedText": "appendChild",
+    "solutionCode": "appendChild"
+  },
+  "Leccion 5 · Manipulacion dinamica::4": {
+    "topicTitle": "Leccion 5 · Manipulacion dinamica",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "appendChild agrega un nodo hijo dentro de otro nodo. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "list.addChild(item);",
+    "expectedText": "appendChild",
+    "acceptedAnswers": [
+      "appendChild",
+      "list.appendChild(item);"
+    ],
+    "solutionCode": "appendChild\n\nTambién válido como corrección completa:\nlist.appendChild(item);"
+  },
+  "Leccion 5 · Manipulacion dinamica::5": {
+    "topicTitle": "Leccion 5 · Manipulacion dinamica",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente buildTodoMarkup(items) y devuelve un string HTML con cada item dentro de <li>...</li> unido sin separadores.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Manipulacion dinamica\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function buildTodoMarkup(items) {\n  return items.map((item) => `<li>${item}</li>`).join(\"\");\n}"
+  },
+  "Leccion 1 · Funciones puras::1": {
+    "topicTitle": "Leccion 1 · Funciones puras",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Funciones puras\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Funciones puras\": Una funcion pura devuelve el mismo resultado para las mismas entradas y evita efectos externos. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Una funcion pura devuelve el mismo resultado para las mismas entradas y evita efectos externos."
+  },
+  "Leccion 1 · Funciones puras::2": {
+    "topicTitle": "Leccion 1 · Funciones puras",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Funciones puras\".",
+    "explanation": "La respuesta correcta es \"pura\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Funciones puras\".",
+    "expectedText": "pura",
+    "solutionCode": "pura"
+  },
+  "Leccion 1 · Funciones puras::3": {
+    "topicTitle": "Leccion 1 · Funciones puras",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 5.",
+    "codeSnippet": "function add(a, b) { return a + b; }\nconsole.log(add(2, 3));",
+    "expectedText": "5",
+    "solutionCode": "5"
+  },
+  "Leccion 1 · Funciones puras::4": {
+    "topicTitle": "Leccion 1 · Funciones puras",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Modificar variables externas crea efectos secundarios y hace menos predecible la función. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "let total = 0;\nfunction add(value) { total += value; }",
+    "expectedText": "efecto",
+    "acceptedAnswers": [
+      "efecto",
+      "function add(total, value) {\n  return total + value;\n}"
+    ],
+    "solutionCode": "efecto\n\nTambién válido como corrección completa:\nfunction add(total, value) {\n  return total + value;\n}"
+  },
+  "Leccion 2 · Inmutabilidad::1": {
+    "topicTitle": "Leccion 2 · Inmutabilidad",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Inmutabilidad\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Inmutabilidad\": La inmutabilidad evita modificar datos originales y prefiere crear nuevas versiones. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "La inmutabilidad evita modificar datos originales y prefiere crear nuevas versiones."
+  },
+  "Leccion 2 · Inmutabilidad::2": {
+    "topicTitle": "Leccion 2 · Inmutabilidad",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Inmutabilidad\".",
+    "explanation": "La respuesta correcta es \"inmutable\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Inmutabilidad\".",
+    "expectedText": "inmutable",
+    "solutionCode": "inmutable"
+  },
+  "Leccion 2 · Inmutabilidad::3": {
+    "topicTitle": "Leccion 2 · Inmutabilidad",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 2.",
+    "codeSnippet": "const values = [1, 2];\nconst next = [...values, 3];\nconsole.log(values.length);",
+    "expectedText": "2",
+    "solutionCode": "2"
+  },
+  "Leccion 2 · Inmutabilidad::4": {
+    "topicTitle": "Leccion 2 · Inmutabilidad",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Para mantener inmutabilidad, crea una copia o una nueva estructura en vez de modificar la original. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const values = [1, 2];\nvalues.length = 0;",
+    "expectedText": "copia",
+    "acceptedAnswers": [
+      "copia",
+      "const values = [1, 2];\nconst nextValues = [];"
+    ],
+    "solutionCode": "copia\n\nTambién válido como corrección completa:\nconst values = [1, 2];\nconst nextValues = [];"
+  },
+  "Leccion 3 · map y reduce::1": {
+    "topicTitle": "Leccion 3 · map y reduce",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"map y reduce\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"map y reduce\": map transforma cada valor y reduce acumula todo en un unico resultado. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "map transforma cada valor y reduce acumula todo en un unico resultado."
+  },
+  "Leccion 3 · map y reduce::2": {
+    "topicTitle": "Leccion 3 · map y reduce",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"map y reduce\".",
+    "explanation": "La respuesta correcta es \"reduce\" porque es el término o símbolo que representa la definición trabajada en la lección de \"map y reduce\".",
+    "expectedText": "reduce",
+    "solutionCode": "reduce"
+  },
+  "Leccion 3 · map y reduce::3": {
+    "topicTitle": "Leccion 3 · map y reduce",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 6.",
+    "codeSnippet": "const total = [1, 2, 3].reduce((sum, value) => sum + value, 0);\nconsole.log(total);",
+    "expectedText": "6",
+    "solutionCode": "6"
+  },
+  "Leccion 3 · map y reduce::4": {
+    "topicTitle": "Leccion 3 · map y reduce",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "reduce necesita recibir una función callback con acumulador y valor actual. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const total = [1, 2, 3].reduce(sum + value, 0);",
+    "expectedText": "callback",
+    "acceptedAnswers": [
+      "callback",
+      "const total = [1, 2, 3].reduce((sum, value) => sum + value, 0);"
+    ],
+    "solutionCode": "callback\n\nTambién válido como corrección completa:\nconst total = [1, 2, 3].reduce((sum, value) => sum + value, 0);"
+  },
+  "Leccion 4 · Composicion::1": {
+    "topicTitle": "Leccion 4 · Composicion",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Composicion\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Composicion\": La composicion conecta funciones pequenas para resolver una tarea mayor. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "La composicion conecta funciones pequenas para resolver una tarea mayor."
+  },
+  "Leccion 4 · Composicion::2": {
+    "topicTitle": "Leccion 4 · Composicion",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Composicion\".",
+    "explanation": "La respuesta correcta es \"composicion\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Composicion\".",
+    "expectedText": "composicion",
+    "solutionCode": "composicion"
+  },
+  "Leccion 4 · Composicion::3": {
+    "topicTitle": "Leccion 4 · Composicion",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: OK.",
+    "codeSnippet": "const trim = (value) => value.trim();\nconst upper = (value) => value.toUpperCase();\nconsole.log(upper(trim(\" ok \")));",
+    "expectedText": "OK",
+    "solutionCode": "OK"
+  },
+  "Leccion 4 · Composicion::4": {
+    "topicTitle": "Leccion 4 · Composicion",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "La composición se hace ejecutando funciones en orden, no sumando sus referencias. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const result = trim + upper;",
+    "expectedText": "funciones",
+    "acceptedAnswers": [
+      "funciones",
+      "const result = upper(trim(\" ok \"));"
+    ],
+    "solutionCode": "funciones\n\nTambién válido como corrección completa:\nconst result = upper(trim(\" ok \"));"
+  },
+  "Leccion 5 · Closures::1": {
+    "topicTitle": "Leccion 5 · Closures",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Closures\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Closures\": Un closure recuerda variables del scope donde fue creado incluso despues. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Un closure recuerda variables del scope donde fue creado incluso despues."
+  },
+  "Leccion 5 · Closures::2": {
+    "topicTitle": "Leccion 5 · Closures",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Closures\".",
+    "explanation": "La respuesta correcta es \"closure\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Closures\".",
+    "expectedText": "closure",
+    "solutionCode": "closure"
+  },
+  "Leccion 5 · Closures::3": {
+    "topicTitle": "Leccion 5 · Closures",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 1.",
+    "codeSnippet": "function createCounter() { let count = 0; return () => ++count; }\nconst next = createCounter();\nconsole.log(next());",
+    "expectedText": "1",
+    "solutionCode": "1"
+  },
+  "Leccion 5 · Closures::4": {
+    "topicTitle": "Leccion 5 · Closures",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "El closure solo puede recordar variables que existen en el scope donde fue creado. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function createCounter() { return () => ++count; }",
+    "expectedText": "count",
+    "acceptedAnswers": [
+      "count",
+      "function createCounter() {\n  let count = 0;\n  return () => ++count;\n}"
+    ],
+    "solutionCode": "count\n\nTambién válido como corrección completa:\nfunction createCounter() {\n  let count = 0;\n  return () => ++count;\n}"
+  },
+  "Leccion 5 · Closures::5": {
+    "topicTitle": "Leccion 5 · Closures",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente composePipeline(value, steps). steps es un array de strings y puede incluir \"trim\", \"upper\" y \"suffix-js\". Debes aplicarlos en orden.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Closures\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function composePipeline(value, steps) {\n  return steps.reduce((current, step) => {\n    if (step === \"trim\") return current.trim();\n    if (step === \"upper\") return current.toUpperCase();\n    if (step === \"suffix-js\") return `${current}-js`;\n    return current;\n  }, value);\n}"
+  },
+  "Leccion 1 · Set::1": {
+    "topicTitle": "Leccion 1 · Set",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Set\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Set\": Set guarda valores unicos y evita repetidos automaticamente. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Set guarda valores unicos y evita repetidos automaticamente."
+  },
+  "Leccion 1 · Set::2": {
+    "topicTitle": "Leccion 1 · Set",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Set\".",
+    "explanation": "La respuesta correcta es \"Set\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Set\".",
+    "expectedText": "Set",
+    "solutionCode": "Set"
+  },
+  "Leccion 1 · Set::3": {
+    "topicTitle": "Leccion 1 · Set",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 2.",
+    "codeSnippet": "const tags = new Set([\"js\", \"js\", \"react\"]);\nconsole.log(tags.size);",
+    "expectedText": "2",
+    "solutionCode": "2"
+  },
+  "Leccion 1 · Set::4": {
+    "topicTitle": "Leccion 1 · Set",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Set se instancia con new porque es una clase/constructor nativo. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const tags = Set([\"js\"]);",
+    "expectedText": "new",
+    "acceptedAnswers": [
+      "new",
+      "const tags = new Set([\"js\"]);"
+    ],
+    "solutionCode": "new\n\nTambién válido como corrección completa:\nconst tags = new Set([\"js\"]);"
+  },
+  "Leccion 2 · Map::1": {
+    "topicTitle": "Leccion 2 · Map",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Map\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Map\": Map guarda pares clave-valor donde la clave puede ser mas flexible que en un objeto. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Map guarda pares clave-valor donde la clave puede ser mas flexible que en un objeto."
+  },
+  "Leccion 2 · Map::2": {
+    "topicTitle": "Leccion 2 · Map",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Map\".",
+    "explanation": "La respuesta correcta es \"Map\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Map\".",
+    "expectedText": "Map",
+    "solutionCode": "Map"
+  },
+  "Leccion 2 · Map::3": {
+    "topicTitle": "Leccion 2 · Map",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 1.",
+    "codeSnippet": "const statusMap = new Map([[\"ok\", 1]]);\nconsole.log(statusMap.get(\"ok\"));",
+    "expectedText": "1",
+    "solutionCode": "1"
+  },
+  "Leccion 2 · Map::4": {
+    "topicTitle": "Leccion 2 · Map",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Map trabaja sus pares clave-valor con métodos como set y get. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const statusMap = new Map();\nstatusMap[\"ok\"] = 1;",
+    "expectedText": "set",
+    "acceptedAnswers": [
+      "set",
+      "const statusMap = new Map();\nstatusMap.set(\"ok\", 1);"
+    ],
+    "solutionCode": "set\n\nTambién válido como corrección completa:\nconst statusMap = new Map();\nstatusMap.set(\"ok\", 1);"
+  },
+  "Leccion 3 · Iteradores::1": {
+    "topicTitle": "Leccion 3 · Iteradores",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Iteradores\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Iteradores\": Los iteradores permiten consumir elementos uno a uno siguiendo un protocolo comun. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Los iteradores permiten consumir elementos uno a uno siguiendo un protocolo comun."
+  },
+  "Leccion 3 · Iteradores::2": {
+    "topicTitle": "Leccion 3 · Iteradores",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Iteradores\".",
+    "explanation": "La respuesta correcta es \"iterador\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Iteradores\".",
+    "expectedText": "iterador",
+    "solutionCode": "iterador"
+  },
+  "Leccion 3 · Iteradores::3": {
+    "topicTitle": "Leccion 3 · Iteradores",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 1.",
+    "codeSnippet": "const iterator = [1, 2][Symbol.iterator]();\nconsole.log(iterator.next().value);",
+    "expectedText": "1",
+    "solutionCode": "1"
+  },
+  "Leccion 3 · Iteradores::4": {
+    "topicTitle": "Leccion 3 · Iteradores",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Symbol.iterator permite obtener el iterador nativo de un iterable. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const iterator = [1, 2].iterator();",
+    "expectedText": "Symbol.iterator",
+    "acceptedAnswers": [
+      "Symbol.iterator",
+      "const iterator = [1, 2][Symbol.iterator]();"
+    ],
+    "solutionCode": "Symbol.iterator\n\nTambién válido como corrección completa:\nconst iterator = [1, 2][Symbol.iterator]();"
+  },
+  "Leccion 4 · Spread operator::1": {
+    "topicTitle": "Leccion 4 · Spread operator",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Spread operator\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Spread operator\": Spread expande elementos de arrays u objetos dentro de otra estructura. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Spread expande elementos de arrays u objetos dentro de otra estructura."
+  },
+  "Leccion 4 · Spread operator::2": {
+    "topicTitle": "Leccion 4 · Spread operator",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Spread operator\".",
+    "explanation": "Spread/rest usan tres puntos seguidos, no dos.",
+    "expectedText": "...",
+    "solutionCode": "..."
+  },
+  "Leccion 4 · Spread operator::3": {
+    "topicTitle": "Leccion 4 · Spread operator",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 3.",
+    "codeSnippet": "const values = [1, 2];\nconst next = [...values, 3];\nconsole.log(next.length);",
+    "expectedText": "3",
+    "solutionCode": "3"
+  },
+  "Leccion 4 · Spread operator::4": {
+    "topicTitle": "Leccion 4 · Spread operator",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Spread/rest usan tres puntos seguidos, no dos. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const next = ..values;",
+    "expectedText": "...",
+    "acceptedAnswers": [
+      "...",
+      "const next = [...values];"
+    ],
+    "solutionCode": "...\n\nTambién válido como corrección completa:\nconst next = [...values];"
+  },
+  "Leccion 5 · Rest parameters::1": {
+    "topicTitle": "Leccion 5 · Rest parameters",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Rest parameters\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Rest parameters\": Rest agrupa argumentos restantes en un array dentro de una funcion. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Rest agrupa argumentos restantes en un array dentro de una funcion."
+  },
+  "Leccion 5 · Rest parameters::2": {
+    "topicTitle": "Leccion 5 · Rest parameters",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Rest parameters\".",
+    "explanation": "La respuesta correcta es \"rest\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Rest parameters\".",
+    "expectedText": "rest",
+    "solutionCode": "rest"
+  },
+  "Leccion 5 · Rest parameters::3": {
+    "topicTitle": "Leccion 5 · Rest parameters",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 3.",
+    "codeSnippet": "function count(...values) { return values.length; }\nconsole.log(count(1, 2, 3));",
+    "expectedText": "3",
+    "solutionCode": "3"
+  },
+  "Leccion 5 · Rest parameters::4": {
+    "topicTitle": "Leccion 5 · Rest parameters",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Spread/rest usan tres puntos seguidos, no dos. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function count(..values) { return values.length; }",
+    "expectedText": "...",
+    "acceptedAnswers": [
+      "...",
+      "function count(...values) { return values.length; }"
+    ],
+    "solutionCode": "...\n\nTambién válido como corrección completa:\nfunction count(...values) { return values.length; }"
+  },
+  "Leccion 5 · Rest parameters::5": {
+    "topicTitle": "Leccion 5 · Rest parameters",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente mergeUniqueTags(baseTags, incomingTags) y devuelve un array con etiquetas unicas manteniendo el orden de aparicion.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Rest parameters\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function mergeUniqueTags(baseTags, incomingTags) {\n  return [...new Set([...baseTags, ...incomingTags])];\n}"
+  },
+  "Leccion 1 · Clean code::1": {
+    "topicTitle": "Leccion 1 · Clean code",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Clean code\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Clean code\": El clean code prioriza nombres claros, funciones pequenas y una lectura sencilla. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "El clean code prioriza nombres claros, funciones pequenas y una lectura sencilla."
+  },
+  "Leccion 1 · Clean code::2": {
+    "topicTitle": "Leccion 1 · Clean code",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Clean code\".",
+    "explanation": "La respuesta correcta es \"legible\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Clean code\".",
+    "expectedText": "legible",
+    "solutionCode": "legible"
+  },
+  "Leccion 1 · Clean code::3": {
+    "topicTitle": "Leccion 1 · Clean code",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: Codigo claro.",
+    "codeSnippet": "const title = \"Codigo claro\";\nconsole.log(title);",
+    "expectedText": "Codigo claro",
+    "solutionCode": "Codigo claro"
+  },
+  "Leccion 1 · Clean code::4": {
+    "topicTitle": "Leccion 1 · Clean code",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Un nombre claro comunica intención; x no explica qué contiene la variable. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const x = users.filter((user) => user.active);",
+    "expectedText": "nombre",
+    "acceptedAnswers": [
+      "nombre",
+      "const activeUsers = users.filter((user) => user.active);"
+    ],
+    "solutionCode": "nombre\n\nTambién válido como corrección completa:\nconst activeUsers = users.filter((user) => user.active);"
+  },
+  "Leccion 2 · Modularizacion::1": {
+    "topicTitle": "Leccion 2 · Modularizacion",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Modularizacion\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Modularizacion\": Modularizar separa responsabilidades para que cada archivo haga una sola cosa. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Modularizar separa responsabilidades para que cada archivo haga una sola cosa."
+  },
+  "Leccion 2 · Modularizacion::2": {
+    "topicTitle": "Leccion 2 · Modularizacion",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Modularizacion\".",
+    "explanation": "La respuesta correcta es \"modulo\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Modularizacion\".",
+    "expectedText": "modulo",
+    "solutionCode": "modulo"
+  },
+  "Leccion 2 · Modularizacion::3": {
+    "topicTitle": "Leccion 2 · Modularizacion",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: api/users.js.",
+    "codeSnippet": "const file = \"api/users.js\";\nconsole.log(file);",
+    "expectedText": "api/users.js",
+    "solutionCode": "api/users.js"
+  },
+  "Leccion 2 · Modularizacion::4": {
+    "topicTitle": "Leccion 2 · Modularizacion",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Separar responsabilidades vuelve el proyecto más fácil de entender, probar y mantener. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "function everything() {\n  // auth, ui, api, stats\n}",
+    "expectedText": "separar",
+    "acceptedAnswers": [
+      "separar",
+      "Separa responsabilidades, por ejemplo: authService(), renderUI(), apiClient() y buildStats()."
+    ],
+    "solutionCode": "separar\n\nTambién válido como corrección completa:\nSepara responsabilidades, por ejemplo: authService(), renderUI(), apiClient() y buildStats()."
+  },
+  "Leccion 3 · Debugging::1": {
+    "topicTitle": "Leccion 3 · Debugging",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Debugging\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Debugging\": Depurar es observar el estado real del programa y acotar donde aparece el fallo. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Depurar es observar el estado real del programa y acotar donde aparece el fallo."
+  },
+  "Leccion 3 · Debugging::2": {
+    "topicTitle": "Leccion 3 · Debugging",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Debugging\".",
+    "explanation": "La respuesta correcta es \"debugging\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Debugging\".",
+    "expectedText": "debugging",
+    "solutionCode": "debugging"
+  },
+  "Leccion 3 · Debugging::3": {
+    "topicTitle": "Leccion 3 · Debugging",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: debug.",
+    "codeSnippet": "const status = \"debug\";\nconsole.log(status);",
+    "expectedText": "debug",
+    "solutionCode": "debug"
+  },
+  "Leccion 3 · Debugging::4": {
+    "topicTitle": "Leccion 3 · Debugging",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Debes usar el mismo nombre de variable que declaraste. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const result = getData();\nconsole.log(data);",
+    "expectedText": "variable",
+    "acceptedAnswers": [
+      "variable",
+      "const result = getData();\nconsole.log(result);"
+    ],
+    "solutionCode": "variable\n\nTambién válido como corrección completa:\nconst result = getData();\nconsole.log(result);"
+  },
+  "Leccion 4 · Performance basica::1": {
+    "topicTitle": "Leccion 4 · Performance basica",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Performance basica\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Performance basica\": La performance basica evita trabajo innecesario y repeticiones costosas. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "La performance basica evita trabajo innecesario y repeticiones costosas."
+  },
+  "Leccion 4 · Performance basica::2": {
+    "topicTitle": "Leccion 4 · Performance basica",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Performance basica\".",
+    "explanation": "La respuesta correcta es \"performance\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Performance basica\".",
+    "expectedText": "performance",
+    "solutionCode": "performance"
+  },
+  "Leccion 4 · Performance basica::3": {
+    "topicTitle": "Leccion 4 · Performance basica",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: 3.",
+    "codeSnippet": "const size = [1, 2, 3].length;\nconsole.log(size);",
+    "expectedText": "3",
+    "solutionCode": "3"
+  },
+  "Leccion 4 · Performance basica::4": {
+    "topicTitle": "Leccion 4 · Performance basica",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Guardar un valor repetido en una variable temporal evita trabajo innecesario y mejora la lectura. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "for (let i = 0; i < list.length; i += 1) { console.log(list.length); }",
+    "expectedText": "cache",
+    "acceptedAnswers": [
+      "cache",
+      "const totalItems = list.length;\nfor (let i = 0; i < totalItems; i += 1) {\n  console.log(totalItems);\n}"
+    ],
+    "solutionCode": "cache\n\nTambién válido como corrección completa:\nconst totalItems = list.length;\nfor (let i = 0; i < totalItems; i += 1) {\n  console.log(totalItems);\n}"
+  },
+  "Leccion 5 · Organizacion de proyectos::1": {
+    "topicTitle": "Leccion 5 · Organizacion de proyectos",
+    "itemNumber": 1,
+    "itemType": "multiple-choice",
+    "prompt": "Según la lección \"Organizacion de proyectos\", selecciona la opción que describe correctamente el concepto principal.",
+    "explanation": "La opción correcta es la A porque resume la idea central de \"Organizacion de proyectos\": Una buena estructura facilita encontrar codigo, pruebas y configuracion rapidamente. Las otras opciones no corresponden al tema o describen comportamientos que JavaScript no realiza automáticamente.",
+    "choiceDetail": "Una buena estructura facilita encontrar codigo, pruebas y configuracion rapidamente."
+  },
+  "Leccion 5 · Organizacion de proyectos::2": {
+    "topicTitle": "Leccion 5 · Organizacion de proyectos",
+    "itemNumber": 2,
+    "itemType": "completion",
+    "prompt": "Completa con el término, palabra clave o símbolo que corresponde a esta definición de \"Organizacion de proyectos\".",
+    "explanation": "La respuesta correcta es \"estructura\" porque es el término o símbolo que representa la definición trabajada en la lección de \"Organizacion de proyectos\".",
+    "expectedText": "estructura",
+    "solutionCode": "estructura"
+  },
+  "Leccion 5 · Organizacion de proyectos::3": {
+    "topicTitle": "Leccion 5 · Organizacion de proyectos",
+    "itemNumber": 3,
+    "itemType": "prediction",
+    "prompt": "¿Qué imprime exactamente en consola?",
+    "explanation": "El código ejecuta console.log con el valor calculado o almacenado. Por eso la salida esperada es: src/components.",
+    "codeSnippet": "const folder = \"src/components\";\nconsole.log(folder);",
+    "expectedText": "src/components",
+    "solutionCode": "src/components"
+  },
+  "Leccion 5 · Organizacion de proyectos::4": {
+    "topicTitle": "Leccion 5 · Organizacion de proyectos",
+    "itemNumber": 4,
+    "itemType": "debugging",
+    "prompt": "Escribe la corrección principal o el fragmento corregido.",
+    "explanation": "Separar el proyecto en carpetas por responsabilidad facilita encontrar y mantener el código. La corrección puede escribirse como el elemento faltante o como el código completo corregido, por eso se acepta más de una forma válida cuando ambas solucionan el mismo error.",
+    "codeSnippet": "const project = [\"todo-junto-en-index.js\"];",
+    "expectedText": "carpetas",
+    "acceptedAnswers": [
+      "carpetas",
+      "Organiza el proyecto en carpetas, por ejemplo: src/components, src/services y src/pages."
+    ],
+    "solutionCode": "carpetas\n\nTambién válido como corrección completa:\nOrganiza el proyecto en carpetas, por ejemplo: src/components, src/services y src/pages."
+  },
+  "Leccion 5 · Organizacion de proyectos::5": {
+    "topicTitle": "Leccion 5 · Organizacion de proyectos",
+    "itemNumber": 5,
+    "itemType": "code",
+    "prompt": "Implementa correctamente createModuleReport(modules) y devuelve un objeto { total, active } donde active cuenta cuantos modulos tienen enabled en true.",
+    "explanation": "La solución debe cumplir exactamente lo pedido y devolver el valor indicado. En este reto de \"Organizacion de proyectos\", lo importante es usar una función clara, retornar el resultado y no imprimirlo con console.log salvo que el enunciado lo pida.",
+    "solutionCode": "function createModuleReport(modules) {\n  return {\n    total: modules.length,\n    active: modules.filter((module) => module.enabled).length,\n  };\n}"
+  }
+}

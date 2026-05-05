@@ -1,12 +1,15 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { apiRequest } from '@/lib/api';
+import { useAuth } from '@/hooks/use-auth';
+import {
+  evaluateLocalExerciseForUser,
+  getLocalLearnerDashboard,
+} from '@/lib/local-learning';
 import type {
   ExerciseEvaluationResponse,
   LearnerAttemptMode,
   LearnerDashboard,
 } from '@/types/duocode';
-import { useAuth } from '@/hooks/use-auth';
 
 type ExerciseSubmissionPayload = {
   code?: string;
@@ -28,12 +31,12 @@ type LearnerDashboardContextValue = {
 const LearnerDashboardContext = createContext<LearnerDashboardContextValue | null>(null);
 
 export function LearnerDashboardProvider({ children }: PropsWithChildren) {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [dashboard, setDashboard] = useState<LearnerDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function refreshDashboard() {
-    if (!token || user?.role !== 'student') {
+    if (!user || user.role !== 'student') {
       setDashboard(null);
       setLoading(false);
       return;
@@ -42,7 +45,7 @@ export function LearnerDashboardProvider({ children }: PropsWithChildren) {
     setLoading(true);
 
     try {
-      const response = await apiRequest<LearnerDashboard>('/api/learner/dashboard', {}, token);
+      const response = await getLocalLearnerDashboard(user.id);
       setDashboard(response);
     } finally {
       setLoading(false);
@@ -51,22 +54,14 @@ export function LearnerDashboardProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     refreshDashboard();
-  }, [token, user?.role]);
+  }, [user?.id, user?.role]);
 
   async function evaluateExercise(exerciseId: string, payload: ExerciseSubmissionPayload) {
-    if (!token) {
+    if (!user) {
       throw new Error('No autenticado');
     }
 
-    const response = await apiRequest<ExerciseEvaluationResponse>(
-      `/api/exercises/${exerciseId}/evaluate`,
-      {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      },
-      token
-    );
-
+    const response = await evaluateLocalExerciseForUser(user.id, exerciseId, payload);
     setDashboard(response.dashboard);
     return response;
   }

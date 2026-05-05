@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand/brand-mark';
 import { CodeCelebrationOverlay } from '@/components/duocode/code-celebration-overlay';
@@ -44,25 +44,11 @@ function findInitialExercise(topic: LearnerTopic | null, requestedExerciseId?: s
   );
 }
 
-function buildModeMix(topic: LearnerTopic) {
-  const choiceCount = topic.exercises.filter((exercise) => exercise.mode === 'choice').length;
-  const textCount = topic.exercises.filter((exercise) => exercise.mode === 'text').length;
-  const codeCount = topic.exercises.filter((exercise) => exercise.mode === 'code').length;
-  const parts = [];
+function getExerciseShortTitle(exercise: LearnerExercise) {
+  const title = String(exercise.title || '');
+  const parts = title.split('·').map((part) => part.trim()).filter(Boolean);
 
-  if (choiceCount) {
-    parts.push(`${choiceCount} chequeo${choiceCount > 1 ? 's' : ''}`);
-  }
-
-  if (textCount) {
-    parts.push(`${textCount} completar`);
-  }
-
-  if (codeCount) {
-    parts.push(`${codeCount} codigo`);
-  }
-
-  return parts.join(' · ');
+  return parts[parts.length - 1] || title;
 }
 
 function buildChallengeTitle(exercise: LearnerExercise) {
@@ -70,9 +56,9 @@ function buildChallengeTitle(exercise: LearnerExercise) {
     case 'multiple-choice':
       return 'Elige la respuesta correcta';
     case 'completion':
-      return 'Completa lo que falta';
+      return 'Escribe el concepto correcto';
     case 'prediction':
-      return 'Escribe que salida produce';
+      return 'Escribe el resultado del codigo';
     case 'debugging':
       return 'Corrige el error del fragmento';
     default:
@@ -80,14 +66,18 @@ function buildChallengeTitle(exercise: LearnerExercise) {
   }
 }
 
+function buildChallengeSubtitle(exercise: LearnerExercise) {
+  return getExerciseShortTitle(exercise);
+}
+
 function buildChallengePromptLabel(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'multiple-choice':
       return 'pregunta que debes responder';
     case 'completion':
-      return 'pieza que debes completar';
+      return 'pregunta';
     case 'prediction':
-      return 'salida que debes escribir';
+      return 'pregunta';
     case 'debugging':
       return 'error que debes corregir';
     default:
@@ -98,11 +88,11 @@ function buildChallengePromptLabel(exercise: LearnerExercise) {
 function buildChallengePromptHint(exercise: LearnerExercise) {
   switch (exercise.kind) {
     case 'multiple-choice':
-      return 'Toca una sola opcion, no escribes codigo y luego pulsa REVISAR.';
+      return '';
     case 'completion':
-      return 'Escribe solo la palabra, operador o expresion faltante. No copies todo el fragmento.';
+      return 'Responde con una sola palabra o expresion corta.';
     case 'prediction':
-      return 'Tu respuesta debe ser exactamente la salida del codigo, sin texto extra.';
+      return 'Escribe solo lo que imprime el codigo al final.';
     case 'debugging':
       return 'Corrige solo la parte clave que esta mal para que el fragmento quede bien.';
     default:
@@ -115,9 +105,9 @@ function buildChallengeGuidance(exercise: LearnerExercise) {
     case 'multiple-choice':
       return 'Aqui no escribes codigo. Solo debes leer la idea o el fragmento y escoger una sola opcion: la que mejor completa o explica el concepto.';
     case 'completion':
-      return 'Debes averiguar que palabra, operador o expresion falta. Escribe solo esa pieza faltante, no copies todo el codigo.';
+      return 'Lee la definicion del concepto y escribe la palabra clave que mejor la describe. No expliques, solo responde con la palabra o expresion corta.';
     case 'prediction':
-      return 'Debes mirar el fragmento y responder exactamente que saldria al ejecutarlo. Si imprime algo en consola, escribe esa salida tal como aparece.';
+      return 'Debes mirar el codigo y escribir exactamente lo que aparece en consola al final. Si imprime varias lineas, respeta el orden.';
     case 'debugging':
       return 'Debes detectar que esta mal en el fragmento. Corrige la palabra, simbolo o parte incorrecta para que la idea quede bien escrita.';
     default:
@@ -128,6 +118,14 @@ function buildChallengeGuidance(exercise: LearnerExercise) {
 function buildChallengeSteps(exercise: LearnerExercise) {
   if (exercise.instructions.length) {
     return exercise.instructions.slice(0, 3);
+  }
+
+  if (exercise.kind === 'completion') {
+    return ['Lee la definicion.', 'Identifica el concepto principal.', 'Escribe solo la palabra correcta y revisa.'];
+  }
+
+  if (exercise.kind === 'prediction') {
+    return ['Lee el codigo.', 'Sigue el valor paso a paso.', 'Escribe la salida final en print: ___.'];
   }
 
   switch (exercise.mode) {
@@ -145,9 +143,9 @@ function buildChallengeAnswerRule(exercise: LearnerExercise) {
     case 'multiple-choice':
       return 'Responde seleccionando una opcion. No escribas texto.';
     case 'completion':
-      return 'Responde solo con la pieza faltante: una palabra, operador o expresion corta.';
+      return 'Responde solo con la palabra clave o expresion corta correcta.';
     case 'prediction':
-      return 'Responde exactamente con la salida esperada. No expliques, no agregues texto extra.';
+      return 'Responde exactamente con la salida del codigo. No expliques ni agregues texto extra.';
     case 'debugging':
       return 'Responde con la correccion necesaria. Si el error es pequeno, escribe solo la parte correcta; si hace falta, corrige la linea clave.';
     default:
@@ -162,10 +160,26 @@ function buildSnippetLabel(exercise: LearnerExercise) {
     case 'debugging':
       return 'fragmento con error';
     case 'completion':
-      return 'fragmento base';
+      return 'definicion del concepto';
+    case 'prediction':
+      return 'codigo a ejecutar';
     default:
       return 'fragmento de referencia';
   }
+}
+
+function findNextSequentialExercise(topic: LearnerTopic | null, currentExerciseId: string) {
+  if (!topic) {
+    return null;
+  }
+
+  const currentIndex = topic.exercises.findIndex((exercise) => exercise.id === currentExerciseId);
+
+  if (currentIndex === -1) {
+    return topic.exercises[0] || null;
+  }
+
+  return topic.exercises[currentIndex + 1] || null;
 }
 
 function findNextPendingExercise(topic: LearnerTopic | null, currentExerciseId: string) {
@@ -179,12 +193,81 @@ function findNextPendingExercise(topic: LearnerTopic | null, currentExerciseId: 
     return topic.exercises.find((exercise) => !exercise.completed) || null;
   }
 
-  return (
-    topic.exercises.slice(currentIndex + 1).find((exercise) => !exercise.completed) ||
-    topic.exercises.find((exercise) => !exercise.completed) ||
-    null
-  );
+  return topic.exercises.slice(currentIndex + 1).find((exercise) => !exercise.completed) || null;
 }
+
+function getChoiceFeedbackState(
+  optionId: string,
+  selectedOptionId: string | null,
+  evaluation: ExerciseEvaluationResponse | null
+) {
+  if (!evaluation) {
+    return optionId === selectedOptionId ? 'selected' : 'idle';
+  }
+
+  if (optionId === evaluation.expectedSelectionId) {
+    return 'correct';
+  }
+
+  if (optionId === (evaluation.submittedSelectionId || selectedOptionId)) {
+    return evaluation.passed ? 'correct' : 'wrong';
+  }
+
+  return 'idle';
+}
+
+function getChoiceFeedbackLabel(choiceState: ReturnType<typeof getChoiceFeedbackState>) {
+  switch (choiceState) {
+    case 'correct':
+      return 'ok';
+    case 'wrong':
+      return 'bad';
+    case 'selected':
+      return 'elegida';
+    default:
+      return null;
+  }
+}
+
+function buildChoiceAnswerText(option: ReturnType<typeof getChoiceOption> | null) {
+  if (!option) {
+    return 'No disponible';
+  }
+
+  return option.detail ? `${option.label} - ${option.detail}` : option.label;
+}
+
+function buildResultAnswerValue(
+  exercise: LearnerExercise | null,
+  evaluation: ExerciseEvaluationResponse | null,
+  correctChoiceOption: ReturnType<typeof getChoiceOption> | null
+) {
+  if (!exercise || !evaluation) {
+    return null;
+  }
+
+  if (exercise.mode === 'choice') {
+    return buildChoiceAnswerText(correctChoiceOption);
+  }
+
+  if (exercise.mode === 'text') {
+    return evaluation.expectedText || evaluation.correctSolution || 'No disponible';
+  }
+
+  return evaluation.correctSolution || 'No disponible';
+}
+
+type ResultOverlayState = {
+  headline: string;
+  title: string;
+  score: number;
+  xpReward: number;
+  variant: 'pass' | 'fail';
+  answerValue: string | null;
+  explanation: string;
+  actionLabel: string;
+  nextExerciseId: string | null;
+};
 
 export default function LessonScreen() {
   const router = useRouter();
@@ -197,11 +280,10 @@ export default function LessonScreen() {
   const [answerText, setAnswerText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [evaluation, setEvaluation] = useState<ExerciseEvaluationResponse | null>(null);
-  const [celebrationVisible, setCelebrationVisible] = useState(false);
+  const [resultOverlay, setResultOverlay] = useState<ResultOverlayState | null>(null);
   const [queuedNextExerciseId, setQueuedNextExerciseId] = useState<string | null>(null);
+  const [attemptStateByExerciseId, setAttemptStateByExerciseId] = useState<Record<string, 'pass' | 'fail'>>({});
   const [showGuidance, setShowGuidance] = useState(false);
-  const [showLessonContext, setShowLessonContext] = useState(false);
-
   const requestedTopicId = Array.isArray(params.topicId) ? params.topicId[0] : params.topicId;
   const requestedExerciseId = Array.isArray(params.exerciseId) ? params.exerciseId[0] : params.exerciseId;
   const selectedTopic = useMemo(
@@ -210,9 +292,22 @@ export default function LessonScreen() {
   );
 
   useEffect(() => {
-    const initialExercise = findInitialExercise(selectedTopic, requestedExerciseId);
-    setSelectedExerciseId(initialExercise?.id || null);
-  }, [requestedExerciseId, selectedTopic]);
+    setSelectedExerciseId((current) => {
+      if (!selectedTopic) {
+        return null;
+      }
+
+      if (resultOverlay && current) {
+        return current;
+      }
+
+      if (current && selectedTopic.exercises.some((exercise) => exercise.id === current)) {
+        return current;
+      }
+
+      return findInitialExercise(selectedTopic, requestedExerciseId)?.id || null;
+    });
+  }, [requestedExerciseId, resultOverlay, selectedTopic]);
 
   const selectedExercise =
     selectedTopic?.exercises.find((exercise) => exercise.id === selectedExerciseId) ||
@@ -225,6 +320,7 @@ export default function LessonScreen() {
       setAnswerText('');
       setSelectedOptionId(null);
       setEvaluation(null);
+      setResultOverlay(null);
       setShowGuidance(false);
       return;
     }
@@ -236,17 +332,12 @@ export default function LessonScreen() {
         selectedExercise.lastSelectedOptionId || extractChoiceSelection(selectedExercise.lastSubmittedCode)
       );
       setEvaluation(null);
+      setResultOverlay(null);
       setHydratedExerciseId(selectedExercise.id);
       setShowGuidance(false);
     }
   }, [hydratedExerciseId, selectedExercise]);
 
-  const selectedChoiceOption =
-    selectedExercise?.mode === 'choice' ? getChoiceOption(selectedExercise, selectedOptionId) : null;
-  const correctChoiceOption =
-    selectedExercise?.mode === 'choice' && evaluation
-      ? getChoiceOption(selectedExercise, evaluation.expectedSelectionId || null)
-      : null;
   const totalLessonXp = useMemo(
     () => selectedTopic?.exercises.reduce((total, exercise) => total + exercise.xpReward, 0) || 0,
     [selectedTopic]
@@ -260,12 +351,27 @@ export default function LessonScreen() {
     [selectedExercise?.id, selectedTopic]
   );
   const remainingExercises = Math.max((selectedTopic?.exerciseCount || 0) - completedExercises, 0);
+  const lessonProgressPercent = useMemo(
+    () =>
+      selectedTopic?.exerciseCount
+        ? Math.round(
+            selectedTopic.exercises.reduce((total, exercise) => total + Number(exercise.bestScore || 0), 0) /
+              selectedTopic.exerciseCount
+          )
+        : 0,
+    [selectedTopic]
+  );
+
+  useEffect(() => {
+    setAttemptStateByExerciseId({});
+  }, [selectedTopic?.id]);
 
   if (loading || !dashboard) {
     return <LoadingState />;
   }
 
   function handleBackToClasses() {
+    setResultOverlay(null);
     router.replace({
       pathname: '/(tabs)/explore',
       params: selectedTopic ? { topicId: selectedTopic.id } : undefined,
@@ -273,13 +379,39 @@ export default function LessonScreen() {
   }
 
   function handleNextExercise() {
-    if (!queuedNextExerciseId) {
+    const nextExerciseId = resultOverlay?.nextExerciseId || queuedNextExerciseId;
+
+    if (!nextExerciseId) {
+      setResultOverlay(null);
+      handleBackToClasses();
       return;
     }
 
-    setSelectedExerciseId(queuedNextExerciseId);
+    setResultOverlay(null);
+    setSelectedExerciseId(nextExerciseId);
     setQueuedNextExerciseId(null);
     setEvaluation(null);
+  }
+
+  function clearReviewFeedback() {
+    setEvaluation(null);
+    setResultOverlay(null);
+    setQueuedNextExerciseId(null);
+  }
+
+  function handleSelectOption(optionId: string) {
+    setSelectedOptionId(optionId);
+    clearReviewFeedback();
+  }
+
+  function handleAnswerTextChange(nextValue: string) {
+    setAnswerText(nextValue);
+    clearReviewFeedback();
+  }
+
+  function handleEditorCodeChange(nextValue: string) {
+    setEditorCode(nextValue);
+    clearReviewFeedback();
   }
 
   async function handleEvaluate() {
@@ -301,14 +433,31 @@ export default function LessonScreen() {
       );
 
       setEvaluation(response);
-      if (response.passed) {
-        const updatedTopic =
-          response.dashboard.topics.find((topic) => topic.id === selectedTopic?.id) || selectedTopic;
-        const nextPendingExercise = findNextPendingExercise(updatedTopic, selectedExercise.id);
+      setAttemptStateByExerciseId((current) => ({
+        ...current,
+        [selectedExercise.id]: response.passed ? 'pass' : 'fail',
+      }));
+      const nextTopic =
+        response.dashboard.topics.find((topic) => topic.id === response.topicId) || selectedTopic;
+      const nextPendingExercise = findNextPendingExercise(nextTopic, selectedExercise.id);
+      const nextExerciseId = nextPendingExercise?.id || null;
+      const nextCorrectChoiceOption =
+        selectedExercise.mode === 'choice'
+          ? getChoiceOption(selectedExercise, response.expectedSelectionId || null)
+          : null;
 
-        setQueuedNextExerciseId(nextPendingExercise?.id || null);
-        setCelebrationVisible(true);
-      }
+      setQueuedNextExerciseId(nextExerciseId);
+      setResultOverlay({
+        headline: response.passed ? 'RESPUESTA CORRECTA' : 'RESPONDISTE MAL',
+        title: selectedExercise.title || 'Resultado de la leccion',
+        score: response.score,
+        xpReward: response.xpEarned,
+        variant: response.passed ? 'pass' : 'fail',
+        answerValue: buildResultAnswerValue(selectedExercise, response, nextCorrectChoiceOption),
+        explanation: response.explanation || '',
+        actionLabel: nextExerciseId ? 'SIGUIENTE PREGUNTA' : 'VOLVER A CLASES',
+        nextExerciseId,
+      });
     } catch (error) {
       Alert.alert('duocode', error instanceof Error ? error.message : 'No se pudo evaluar la leccion');
     } finally {
@@ -322,6 +471,7 @@ export default function LessonScreen() {
     }
 
     setEvaluation(null);
+    setResultOverlay(null);
     setQueuedNextExerciseId(null);
     if (selectedExercise.mode === 'choice') {
       setSelectedOptionId(null);
@@ -363,7 +513,7 @@ export default function LessonScreen() {
             {selectedTopic.level} · {selectedTopic.unitTitle}
           </Text>
           <Text style={styles.heroTitle}>{selectedTopic.title}</Text>
-          <Text style={styles.heroText}>{selectedTopic.lessonGoal}</Text>
+          <Text style={styles.heroText}>{selectedTopic.stageGoal}</Text>
 
           <View style={styles.heroBadges}>
             <View style={styles.heroBadge}>
@@ -379,34 +529,6 @@ export default function LessonScreen() {
               <Text style={styles.heroBadgeLabel}>recompensa</Text>
             </View>
           </View>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.rowBetween}>
-            <Text style={styles.cardTitle}>que vas a tocar</Text>
-            <Pressable
-              style={[styles.guideToggle, showLessonContext && styles.guideToggleActive]}
-              onPress={() => setShowLessonContext((current) => !current)}>
-              <Text style={styles.guideToggleText}>{showLessonContext ? 'HIDE CONTEXTO' : 'SHOW CONTEXTO'}</Text>
-            </Pressable>
-          </View>
-          <Text style={styles.bodyText}>{selectedTopic.description}</Text>
-          {showLessonContext ? (
-            <View style={styles.summaryList}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>concepto</Text>
-                <Text style={styles.summaryValue}>{selectedTopic.description}</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>dinamica</Text>
-                <Text style={styles.summaryValue}>{buildModeMix(selectedTopic) || 'reto guiado'}</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryLabel}>meta</Text>
-                <Text style={styles.summaryValue}>{selectedTopic.stageGoal}</Text>
-              </View>
-            </View>
-          ) : null}
         </View>
 
         <View style={styles.card}>
@@ -427,36 +549,41 @@ export default function LessonScreen() {
               </Text>
               <Text style={styles.routeText}>
                 {selectedTopic.exercises.every((exercise) => exercise.completed)
-                  ? 'Ya resolviste todos los retos de esta leccion. La segunda vuelta la haces luego en Practica.'
-                  : `${completedExercises} resueltos · ${remainingExercises} pendientes. Aqui solo se muestra el reto actual para que no te distraigas.`}
+                  ? `Ya completaste esta leccion con ${lessonProgressPercent}% de avance.`
+                  : `Llevas ${lessonProgressPercent}% de avance. ${completedExercises} correctos y ${remainingExercises} por resolver.`}
               </Text>
             </View>
 
             <View style={styles.routeCounter}>
-              <Text style={styles.routeCounterValue}>{`${completedExercises}/${selectedTopic.exerciseCount}`}</Text>
+              <Text style={styles.routeCounterValue}>{`${lessonProgressPercent}%`}</Text>
               <Text style={styles.routeCounterLabel}>avance</Text>
             </View>
           </View>
 
           <View style={styles.routeSteps}>
             {selectedTopic.exercises.map((exercise, index) => {
-              const isCurrent = exercise.id === selectedExercise?.id;
+              const localAttemptState = attemptStateByExerciseId[exercise.id];
+              const isPassed = exercise.completed || localAttemptState === 'pass';
+              const isFailed = !exercise.completed && localAttemptState === 'fail';
+              const isCurrent = exercise.id === selectedExercise?.id && !isPassed && !isFailed;
 
               return (
                 <View
                   key={exercise.id}
                   style={[
                     styles.routeStep,
-                    exercise.completed && styles.routeStepDone,
+                    isPassed && styles.routeStepDone,
+                    isFailed && styles.routeStepBad,
                     isCurrent && styles.routeStepCurrent,
                   ]}>
                   <Text
                     style={[
                       styles.routeStepIndex,
-                      exercise.completed && styles.routeStepIndexDone,
+                      isPassed && styles.routeStepIndexDone,
+                      isFailed && styles.routeStepIndexBad,
                       isCurrent && styles.routeStepIndexCurrent,
                     ]}>
-                    {exercise.completed ? 'OK' : index + 1}
+                    {isPassed ? 'OK' : isFailed ? 'BAD' : index + 1}
                   </Text>
                 </View>
               );
@@ -469,96 +596,105 @@ export default function LessonScreen() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>reto actual</Text>
               <Text style={styles.challengeTitle}>{buildChallengeTitle(selectedExercise)}</Text>
-              <Text style={styles.challengeSubtitle}>{selectedExercise.title}</Text>
+              <Text style={styles.challengeSubtitle}>{buildChallengeSubtitle(selectedExercise)}</Text>
               <View style={styles.promptShell}>
                 <Text style={styles.promptLabel}>{buildChallengePromptLabel(selectedExercise)}</Text>
                 <Text style={styles.promptText}>{selectedExercise.prompt}</Text>
-                <Text style={styles.promptHint}>{buildChallengePromptHint(selectedExercise)}</Text>
-              </View>
-              <View style={styles.pills}>
-                <Text style={styles.pill}>{selectedExercise.lessonTypeLabel}</Text>
-                <Text style={styles.pill}>{rewardLabel(selectedExercise)}</Text>
-                <Text style={styles.pill}>{`mejor ${selectedExercise.bestScore}%`}</Text>
+                {buildChallengePromptHint(selectedExercise) ? (
+                  <Text style={styles.promptHint}>{buildChallengePromptHint(selectedExercise)}</Text>
+                ) : null}
               </View>
             </View>
 
             <View style={styles.card}>
-              <View style={styles.rowBetween}>
-                <Text style={styles.cardTitle}>que debes hacer</Text>
-                {selectedExercise.completed ? (
-                  queuedNextExerciseId ? (
-                    <Pressable style={styles.primaryButton} onPress={handleNextExercise}>
-                      <Text style={styles.primaryButtonText}>SIGUIENTE RETO</Text>
-                    </Pressable>
-                  ) : (
-                    <Pressable style={styles.primaryButton} onPress={handleBackToClasses}>
-                      <Text style={styles.primaryButtonText}>VOLVER A CLASES</Text>
-                    </Pressable>
-                  )
-                ) : (
-                  <View style={styles.actionRow}>
-                    <Pressable style={styles.secondaryButton} onPress={handleReset}>
-                      <Text style={styles.secondaryButtonText}>RESET</Text>
-                    </Pressable>
-                    <Pressable style={styles.primaryButton} onPress={handleEvaluate} disabled={submitting}>
-                      <Text style={styles.primaryButtonText}>{submitting ? 'REVISANDO...' : 'REVISAR'}</Text>
-                    </Pressable>
-                  </View>
-                )}
-              </View>
+              <Modal
+                transparent
+                animationType="fade"
+                visible={showGuidance}
+                onRequestClose={() => setShowGuidance(false)}>
+                <View style={styles.guideModalOverlay}>
+                  <Pressable style={styles.guideModalBackdrop} onPress={() => setShowGuidance(false)} />
 
-              <Pressable
-                style={[styles.guideToggle, showGuidance && styles.guideToggleActive]}
-                onPress={() => setShowGuidance((current) => !current)}>
-                <Text style={styles.guideToggleText}>{showGuidance ? 'HIDE GUIA' : 'SHOW GUIA'}</Text>
-                <Text style={styles.guideToggleHint}>
-                  {showGuidance
-                    ? 'Oculta los pasos extra y deja visible solo el reto actual.'
-                    : 'Abre una ayuda corta si quieres ver como responder este reto.'}
-                </Text>
-              </Pressable>
-
-              {showGuidance ? (
-                <View style={styles.guidanceCard}>
-                  <Text style={styles.guidanceLead}>{buildChallengeGuidance(selectedExercise)}</Text>
-                  <View style={styles.answerRuleBox}>
-                    <Text style={styles.answerRuleLabel}>como debes responder</Text>
-                    <Text style={styles.answerRuleText}>{buildChallengeAnswerRule(selectedExercise)}</Text>
-                  </View>
-                  <View style={styles.guidanceSteps}>
-                    {buildChallengeSteps(selectedExercise).map((step, index) => (
-                      <View key={`${selectedExercise.id}-step-${index + 1}`} style={styles.guidanceStep}>
-                        <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
-                        <Text style={styles.guidanceStepText}>{step}</Text>
+                  <View style={styles.guideModalCard}>
+                    <View style={styles.guideModalHeader}>
+                      <View style={styles.guideModalTitleGroup}>
+                        <Text style={styles.guideModalEyebrow}>ayuda rapida</Text>
+                        <Text style={styles.guideModalTitle}>Como resolver este reto</Text>
                       </View>
-                    ))}
+
+                      <Pressable style={styles.guideCloseButton} onPress={() => setShowGuidance(false)}>
+                        <Text style={styles.guideCloseButtonText}>CERRAR</Text>
+                      </Pressable>
+                    </View>
+
+                    <ScrollView
+                      style={styles.guideModalScroll}
+                      contentContainerStyle={styles.guideModalContent}
+                      showsVerticalScrollIndicator={false}>
+                      <Text style={styles.guidanceLead}>{buildChallengeGuidance(selectedExercise)}</Text>
+                      <View style={styles.answerRuleBox}>
+                        <Text style={styles.answerRuleLabel}>como debes responder</Text>
+                        <Text style={styles.answerRuleText}>{buildChallengeAnswerRule(selectedExercise)}</Text>
+                      </View>
+                      <View style={styles.guidanceSteps}>
+                        {buildChallengeSteps(selectedExercise).map((step, index) => (
+                          <View key={`${selectedExercise.id}-step-${index + 1}`} style={styles.guidanceStep}>
+                            <Text style={styles.guidanceStepIndex}>{index + 1}</Text>
+                            <Text style={styles.guidanceStepText}>{step}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </ScrollView>
                   </View>
                 </View>
-              ) : null}
+              </Modal>
 
               {selectedExercise.mode === 'choice' ? (
                 <View style={styles.optionList}>
-                  <View style={styles.choiceInfoCard}>
-                    <Text style={styles.choiceInfoEyebrow}>elige 1 opcion</Text>
-                    <Text style={styles.choiceInfoText}>
-                      Toca la tarjeta que mejor responde la pregunta. Cuando ya la tengas elegida, pulsa `REVISAR`.
-                    </Text>
-                  </View>
                   {selectedExercise.choiceOptions.map((option) => {
-                    const isActive = option.id === selectedOptionId;
+                    const optionState = getChoiceFeedbackState(option.id, selectedOptionId, evaluation);
+                    const statusLabel = getChoiceFeedbackLabel(optionState);
                     const optionBadge = option.id.toUpperCase();
                     const optionHeading = option.label?.trim() || `Opcion ${optionBadge}`;
                     const optionBody = option.detail?.trim() || optionHeading;
                     return (
                       <Pressable
                         key={option.id}
-                        style={[styles.optionCard, isActive && styles.optionCardSelected]}
-                        onPress={() => setSelectedOptionId(option.id)}
+                        style={[
+                          styles.optionCard,
+                          optionState === 'selected' && styles.optionCardSelected,
+                          optionState === 'correct' && styles.optionCardCorrect,
+                          optionState === 'wrong' && styles.optionCardWrong,
+                        ]}
+                        onPress={() => handleSelectOption(option.id)}
                         disabled={selectedExercise.completed}>
                         <View style={styles.optionHeader}>
-                          <Text style={styles.optionBadge}>{optionBadge}</Text>
-                          <Text style={styles.optionTitle}>{optionHeading}</Text>
-                          {isActive ? <Text style={styles.optionStatus}>elegida</Text> : null}
+                          <Text
+                            style={[
+                              styles.optionBadge,
+                              optionState === 'correct' && styles.optionBadgeCorrect,
+                              optionState === 'wrong' && styles.optionBadgeWrong,
+                            ]}>
+                            {optionBadge}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.optionTitle,
+                              optionState === 'correct' && styles.optionTitleCorrect,
+                              optionState === 'wrong' && styles.optionTitleWrong,
+                            ]}>
+                            {optionHeading}
+                          </Text>
+                          {statusLabel ? (
+                            <Text
+                              style={[
+                                styles.optionStatus,
+                                optionState === 'correct' && styles.optionStatusCorrect,
+                                optionState === 'wrong' && styles.optionStatusWrong,
+                              ]}>
+                              {statusLabel}
+                            </Text>
+                          ) : null}
                         </View>
                         <Text style={styles.optionDetail}>{optionBody}</Text>
                       </Pressable>
@@ -568,18 +704,30 @@ export default function LessonScreen() {
               ) : selectedExercise.mode === 'text' ? (
                 <>
                   {selectedExercise.codeSnippet ? (
-                    <View style={styles.snippetBox}>
-                      <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
-                      {selectedExercise.codeSnippet.split('\n').map((line, index) => (
-                        <Text key={`${selectedExercise.id}-snippet-${index + 1}`} style={styles.snippetLine}>
-                          {line || ' '}
-                        </Text>
-                      ))}
+                    selectedExercise.kind === 'completion' ? (
+                      <View style={styles.conceptBox}>
+                        <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
+                        <Text style={styles.conceptText}>{selectedExercise.codeSnippet}</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.snippetBox}>
+                        <Text style={styles.snippetLabel}>{buildSnippetLabel(selectedExercise)}</Text>
+                        {selectedExercise.codeSnippet.split('\n').map((line, index) => (
+                          <Text key={`${selectedExercise.id}-snippet-${index + 1}`} style={styles.snippetLine}>
+                            {line || ' '}
+                          </Text>
+                        ))}
+                      </View>
+                    )
+                  ) : null}
+                  {selectedExercise.kind === 'prediction' ? (
+                    <View style={styles.outputHintBox}>
+                      <Text style={styles.outputHintText}>print: ___</Text>
                     </View>
                   ) : null}
                   <TextInput
                     value={answerText}
-                    onChangeText={setAnswerText}
+                    onChangeText={handleAnswerTextChange}
                     multiline
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -587,7 +735,11 @@ export default function LessonScreen() {
                     textAlignVertical="top"
                     placeholder={selectedExercise.inputPlaceholder || 'Escribe tu respuesta'}
                     placeholderTextColor={DuocodePalette.muted}
-                    style={styles.answerInput}
+                    style={[
+                      styles.answerInput,
+                      evaluation?.passed && styles.answerInputPass,
+                      evaluation && !evaluation.passed && styles.answerInputFail,
+                    ]}
                     editable={!selectedExercise.completed}
                   />
                 </>
@@ -605,85 +757,76 @@ export default function LessonScreen() {
                   ) : null}
                   <TextInput
                     value={editorCode}
-                    onChangeText={setEditorCode}
+                    onChangeText={handleEditorCodeChange}
                     multiline
                     autoCapitalize="none"
                     autoCorrect={false}
                     spellCheck={false}
                     textAlignVertical="top"
-                    style={styles.codeInput}
+                    style={[
+                      styles.codeInput,
+                      evaluation?.passed && styles.answerInputPass,
+                      evaluation && !evaluation.passed && styles.answerInputFail,
+                    ]}
                     editable={!selectedExercise.completed}
                   />
                 </>
               )}
+
+              {selectedExercise.completed ? (
+                <View style={styles.footerActionRow}>
+                  {queuedNextExerciseId ? (
+                    <Pressable style={[styles.primaryButton, styles.footerActionButton]} onPress={handleNextExercise}>
+                      <Text style={styles.primaryButtonText}>SIGUIENTE RETO</Text>
+                    </Pressable>
+                  ) : (
+                    <Pressable
+                      style={[styles.primaryButton, styles.footerActionButton]}
+                      onPress={handleBackToClasses}>
+                      <Text style={styles.primaryButtonText}>VOLVER A CLASES</Text>
+                    </Pressable>
+                  )}
+                </View>
+              ) : (
+                <View style={styles.footerActionRow}>
+                  <Pressable
+                    style={[styles.guideActionButton, styles.footerActionButton]}
+                    onPress={() => setShowGuidance(true)}>
+                    <Text style={styles.guideActionButtonText}>VER AYUDA RAPIDA</Text>
+                  </Pressable>
+                  {selectedExercise.mode === 'code' ? (
+                    <Pressable style={[styles.secondaryButton, styles.footerActionButton]} onPress={handleReset}>
+                      <Text style={styles.secondaryButtonText}>RESET</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable
+                    style={[styles.primaryButton, styles.footerActionButton]}
+                    onPress={handleEvaluate}
+                    disabled={submitting}>
+                    <Text style={styles.primaryButtonText}>{submitting ? 'REVISANDO...' : 'REVISAR'}</Text>
+                  </Pressable>
+                </View>
+              )}
             </View>
 
-            {evaluation ? (
-              <View style={styles.card}>
-                <View style={styles.rowBetween}>
-                  <View style={styles.resultCopy}>
-                    <Text style={styles.cardTitle}>{evaluation.passed ? 'resultado correcto' : 'necesita ajuste'}</Text>
-                    <Text style={styles.bodyText}>
-                      {evaluation.passed
-                        ? 'Esta solucion suma el XP completo de la leccion.'
-                        : 'Ajusta tu respuesta y vuelve a intentarlo.'}
-                    </Text>
-                  </View>
-                  <View style={[styles.scoreBadge, evaluation.passed ? styles.scoreBadgePass : styles.scoreBadgeFail]}>
-                    <Text style={styles.scoreBadgeText}>{`${evaluation.score}%`}</Text>
-                    <Text style={styles.scoreBadgeMeta}>{`+${evaluation.xpEarned} XP`}</Text>
-                  </View>
-                </View>
-
-                {selectedExercise.mode === 'choice' ? (
-                  <View style={styles.feedbackBox}>
-                    <Text style={styles.feedbackLabel}>tu respuesta</Text>
-                    <Text style={styles.feedbackText}>{selectedChoiceOption?.label || 'Sin seleccion'}</Text>
-                    <Text style={styles.feedbackLabel}>correcta</Text>
-                    <Text style={styles.feedbackText}>{correctChoiceOption?.label || 'No disponible'}</Text>
-                  </View>
-                ) : null}
-
-                {selectedExercise.mode === 'text' ? (
-                  <View style={styles.feedbackBox}>
-                    <Text style={styles.feedbackLabel}>tu respuesta</Text>
-                    <Text style={styles.feedbackText}>{evaluation.submittedText || 'Sin respuesta'}</Text>
-                    <Text style={styles.feedbackLabel}>correcta</Text>
-                    <Text style={styles.feedbackText}>{evaluation.expectedText || 'No disponible'}</Text>
-                  </View>
-                ) : null}
-
-                {evaluation.tests.slice(0, 3).map((test) => (
-                  <View key={test.label} style={styles.testCard}>
-                    <Text style={styles.testTitle}>{`${test.label} · ${test.pass ? 'PASS' : 'FAIL'}`}</Text>
-                    <Text style={styles.testLine}>{`esperado: ${test.expectedPreview}`}</Text>
-                    <Text style={styles.testLine}>{`recibido: ${test.receivedPreview}`}</Text>
-                  </View>
-                ))}
-
-                {!evaluation.passed && selectedExercise.mode === 'code' ? (
-                  <View style={styles.feedbackBox}>
-                    <Text style={styles.feedbackLabel}>solucion correcta</Text>
-                    <Text style={styles.snippetLine}>{evaluation.correctSolution}</Text>
-                  </View>
-                ) : null}
-
-                <View style={styles.feedbackBox}>
-                  <Text style={styles.feedbackLabel}>explicacion</Text>
-                  <Text style={styles.bodyText}>{evaluation.explanation}</Text>
-                </View>
-              </View>
-            ) : null}
           </>
         ) : null}
       </ScrollView>
 
       <CodeCelebrationOverlay
-        visible={celebrationVisible && Boolean(evaluation?.passed && selectedExercise)}
-        title={selectedExercise?.title || 'Leccion completada'}
-        score={evaluation?.score || 0}
-        xpReward={evaluation?.xpEarned || 0}
-        onDismiss={() => setCelebrationVisible(false)}
+        visible={Boolean(resultOverlay)}
+        headline={resultOverlay?.headline}
+        title={resultOverlay?.title || 'Resultado de la leccion'}
+        score={resultOverlay?.score || 0}
+        xpReward={resultOverlay?.xpReward || 0}
+        variant={resultOverlay?.variant || 'pass'}
+        answerLabel="respuesta correcta"
+        answerValue={resultOverlay?.answerValue || null}
+        explanation={resultOverlay?.explanation || ''}
+        actionLabel={resultOverlay?.actionLabel || null}
+        onAction={handleNextExercise}
+        disableBackdropDismiss
+        onDismiss={() => setResultOverlay(null)}
       />
     </SafeAreaView>
   );
@@ -866,18 +1009,23 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   routeStep: {
-    width: 36,
-    height: 36,
+    minWidth: 44,
+    height: 38,
     borderRadius: 18,
     backgroundColor: DuocodePalette.surfaceAlt,
     borderWidth: 1,
     borderColor: DuocodePalette.border,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   routeStepDone: {
     backgroundColor: DuocodePalette.terminalGreenSoft,
-    borderColor: DuocodePalette.green,
+    borderColor: DuocodePalette.terminalGreen,
+  },
+  routeStepBad: {
+    backgroundColor: DuocodePalette.redSoft,
+    borderColor: DuocodePalette.red,
   },
   routeStepCurrent: {
     backgroundColor: DuocodePalette.accentSoft,
@@ -890,12 +1038,17 @@ const styles = StyleSheet.create({
   },
   routeStepIndex: {
     color: '#9CB6D8',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
   routeStepIndexDone: {
-    color: DuocodePalette.code,
+    color: DuocodePalette.terminalGreen,
+    fontSize: 11,
+  },
+  routeStepIndexBad: {
+    color: DuocodePalette.red,
+    fontSize: 11,
   },
   routeStepIndexCurrent: {
     color: DuocodePalette.accent,
@@ -1030,13 +1183,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
   },
   guideToggle: {
-    backgroundColor: '#0F1A2D',
+    alignSelf: 'flex-start',
+    backgroundColor: DuocodePalette.accentSoft,
     borderWidth: 1,
-    borderColor: DuocodePalette.border,
+    borderColor: DuocodePalette.accent,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    gap: 4,
   },
   guideToggleActive: {
     borderColor: DuocodePalette.accent,
@@ -1048,17 +1201,90 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontFamily: Fonts.mono,
   },
-  guideToggleHint: {
-    color: '#C9D9F0',
-    fontSize: 12,
-    lineHeight: 18,
+  guideActionButton: {
+    backgroundColor: DuocodePalette.accentSoft,
+    borderWidth: 1,
+    borderColor: DuocodePalette.accent,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
-  guidanceCard: {
+  guideActionButtonText: {
+    color: DuocodePalette.accent,
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  footerActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+    alignItems: 'stretch',
+  },
+  footerActionButton: {
+    flex: 1,
+  },
+  guideModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  guideModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(3, 7, 18, 0.78)',
+  },
+  guideModalCard: {
+    width: '100%',
+    maxWidth: 640,
+    maxHeight: '78%',
+    alignSelf: 'center',
     backgroundColor: '#101F33',
     borderWidth: 1,
     borderColor: DuocodePalette.borderStrong,
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 24,
+    padding: 18,
+    gap: 14,
+  },
+  guideModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  guideModalTitleGroup: {
+    flex: 1,
+    gap: 4,
+  },
+  guideModalEyebrow: {
+    color: DuocodePalette.code,
+    fontSize: 11,
+    fontFamily: Fonts.mono,
+  },
+  guideModalTitle: {
+    color: DuocodePalette.text,
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  guideCloseButton: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  guideCloseButtonText: {
+    color: DuocodePalette.muted,
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  guideModalScroll: {
+    flexGrow: 0,
+  },
+  guideModalContent: {
     gap: 12,
   },
   guidanceLead: {
@@ -1116,25 +1342,6 @@ const styles = StyleSheet.create({
   optionList: {
     gap: 12,
   },
-  choiceInfoCard: {
-    backgroundColor: '#0F1A2D',
-    borderWidth: 1,
-    borderColor: DuocodePalette.borderStrong,
-    borderRadius: 18,
-    padding: 14,
-    gap: 6,
-  },
-  choiceInfoEyebrow: {
-    color: DuocodePalette.code,
-    fontSize: 11,
-    fontFamily: Fonts.mono,
-  },
-  choiceInfoText: {
-    color: '#D7E6FB',
-    fontSize: 13,
-    lineHeight: 20,
-    fontWeight: '700',
-  },
   optionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1167,12 +1374,26 @@ const styles = StyleSheet.create({
     borderColor: DuocodePalette.accent,
     backgroundColor: DuocodePalette.accentSoft,
   },
+  optionCardCorrect: {
+    borderColor: DuocodePalette.terminalGreen,
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+  },
+  optionCardWrong: {
+    borderColor: DuocodePalette.red,
+    backgroundColor: DuocodePalette.redSoft,
+  },
   optionTitle: {
     flex: 1,
     color: '#CFE0F8',
     fontSize: 12,
     fontWeight: '900',
     fontFamily: Fonts.mono,
+  },
+  optionTitleCorrect: {
+    color: DuocodePalette.code,
+  },
+  optionTitleWrong: {
+    color: '#FFB4C2',
   },
   optionStatus: {
     backgroundColor: DuocodePalette.accentSoft,
@@ -1186,6 +1407,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     overflow: 'hidden',
+  },
+  optionStatusCorrect: {
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+    borderColor: DuocodePalette.terminalGreen,
+    color: DuocodePalette.code,
+  },
+  optionStatusWrong: {
+    backgroundColor: DuocodePalette.redSoft,
+    borderColor: DuocodePalette.red,
+    color: '#FFB4C2',
+  },
+  optionBadgeCorrect: {
+    backgroundColor: DuocodePalette.codeSoft,
+    borderColor: DuocodePalette.terminalGreen,
+    color: DuocodePalette.code,
+  },
+  optionBadgeWrong: {
+    backgroundColor: DuocodePalette.redSoft,
+    borderColor: DuocodePalette.red,
+    color: '#FFB4C2',
   },
   optionDetail: {
     color: DuocodePalette.text,
@@ -1201,16 +1442,44 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 4,
   },
+  conceptBox: {
+    backgroundColor: '#12233A',
+    borderWidth: 1,
+    borderColor: DuocodePalette.borderStrong,
+    borderRadius: 18,
+    padding: 14,
+    gap: 8,
+  },
   snippetLabel: {
     color: DuocodePalette.terminalBlue,
     fontSize: 11,
     fontFamily: Fonts.mono,
     marginBottom: 4,
   },
+  conceptText: {
+    color: DuocodePalette.text,
+    fontSize: 15,
+    lineHeight: 23,
+    fontWeight: '700',
+  },
   snippetLine: {
     color: DuocodePalette.code,
     fontSize: 15,
     lineHeight: 23,
+    fontFamily: Fonts.mono,
+  },
+  outputHintBox: {
+    backgroundColor: DuocodePalette.surfaceAlt,
+    borderWidth: 1,
+    borderColor: DuocodePalette.border,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  outputHintText: {
+    color: DuocodePalette.code,
+    fontSize: 14,
+    fontWeight: '900',
     fontFamily: Fonts.mono,
   },
   answerInput: {
@@ -1224,6 +1493,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     fontFamily: Fonts.mono,
+  },
+  answerInputPass: {
+    borderColor: DuocodePalette.terminalGreen,
+    backgroundColor: DuocodePalette.terminalGreenSoft,
+  },
+  answerInputFail: {
+    borderColor: DuocodePalette.red,
+    backgroundColor: DuocodePalette.redSoft,
   },
   codeInput: {
     minHeight: 280,
